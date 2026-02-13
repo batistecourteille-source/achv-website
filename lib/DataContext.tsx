@@ -762,8 +762,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const saveToFirestore = async (key: string, data: any) => {
         try {
             await setDoc(doc(db, 'site', 'achv'), { [key]: data }, { merge: true });
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error saving to Firestore:", error);
+            alert(`Erreur de sauvegarde automatique : ${error.message}\n\nSi l'erreur mentionne "size" ou "quota", la base de données est trop pleine. Il faudra supprimer des éléments volumineux.`);
         }
     };
 
