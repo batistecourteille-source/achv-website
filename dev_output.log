@@ -1,0 +1,22 @@
+
+> achv-website@1.0.0 dev
+> next dev
+
+ ⨯ Failed to load next.config.ts, see more info here https://nextjs.org/docs/messages/next-config-error
+node:internal/fs/promises:642
+  return new FileHandle(await PromisePrototypeThen(
+                        ^
+
+Error: ENOENT: no such file or directory, open '/Users/batistec/Desktop/monsiteweb/ACHV/next.config.ts'
+    at async open (node:internal/fs/promises:642:25)
+    at async readFile (node:internal/fs/promises:1279:14)
+    at async transpileConfig (/Users/batistec/Desktop/monsiteweb/ACHV/node_modules/next/dist/build/next-config-ts/transpile-config.js:87:34)
+    at async loadConfig (/Users/batistec/Desktop/monsiteweb/ACHV/node_modules/next/dist/server/config.js:1088:36)
+    at async Module.nextDev (/Users/batistec/Desktop/monsiteweb/ACHV/node_modules/next/dist/cli/next-dev.js:195:14) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/batistec/Desktop/monsiteweb/ACHV/next.config.ts'
+}
+
+Node.js v24.12.0
