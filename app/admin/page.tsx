@@ -8,26 +8,42 @@ import '@/app/admin.css';
 /* =============================================
    IMAGE UPLOAD — drag & drop + click
    ============================================= */
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+/* =============================================
+   IMAGE UPLOAD — Firebase Storage
+   ============================================= */
 function useImageUpload() {
-    const toBase64 = (file: File): Promise<string> =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-        });
-    return { toBase64 };
+    const upload = async (file: File, path: string = 'uploads'): Promise<string> => {
+        if (!storage) throw new Error("Storage not configured");
+        const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        return await getDownloadURL(snapshot.ref);
+    };
+
+    return { upload };
 }
 
-function ImageUpload({ value, onChange, label, hint }: { value?: string; onChange: (v: string) => void; label: string; hint?: string }) {
-    const { toBase64 } = useImageUpload();
-    const ref = useRef<HTMLInputElement>(null);
+function ImageUpload({ value, onChange, label, hint, folder = 'images' }: { value?: string; onChange: (v: string) => void; label: string; hint?: string; folder?: string }) {
+    const { upload } = useImageUpload();
+    const refInput = useRef<HTMLInputElement>(null);
     const [dragging, setDragging] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
     const handleFile = async (file: File) => {
         if (file && file.type.startsWith('image/')) {
-            const data = await toBase64(file);
-            onChange(data);
+            setUploading(true);
+            try {
+                // Determine folder based on context if possible, otherwise default
+                const url = await upload(file, folder);
+                onChange(url);
+            } catch (error) {
+                console.error("Upload failed:", error);
+                alert("Erreur lors de l'envoi de l'image. Vérifiez votre connexion.");
+            } finally {
+                setUploading(false);
+            }
         }
     };
 
@@ -41,11 +57,17 @@ function ImageUpload({ value, onChange, label, hint }: { value?: string; onChang
         <div className="form-group">
             <label>{label}</label>
             {hint && <p className="form-hint">{hint}</p>}
-            {value ? (
+
+            {uploading ? (
+                <div className="wp-dropzone">
+                    <div className="wp-spinner"></div>
+                    <p>Envoi de l'image en cours...</p>
+                </div>
+            ) : value ? (
                 <div className="wp-image-preview">
                     <img src={value} alt="Preview" />
                     <div className="wp-image-actions">
-                        <button type="button" onClick={() => ref.current?.click()} className="wp-btn-sm">📷 Remplacer</button>
+                        <button type="button" onClick={() => refInput.current?.click()} className="wp-btn-sm">📷 Remplacer</button>
                         <button type="button" onClick={() => onChange('')} className="wp-btn-sm wp-btn-danger">✕ Retirer</button>
                     </div>
                 </div>
@@ -55,14 +77,14 @@ function ImageUpload({ value, onChange, label, hint }: { value?: string; onChang
                     onDragOver={e => { e.preventDefault(); setDragging(true); }}
                     onDragLeave={() => setDragging(false)}
                     onDrop={onDrop}
-                    onClick={() => ref.current?.click()}
+                    onClick={() => refInput.current?.click()}
                 >
                     <div className="wp-dropzone-icon">📁</div>
                     <p>Glissez une image ici ou <span>cliquez pour parcourir</span></p>
                     <small>JPG, PNG, WebP • Max 5 Mo</small>
                 </div>
             )}
-            <input type="file" ref={ref} accept="image/*" onChange={async e => { const f = e.target.files?.[0]; if (f) await handleFile(f); }} style={{ display: 'none' }} />
+            <input type="file" ref={refInput} accept="image/*" onChange={async e => { const f = e.target.files?.[0]; if (f) await handleFile(f); }} style={{ display: 'none' }} />
         </div>
     );
 }

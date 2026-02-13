@@ -1138,3 +1138,5 @@
         border-bottom: 1px solid #e2e8f0;
     }
 }
+.wp-spinner { width: 20px; height: 20px; border: 2px solid #ddd; border-top-color: #3b82f6; border-radius: 50%; animation: wp-spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+@keyframes wp-spin { to { transform: rotate(360deg); } }
