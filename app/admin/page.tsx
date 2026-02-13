@@ -20,24 +20,42 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 function useImageUpload() {
     const upload = async (file: File, path: string = 'uploads'): Promise<string> => {
         console.log("Starting upload...", file.name);
+
         if (!storage) {
             console.error("Storage object is missing!");
-            throw new Error("Configuration mancante : Storage non initialisé.");
+            alert("Erreur critique : Le service de stockage n'est pas configuré. Vérifiez votre fichier .env.local (NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET).");
+            throw new Error("Configuration manquante : Storage non initialisé.");
         }
+
         try {
+            // Test permissions with a small file or specific path if needed, but here we just try upload
             const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
             console.log("Target Ref:", storageRef.fullPath);
+
             const snapshot = await uploadBytes(storageRef, file);
             console.log("Upload done, getting URL...");
+
             const url = await getDownloadURL(snapshot.ref);
-            console.log("URL:", url);
+            console.log("URL obtained:", url);
             return url;
         } catch (error: any) {
-            console.error("Upload Error:", error);
-            if (error.code === 'storage/unauthorized') throw new Error("Permission refusée. Vérifiez les règles Storage.");
-            if (error.code === 'storage/retry-limit-exceeded') throw new Error("Erreur de connexion (délai dépassé).");
-            if (error.code === 'storage/invalid-argument') throw new Error("Format de fichier invalide.");
-            throw new Error(error.message || "Erreur inconnue lors de l'upload.");
+            console.error("Upload Error Detailed:", error);
+
+            let message = "Erreur inconnue lors de l'upload.";
+            if (error.code === 'storage/unauthorized') {
+                message = "Permission refusée : Vous n'avez pas l'autorisation d'envoyer des fichiers. Vérifiez les règles de sécurité Firebase Storage.";
+            } else if (error.code === 'storage/retry-limit-exceeded') {
+                message = "Erreur de connexion : Délai d'attente dépassé. Vérifiez votre connexion internet.";
+            } else if (error.code === 'storage/invalid-argument') {
+                message = "Fichier invalide : Le format ou le nom du fichier pose problème.";
+            } else if (error.code === 'storage/canceled') {
+                message = "Envoi annulé par l'utilisateur.";
+            } else if (error.message) {
+                message = `Erreur technique : ${error.message}`;
+            }
+
+            alert(message);
+            throw new Error(message);
         }
     };
 
@@ -47,21 +65,31 @@ function useImageUpload() {
 function ImageUpload({ value, onChange, label, hint, folder = 'images' }: { value?: string; onChange: (v: string) => void; label: string; hint?: string; folder?: string }) {
     const { upload } = useImageUpload();
     const refInput = useRef<HTMLInputElement>(null);
-    const [dragging, setDragging] = useState(false);
     const [uploading, setUploading] = useState(false);
 
     const handleFile = async (file: File) => {
-        if (file && file.type.startsWith('image/')) {
-            setUploading(true);
-            try {
-                const url = await upload(file, folder);
-                onChange(url);
-            } catch (error: any) {
-                console.error("Upload failed:", error);
-                alert("Erreur : " + error.message);
-            } finally {
-                setUploading(false);
-            }
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert("Ce fichier n'est pas une image.");
+            return;
+        }
+
+        // Limit file size to 5MB client-side check
+        if (file.size > 5 * 1024 * 1024) {
+            alert("L'image est trop volumineuse (Max 5 Mo).");
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const url = await upload(file, folder);
+            onChange(url);
+        } catch (error) {
+            // Error is already alerted in upload function
+            console.error(error);
+        } finally {
+            setUploading(false);
         }
     };
 
