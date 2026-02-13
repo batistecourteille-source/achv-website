@@ -14,12 +14,31 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 /* =============================================
    IMAGE UPLOAD — Firebase Storage
    ============================================= */
+/* =============================================
+   IMAGE UPLOAD — Firebase Storage
+   ============================================= */
 function useImageUpload() {
     const upload = async (file: File, path: string = 'uploads'): Promise<string> => {
-        if (!storage) throw new Error("Storage not configured");
-        const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        return await getDownloadURL(snapshot.ref);
+        console.log("Starting upload...", file.name);
+        if (!storage) {
+            console.error("Storage object is missing!");
+            throw new Error("Configuration mancante : Storage non initialisé.");
+        }
+        try {
+            const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
+            console.log("Target Ref:", storageRef.fullPath);
+            const snapshot = await uploadBytes(storageRef, file);
+            console.log("Upload done, getting URL...");
+            const url = await getDownloadURL(snapshot.ref);
+            console.log("URL:", url);
+            return url;
+        } catch (error: any) {
+            console.error("Upload Error:", error);
+            if (error.code === 'storage/unauthorized') throw new Error("Permission refusée. Vérifiez les règles Storage.");
+            if (error.code === 'storage/retry-limit-exceeded') throw new Error("Erreur de connexion (délai dépassé).");
+            if (error.code === 'storage/invalid-argument') throw new Error("Format de fichier invalide.");
+            throw new Error(error.message || "Erreur inconnue lors de l'upload.");
+        }
     };
 
     return { upload };
@@ -35,12 +54,11 @@ function ImageUpload({ value, onChange, label, hint, folder = 'images' }: { valu
         if (file && file.type.startsWith('image/')) {
             setUploading(true);
             try {
-                // Determine folder based on context if possible, otherwise default
                 const url = await upload(file, folder);
                 onChange(url);
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Upload failed:", error);
-                alert("Erreur lors de l'envoi de l'image. Vérifiez votre connexion.");
+                alert("Erreur : " + error.message);
             } finally {
                 setUploading(false);
             }
