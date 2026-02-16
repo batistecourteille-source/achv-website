@@ -31,6 +31,8 @@ export interface Event {
     dateEnd?: string;
     location: string;
     description: string;
+    registrationUrl?: string;
+    presentationUrl?: string;
 }
 
 export interface TeamMember {

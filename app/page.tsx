@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import InstagramPost from '@/components/InstagramPost';
 
 /* =============================================
    HEADER avec nav dynamique (custom pages)
@@ -280,6 +279,39 @@ function EventsPreview() {
                                     <h3>{ev.title}</h3>
                                     <p>{ev.description}</p>
                                     <div className="event-location">📍 {ev.location}</div>
+
+                                    {(ev.registrationUrl || ev.presentationUrl) && (
+                                        <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                            {ev.registrationUrl && (
+                                                <a
+                                                    href={ev.registrationUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="btn btn-primary"
+                                                    style={{ padding: '6px 14px', fontSize: '0.75rem' }}
+                                                >
+                                                    S'inscrire
+                                                </a>
+                                            )}
+                                            {ev.presentationUrl && (
+                                                <a
+                                                    href={ev.presentationUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="btn"
+                                                    style={{
+                                                        padding: '6px 14px',
+                                                        fontSize: '0.75rem',
+                                                        background: 'transparent',
+                                                        border: '1.5px solid var(--primary)',
+                                                        color: 'var(--primary)'
+                                                    }}
+                                                >
+                                                    En savoir plus
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         );
@@ -405,8 +437,11 @@ function CTASection() {
 /* =============================================
    SOCIAL FEED
    ============================================= */
+import SocialPostEmbed from '@/components/SocialPostEmbed';
+
 function SocialFeed() {
     const { socialPosts, settings } = useData();
+    const [selectedReel, setSelectedReel] = useState<string | null>(null);
 
     // Filter posts based on visibility flags
     const visiblePosts = socialPosts.filter(post => {
@@ -416,7 +451,6 @@ function SocialFeed() {
 
     if (!visiblePosts || visiblePosts.length === 0) return null;
 
-    // Duplicate list for infinite scroll effect (if needed, but simple scroll is safer)
     return (
         <section className="section" id="social-feed">
             <div className="container">
@@ -427,39 +461,115 @@ function SocialFeed() {
                 </div>
 
                 <div style={{ marginBottom: 40 }}>
-                    <InstagramPost />
+                    <SocialPostEmbed url={undefined} />
                 </div>
 
                 <div className="social-feed-container">
                     <div className="social-feed-track">
-                        {visiblePosts.map(post => (
-                            <a key={post.id} href={post.postUrl || '#'} target="_blank" rel="noopener" className="social-card">
-                                <div className="social-card-header">
-                                    <span className={`social-icon ${post.platform}`}>
-                                        {post.platform === 'facebook' && '📘'}
-                                        {post.platform === 'instagram' && '📸'}
-                                        {post.platform === 'linkedin' && '💼'}
-                                        {post.platform === 'youtube' && '🎥'}
-                                    </span>
-                                    <span className="social-date">{post.date}</span>
-                                </div>
-                                {post.imageUrl && (
-                                    <div className="social-card-media">
-                                        <div className="social-card-bg" style={{ backgroundImage: `url(${post.imageUrl})` }}></div>
-                                        <div className="social-card-img" style={{ backgroundImage: `url(${post.imageUrl})` }}></div>
+                        {visiblePosts.map(post => {
+                            const isReel = post.postUrl && post.postUrl.includes('/reel/');
+                            return (
+                                <a
+                                    key={post.id}
+                                    href={post.postUrl || '#'}
+                                    target="_blank"
+                                    rel="noopener"
+                                    className="social-card"
+                                    onClick={(e) => {
+                                        if (isReel) {
+                                            e.preventDefault();
+                                            setSelectedReel(post.postUrl || '');
+                                        }
+                                    }}
+                                >
+                                    <div className="social-card-header">
+                                        <span className={`social-icon ${post.platform}`}>
+                                            {post.platform === 'facebook' && '📘'}
+                                            {post.platform === 'instagram' && '📸'}
+                                            {post.platform === 'linkedin' && '💼'}
+                                            {post.platform === 'youtube' && '🎥'}
+                                        </span>
+                                        <span className="social-date">{post.date}</span>
                                     </div>
-                                )}
-                                <div className="social-card-content">
-                                    <p>{post.content}</p>
-                                </div>
-                                <div className="social-card-footer">
-                                    Voir sur {post.platform} →
-                                </div>
-                            </a>
-                        ))}
+                                    {post.imageUrl && (
+                                        <div className="social-card-media">
+                                            <div className="social-card-bg" style={{ backgroundImage: `url(${post.imageUrl})` }}></div>
+                                            <div className="social-card-img" style={{ backgroundImage: `url(${post.imageUrl})` }}></div>
+                                            {isReel && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    inset: 0,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    background: 'rgba(0,0,0,0.3)',
+                                                    transition: 'background 0.3s',
+                                                    zIndex: 2
+                                                }}>
+                                                    <div style={{
+                                                        width: 60,
+                                                        height: 60,
+                                                        borderRadius: '50%',
+                                                        background: 'rgba(255,255,255,0.9)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                                                    }}>
+                                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M8 5V19L19 12L8 5Z" fill="#E1306C" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    <div className="social-card-content">
+                                        <p>{post.content}</p>
+                                    </div>
+                                    <div className="social-card-footer">
+                                        Voir sur {post.platform} →
+                                    </div>
+                                </a>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
+
+            {/* Video Modal */}
+            {selectedReel && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 9999,
+                    background: 'rgba(0,0,0,0.85)',
+                    backdropFilter: 'blur(10px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 20
+                }} onClick={() => setSelectedReel(null)}>
+                    <div style={{ position: 'relative', width: '100%', maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
+                        <button
+                            onClick={() => setSelectedReel(null)}
+                            style={{
+                                position: 'absolute',
+                                top: -40,
+                                right: 0,
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'white',
+                                fontSize: '2rem',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            ×
+                        </button>
+                        <SocialPostEmbed url={selectedReel} />
+                    </div>
+                </div>
+            )}
         </section>
     );
 }

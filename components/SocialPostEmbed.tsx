@@ -1,12 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Script from 'next/script';
 import { useData } from '@/lib/DataContext';
 
-export default function FeaturedPost() {
+export default function SocialPostEmbed({ url }: { url?: string }) {
     const { settings } = useData();
-    const postUrl = settings.instagramPostUrl;
+    const postUrl = url || settings.instagramPostUrl;
+
+    useEffect(() => {
+        // Force re-process of Instagram embeds when url changes or component mounts
+        if (typeof window !== 'undefined' && (window as any).instgrm) {
+            (window as any).instgrm.Embeds.process();
+        }
+    }, [postUrl]);
 
     if (!postUrl) return null;
 

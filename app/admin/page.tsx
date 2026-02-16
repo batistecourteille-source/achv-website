@@ -459,16 +459,25 @@ function EventsView() {
     const { events, addEvent, updateEvent, deleteEvent } = useData();
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState<Ev | null>(null);
-    const [form, setForm] = useState({ title: '', date: '', dateEnd: '', location: '', description: '' });
+    const [form, setForm] = useState({ title: '', date: '', dateEnd: '', location: '', description: '', registrationUrl: '', presentationUrl: '' });
     const [toast, setToast] = useState('');
     const [confirmId, setConfirmId] = useState<string | null>(null);
 
-    const openNew = () => { setEditing(null); setForm({ title: '', date: new Date().toISOString().split('T')[0], dateEnd: '', location: '', description: '' }); setShowModal(true); };
-    const openEdit = (e: Ev) => { setEditing(e); setForm({ title: e.title, date: e.date, dateEnd: e.dateEnd || '', location: e.location, description: e.description }); setShowModal(true); };
+    const openNew = () => { setEditing(null); setForm({ title: '', date: new Date().toISOString().split('T')[0], dateEnd: '', location: '', description: '', registrationUrl: '', presentationUrl: '' }); setShowModal(true); };
+    const openEdit = (e: Ev) => { setEditing(e); setForm({ title: e.title, date: e.date, dateEnd: e.dateEnd || '', location: e.location, description: e.description, registrationUrl: e.registrationUrl || '', presentationUrl: e.presentationUrl || '' }); setShowModal(true); };
 
     const save = () => {
         if (!form.title.trim()) return;
-        const eventData = { ...form, dateEnd: form.dateEnd || undefined };
+
+        // Create a copy of the form data
+        const eventData: any = { ...form };
+
+        // Remove empty strings for optional fields to keep the database clean
+        // and avoid sending 'undefined' which Firestore rejects
+        if (!eventData.dateEnd) delete eventData.dateEnd;
+        if (!eventData.registrationUrl) delete eventData.registrationUrl;
+        if (!eventData.presentationUrl) delete eventData.presentationUrl;
+
         if (editing) { updateEvent(editing.id, eventData); setToast('✓ Événement modifié'); }
         else { addEvent({ ...eventData, id: Date.now().toString() }); setToast('✓ Événement créé'); }
         setShowModal(false);
@@ -509,6 +518,18 @@ function EventsView() {
                         <div className="form-group"><label>Date de fin (optionnel)</label><input type="date" value={form.dateEnd} onChange={e => setForm({ ...form, dateEnd: e.target.value })} /></div>
                     </div>
                     <div className="form-group"><label>Lieu</label><input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="Ville, lieu..." /></div>
+
+                    <div className="wp-form-row">
+                        <div className="form-group">
+                            <label>Lien d&apos;inscription (URL)</label>
+                            <input value={form.registrationUrl} onChange={e => setForm({ ...form, registrationUrl: e.target.value })} placeholder="https://..." />
+                        </div>
+                        <div className="form-group">
+                            <label>Lien de présentation (URL)</label>
+                            <input value={form.presentationUrl} onChange={e => setForm({ ...form, presentationUrl: e.target.value })} placeholder="https://..." />
+                        </div>
+                    </div>
+
                     <div className="form-group"><label>Description</label><textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Détails de l'événement..." /></div>
                     <div className="modal-actions"><button className="wp-btn wp-btn-cancel" onClick={() => setShowModal(false)}>Annuler</button><button className="wp-btn wp-btn-primary" onClick={save}>💾 Enregistrer</button></div>
                 </Modal>

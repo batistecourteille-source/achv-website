@@ -44,9 +44,9 @@ export async function GET(request: Request) {
         const siteName = getMeta('og:site_name') || '';
 
         // Instagram Fallback: construct media URL if direct scraping failed
-        if (url.includes('instagram.com/p/')) {
+        if (url.includes('instagram.com/p/') || url.includes('instagram.com/reel/')) {
             if (!image) {
-                const shortcode = url.match(/instagram\.com\/p\/([^/?#]+)/)?.[1];
+                const shortcode = url.match(/instagram\.com\/(?:p|reel)\/([^/?#]+)/)?.[1];
                 if (shortcode) {
                     image = `https://www.instagram.com/p/${shortcode}/media/?size=l`;
                 }

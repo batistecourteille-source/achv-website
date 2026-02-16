@@ -60,6 +60,39 @@ export default function AgendaPage() {
                                         <h3>{ev.title}</h3>
                                         <p>{ev.description}</p>
                                         <div className="event-location">📍 {ev.location}</div>
+
+                                        {(ev.registrationUrl || ev.presentationUrl) && (
+                                            <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                                {ev.registrationUrl && (
+                                                    <a
+                                                        href={ev.registrationUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="btn btn-primary"
+                                                        style={{ padding: '8px 20px', fontSize: '0.8rem' }}
+                                                    >
+                                                        S'inscrire
+                                                    </a>
+                                                )}
+                                                {ev.presentationUrl && (
+                                                    <a
+                                                        href={ev.presentationUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="btn"
+                                                        style={{
+                                                            padding: '8px 20px',
+                                                            fontSize: '0.8rem',
+                                                            background: 'transparent',
+                                                            border: '1.5px solid var(--primary)',
+                                                            color: 'var(--primary)'
+                                                        }}
+                                                    >
+                                                        En savoir plus
+                                                    </a>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             );
