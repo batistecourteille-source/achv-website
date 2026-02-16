@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import InstagramPost from '@/components/InstagramPost';
 
 /* =============================================
    HEADER avec nav dynamique (custom pages)
@@ -425,6 +426,10 @@ function SocialFeed() {
                     <p className="section-subtitle">Retrouvez nos derniers posts Facebook, Instagram, LinkedIn et YouTube</p>
                 </div>
 
+                <div style={{ marginBottom: 40 }}>
+                    <InstagramPost />
+                </div>
+
                 <div className="social-feed-container">
                     <div className="social-feed-track">
                         {visiblePosts.map(post => (
@@ -439,7 +444,10 @@ function SocialFeed() {
                                     <span className="social-date">{post.date}</span>
                                 </div>
                                 {post.imageUrl && (
-                                    <div className="social-card-image" style={{ backgroundImage: `url(${post.imageUrl})` }}></div>
+                                    <div className="social-card-media">
+                                        <div className="social-card-bg" style={{ backgroundImage: `url(${post.imageUrl})` }}></div>
+                                        <div className="social-card-img" style={{ backgroundImage: `url(${post.imageUrl})` }}></div>
+                                    </div>
                                 )}
                                 <div className="social-card-content">
                                     <p>{post.content}</p>

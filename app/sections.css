@@ -867,8 +867,8 @@
 .social-card {
     display: flex;
     flex-direction: column;
-    width: 300px;
-    height: 400px;
+    width: 340px;
+    height: 500px;
     background: var(--white);
     border-radius: var(--radius-lg);
     border: 1px solid var(--light-gray);
@@ -905,12 +905,32 @@
     font-weight: 600;
 }
 
-.social-card-image {
+.social-card-media {
+    position: relative;
     width: 100%;
-    height: 180px;
+    height: 250px;
+    overflow: hidden;
+    background: #000;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.social-card-bg {
+    position: absolute;
+    inset: -20px;
     background-size: cover;
     background-position: center;
-    border-bottom: 1px solid var(--light-gray);
+    filter: blur(20px);
+    opacity: 0.6;
+}
+
+.social-card-img {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 1;
 }
 
 .social-card-content {

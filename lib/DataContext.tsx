@@ -136,6 +136,7 @@ export interface SiteSettings {
     heroBadge: string;
     ctaTitle: string;
     ctaText: string;
+    instagramPostUrl?: string;
     clubValues: { icon: string; title: string; desc: string }[];
     partnersPage: {
         heroTitle: string;
@@ -315,6 +316,7 @@ const defaultSettings: SiteSettings = {
     heroBadge: '🏃 Section HBA • Noyal & Nouvoitou',
     ctaTitle: "💙 Rejoignez l'aventure ACHV",
     ctaText: 'Envie de courir, marcher, progresser ? Contactez-nous !',
+    instagramPostUrl: 'https://www.instagram.com/p/DUvL_eWjVUb/',
     clubValues: [
         { icon: '🎓', title: 'Formation', desc: 'Des entraîneurs diplômés FFA pour tous les niveaux, du débutant au compétiteur.' },
         { icon: '🤝', title: 'Convivialité', desc: "Un esprit d'équipe, des sorties, des events — l'ambiance ACHV, c'est unique." },
@@ -643,6 +645,7 @@ const mergeSettings = (stored: any, defaults: SiteSettings): SiteSettings => {
         agendaPage: { ...defaults.agendaPage, ...(stored?.agendaPage || {}) },
         resultatsPage: { ...defaults.resultatsPage, ...(stored?.resultatsPage || {}) },
         recordsPage: { ...defaults.recordsPage, ...(stored?.recordsPage || {}) },
+        instagramPostUrl: stored?.instagramPostUrl || defaults.instagramPostUrl,
     };
 };
 

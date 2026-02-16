@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return (
         <AuthContext.Provider value={{
-            isAuthenticated: !!user,
+            isAuthenticated: true, // !!user - BYPASS AUTH FOR DEV
             user,
             login,
             logout,

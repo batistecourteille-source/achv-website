@@ -66,6 +66,7 @@ function ImageUpload({ value, onChange, label, hint, folder = 'images' }: { valu
     const { upload } = useImageUpload();
     const refInput = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
+    const [dragging, setDragging] = useState(false);
 
     const handleFile = async (file: File) => {
         if (!file) return;
@@ -1603,6 +1604,15 @@ function SettingsView() {
             {activeTab === 'social' && (
                 <>
                     <div className="admin-card">
+                        <h3>Post mis en avant (Page d'accueil)</h3>
+                        <div className="form-group">
+                            <label>URL du post</label>
+                            <input value={form.instagramPostUrl || ''} onChange={e => setForm({ ...form, instagramPostUrl: e.target.value })} placeholder="https://instagram.com/..., https://facebook.com/..." />
+                            <p className="form-hint">Collez ici le lien du post à mettre en avant (Instagram, Facebook, YouTube, LinkedIn).</p>
+                        </div>
+                    </div>
+
+                    <div className="admin-card">
                         <h3>Liens Profils (Pied de page)</h3>
                         <div className="form-group">
                             <label>Facebook</label>
@@ -1664,29 +1674,96 @@ function SettingsView() {
                         </div>
                         <p className="form-hint">Ajoutez ici les posts qui défileront sur la page d&apos;accueil.</p>
 
-                        <div className="wp-form-row" style={{ alignItems: 'flex-end', marginBottom: 24, background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0' }}>
-                            <div className="form-group">
-                                <label>Plateforme</label>
-                                <select value={newPost.platform} onChange={e => setNewPost({ ...newPost, platform: e.target.value as any })}>
-                                    <option value="facebook">Facebook</option>
-                                    <option value="instagram">Instagram</option>
-                                    <option value="linkedin">LinkedIn</option>
-                                    <option value="youtube">YouTube</option>
-                                </select>
+                        <div className="wp-form-row" style={{ alignItems: 'flex-start', marginBottom: 24, background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0', flexDirection: 'column' }}>
+                            <div style={{ width: '100%', display: 'flex', gap: '16px', alignItems: 'flex-end', marginBottom: '16px' }}>
+                                <div className="form-group" style={{ flex: 1 }}>
+                                    <label>Lien du Post (URL) <span style={{ color: '#ef4444' }}>*</span></label>
+                                    <input
+                                        value={newPost.postUrl}
+                                        onChange={e => setNewPost({ ...newPost, postUrl: e.target.value })}
+                                        placeholder="https://..."
+                                        onBlur={async () => {
+                                            if (!newPost.postUrl) return;
+                                            try {
+                                                const res = await fetch(`/api/fetch-metadata?url=${encodeURIComponent(newPost.postUrl)}`);
+                                                const data = await res.json();
+                                                if (data.error) throw new Error(data.error);
+
+                                                let platform = newPost.platform;
+                                                if (newPost.postUrl.includes('facebook')) platform = 'facebook';
+                                                else if (newPost.postUrl.includes('instagram')) platform = 'instagram';
+                                                else if (newPost.postUrl.includes('linkedin')) platform = 'linkedin';
+                                                else if (newPost.postUrl.includes('youtube') || newPost.postUrl.includes('youtu.be')) platform = 'youtube';
+
+                                                setNewPost(prev => ({
+                                                    ...prev,
+                                                    platform,
+                                                    content: data.description || data.title || prev.content,
+                                                    imageUrl: data.image || prev.imageUrl || '/img/placeholder-social.jpg'
+                                                }));
+                                                setToast('✓ Informations récupérées !');
+                                            } catch (e) {
+                                                console.error(e);
+                                                // Don't alert aggressively on blur, just log
+                                            }
+                                        }}
+                                    />
+                                    <p className="form-hint">Collez le lien et cliquez à côté, nous tenterons de récupérer les infos automatiquement.</p>
+                                </div>
+                                <button
+                                    className="wp-btn wp-btn-secondary"
+                                    onClick={async () => {
+                                        if (!newPost.postUrl) return alert('Veuillez entrer une URL');
+                                        try {
+                                            setToast('⏳ Récupération...');
+                                            const res = await fetch(`/api/fetch-metadata?url=${encodeURIComponent(newPost.postUrl)}`);
+                                            const data = await res.json();
+                                            if (data.error) throw new Error(data.error);
+
+                                            let platform = newPost.platform;
+                                            if (newPost.postUrl.includes('facebook')) platform = 'facebook';
+                                            else if (newPost.postUrl.includes('instagram')) platform = 'instagram';
+                                            else if (newPost.postUrl.includes('linkedin')) platform = 'linkedin';
+                                            else if (newPost.postUrl.includes('youtube') || newPost.postUrl.includes('youtu.be')) platform = 'youtube';
+
+                                            setNewPost(prev => ({
+                                                ...prev,
+                                                platform,
+                                                content: data.description || data.title || '',
+                                                imageUrl: data.image || '/img/placeholder-social.jpg'
+                                            }));
+                                            setToast('✓ Informations récupérées !');
+                                        } catch (e) {
+                                            alert("Impossible de récupérer les infos automatiquement. Merci de remplir les champs manuellement.");
+                                        }
+                                    }}
+                                    style={{ height: '42px', marginBottom: '24px' }}
+                                >
+                                    🪄 Remplir auto
+                                </button>
                             </div>
-                            <div className="form-group" style={{ flex: 2 }}>
-                                <label>Contenu du post</label>
-                                <textarea value={newPost.content} onChange={e => setNewPost({ ...newPost, content: e.target.value })} rows={2} placeholder="Texte du post..." />
+
+                            <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <div className="form-group">
+                                    <label>Plateforme</label>
+                                    <select value={newPost.platform} onChange={e => setNewPost({ ...newPost, platform: e.target.value as any })}>
+                                        <option value="facebook">Facebook</option>
+                                        <option value="instagram">Instagram</option>
+                                        <option value="linkedin">LinkedIn</option>
+                                        <option value="youtube">YouTube</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Image (URL)</label>
+                                    <input value={newPost.imageUrl} onChange={e => setNewPost({ ...newPost, imageUrl: e.target.value })} placeholder="/img.jpg" />
+                                </div>
+                                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                                    <label>Contenu du post</label>
+                                    <textarea value={newPost.content} onChange={e => setNewPost({ ...newPost, content: e.target.value })} rows={3} placeholder="Texte du post..." />
+                                </div>
                             </div>
-                            <div className="form-group" style={{ flex: 1 }}>
-                                <label>Image (URL)</label>
-                                <input value={newPost.imageUrl} onChange={e => setNewPost({ ...newPost, imageUrl: e.target.value })} placeholder="/img.jpg" />
-                            </div>
-                            <div className="form-group" style={{ flex: 1 }}>
-                                <label>Lien Post (URL)</label>
-                                <input value={newPost.postUrl} onChange={e => setNewPost({ ...newPost, postUrl: e.target.value })} placeholder="https://..." />
-                            </div>
-                            <button className="wp-btn wp-btn-primary" onClick={handleAddPost} disabled={!newPost.content}>+ Ajouter</button>
+
+                            <button className="wp-btn wp-btn-primary" onClick={handleAddPost} disabled={!newPost.content || !newPost.postUrl} style={{ marginTop: '16px', alignSelf: 'flex-end' }}>+ Ajouter au flux</button>
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
