@@ -38,11 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await sendPasswordResetEmail(auth, email);
     };
 
-    if (!loaded) return null;
+    // We always render children to avoid hydration mismatches and allow SSR
+    // The auth state will be initially null until Firebase loads on the client
+
 
     return (
         <AuthContext.Provider value={{
-            isAuthenticated: true, // !!user - BYPASS AUTH FOR DEV
+            isAuthenticated: !!user,
             user,
             login,
             logout,

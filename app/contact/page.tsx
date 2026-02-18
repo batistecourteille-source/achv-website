@@ -52,6 +52,16 @@ export default function ContactPage() {
                                     📷 Instagram
                                 </a>
                             )}
+                            {settings.youtubeUrl && (
+                                <a href={settings.youtubeUrl} target="_blank" rel="noopener" className="btn btn-outline" style={{ color: 'var(--dark)', borderColor: 'var(--light-gray)' }}>
+                                    🎥 YouTube
+                                </a>
+                            )}
+                            {settings.tiktokUrl && (
+                                <a href={settings.tiktokUrl} target="_blank" rel="noopener" className="btn btn-outline" style={{ color: 'var(--dark)', borderColor: 'var(--light-gray)' }}>
+                                    🎵 TikTok
+                                </a>
+                            )}
                         </div>
 
                         <h2 style={{ marginBottom: 16 }}>{settings.contactPage.linksTitle}</h2>

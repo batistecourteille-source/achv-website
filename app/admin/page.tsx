@@ -140,33 +140,84 @@ function ImageUpload({ value, onChange, label, hint, folder = 'images' }: { valu
    RICH TEXT TOOLBAR
    ============================================= */
 function RichTextArea({ value, onChange, rows = 8, placeholder }: { value: string; onChange: (v: string) => void; rows?: number; placeholder?: string }) {
-    const ref = useRef<HTMLTextAreaElement>(null);
+    const editorRef = useRef<HTMLDivElement>(null);
+    const [isEmpty, setIsEmpty] = useState(!value);
 
-    const wrap = (before: string, after: string) => {
-        const ta = ref.current;
-        if (!ta) return;
-        const start = ta.selectionStart;
-        const end = ta.selectionEnd;
-        const selected = value.substring(start, end);
-        const newVal = value.substring(0, start) + before + selected + after + value.substring(end);
-        onChange(newVal);
-        setTimeout(() => { ta.focus(); ta.setSelectionRange(start + before.length, end + before.length); }, 0);
+    // Sync external value into editor only on first mount or when value changes externally
+    useEffect(() => {
+        if (editorRef.current && editorRef.current.innerHTML !== value) {
+            editorRef.current.innerHTML = value || '';
+            setIsEmpty(!value);
+        }
+    }, []); // Only on mount
+
+    const exec = (cmd: string, val?: string) => {
+        document.execCommand(cmd, false, val);
+        editorRef.current?.focus();
+        // Sync content back
+        if (editorRef.current) {
+            onChange(editorRef.current.innerHTML);
+            setIsEmpty(!editorRef.current.textContent?.trim());
+        }
+    };
+
+    const handleInput = () => {
+        if (editorRef.current) {
+            onChange(editorRef.current.innerHTML);
+            setIsEmpty(!editorRef.current.textContent?.trim());
+        }
+    };
+
+    const handleLink = () => {
+        const url = prompt('Entrez l\'adresse du lien (URL) :');
+        if (url) exec('createLink', url);
     };
 
     return (
         <div className="wp-richtext">
             <div className="wp-toolbar">
-                <button type="button" title="Gras" onClick={() => wrap('<strong>', '</strong>')}>𝗕</button>
-                <button type="button" title="Italique" onClick={() => wrap('<em>', '</em>')}>𝘐</button>
-                <button type="button" title="Souligné" onClick={() => wrap('<u>', '</u>')}>U̲</button>
+                <button type="button" title="Gras" onClick={() => exec('bold')} style={{ fontWeight: 'bold' }}>G</button>
+                <button type="button" title="Italique" onClick={() => exec('italic')} style={{ fontStyle: 'italic' }}>I</button>
+                <button type="button" title="Souligné" onClick={() => exec('underline')} style={{ textDecoration: 'underline' }}>S</button>
                 <span className="wp-toolbar-sep" />
-                <button type="button" title="Titre H3" onClick={() => wrap('<h3>', '</h3>')}>H3</button>
-                <button type="button" title="Paragraphe" onClick={() => wrap('<p>', '</p>')}>¶</button>
-                <button type="button" title="Liste" onClick={() => wrap('<ul>\n<li>', '</li>\n</ul>')}>☰</button>
+                <button type="button" title="Titre" onClick={() => exec('formatBlock', 'h3')}>Titre</button>
+                <button type="button" title="Paragraphe" onClick={() => exec('formatBlock', 'p')}>Paragraphe</button>
+                <button type="button" title="Liste à puces" onClick={() => exec('insertUnorderedList')}>• Liste</button>
                 <span className="wp-toolbar-sep" />
-                <button type="button" title="Lien" onClick={() => wrap('<a href="">', '</a>')}>🔗</button>
+                <button type="button" title="Insérer un lien" onClick={handleLink}>🔗 Lien</button>
             </div>
-            <textarea ref={ref} value={value} onChange={e => onChange(e.target.value)} rows={rows} placeholder={placeholder} />
+            <div
+                ref={editorRef}
+                contentEditable
+                suppressContentEditableWarning
+                onInput={handleInput}
+                onBlur={handleInput}
+                className="wp-richtext-editor"
+                style={{
+                    minHeight: rows * 24,
+                    padding: '12px 16px',
+                    border: '1px solid #d1d5db',
+                    borderTop: 'none',
+                    borderRadius: '0 0 8px 8px',
+                    fontSize: '1rem',
+                    lineHeight: 1.7,
+                    outline: 'none',
+                    background: 'white',
+                    color: '#1f2937',
+                    overflow: 'auto',
+                }}
+            />
+            {isEmpty && (
+                <div style={{
+                    position: 'absolute',
+                    top: 52, left: 16,
+                    color: '#9ca3af',
+                    pointerEvents: 'none',
+                    fontSize: '1rem',
+                }}>
+                    {placeholder}
+                </div>
+            )}
         </div>
     );
 }
@@ -344,13 +395,13 @@ function ArticlesView() {
     const { articles, addArticle, updateArticle, deleteArticle } = useData();
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState<Article | null>(null);
-    const [form, setForm] = useState({ title: '', content: '', excerpt: '', date: '', category: '', image: '', published: true, city: 'Les deux' });
+    const [form, setForm] = useState({ title: '', content: '', excerpt: '', date: '', category: '', image: '', images: [] as string[], published: true, city: 'Les deux' });
     const [toast, setToast] = useState('');
     const [confirmId, setConfirmId] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
 
-    const openNew = () => { setEditing(null); setForm({ title: '', content: '', excerpt: '', date: new Date().toISOString().split('T')[0], category: 'Vie du club', image: '', published: true, city: 'Les deux' }); setShowModal(true); };
-    const openEdit = (a: Article) => { setEditing(a); setForm({ title: a.title, content: a.content, excerpt: a.excerpt, date: a.date, category: a.category, image: a.image || '', published: a.published, city: a.city || 'Les deux' }); setShowModal(true); };
+    const openNew = () => { setEditing(null); setForm({ title: '', content: '', excerpt: '', date: new Date().toISOString().split('T')[0], category: 'Vie du club', image: '', images: [], published: true, city: 'Les deux' }); setShowModal(true); };
+    const openEdit = (a: Article) => { setEditing(a); setForm({ title: a.title, content: a.content, excerpt: a.excerpt, date: a.date, category: a.category, image: a.image || '', images: a.images || [], published: a.published, city: a.city || 'Les deux' }); setShowModal(true); };
 
     const save = () => {
         if (!form.title.trim()) return;
@@ -437,6 +488,39 @@ function ArticlesView() {
                             <div className="wp-sidebar-box">
                                 <h4>Image à la une</h4>
                                 <ImageUpload value={form.image} onChange={v => setForm({ ...form, image: v })} label="" hint="Apparaît en aperçu sur la liste des actualités" />
+                            </div>
+                            <div className="wp-sidebar-box">
+                                <h4>📸 Galerie photos</h4>
+                                <p className="form-hint" style={{ marginBottom: 8 }}>Ajoutez plusieurs photos à votre article (galerie en bas de l&apos;article).</p>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                                    {form.images.map((img, idx) => (
+                                        <div key={idx} style={{ position: 'relative', width: 80, height: 80, borderRadius: 8, overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                                            <img src={img} alt={`Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newImages = form.images.filter((_, i) => i !== idx);
+                                                    setForm({ ...form, images: newImages });
+                                                }}
+                                                style={{
+                                                    position: 'absolute', top: 2, right: 2,
+                                                    background: 'rgba(220,38,38,0.85)', color: 'white',
+                                                    border: 'none', borderRadius: '50%', width: 20, height: 20,
+                                                    fontSize: 12, cursor: 'pointer', display: 'flex',
+                                                    alignItems: 'center', justifyContent: 'center', lineHeight: 1
+                                                }}
+                                            >✕</button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <ImageUpload
+                                    value=""
+                                    onChange={v => {
+                                        if (v) setForm({ ...form, images: [...form.images, v] });
+                                    }}
+                                    label=""
+                                    hint="Ajouter une photo à la galerie"
+                                />
                             </div>
                         </div>
                     </div>
@@ -1261,8 +1345,8 @@ function PricingView() {
             {activeTab === 'content' && (
                 <div className="admin-card">
                     <h3>En-tête & Introduction</h3>
-                    <div className="form-group"><label>Titre Hero</label><input value={pageForm.heroTitle} onChange={e => setPageForm({ ...pageForm, heroTitle: e.target.value })} /></div>
-                    <div className="form-group"><label>Sous-titre Hero</label><input value={pageForm.heroSubtitle} onChange={e => setPageForm({ ...pageForm, heroSubtitle: e.target.value })} /></div>
+                    <div className="form-group"><label>Titre de la page</label><input value={pageForm.heroTitle} onChange={e => setPageForm({ ...pageForm, heroTitle: e.target.value })} /></div>
+                    <div className="form-group"><label>Sous-titre de la page</label><input value={pageForm.heroSubtitle} onChange={e => setPageForm({ ...pageForm, heroSubtitle: e.target.value })} /></div>
 
                     <h3 style={{ marginTop: '24px' }}>Titres de section</h3>
                     <div className="wp-form-row">
@@ -1328,7 +1412,7 @@ function PricingView() {
 }
 
 function SettingsView() {
-    const { settings, setSettings, socialPosts, addSocialPost, deleteSocialPost } = useData();
+    const { settings, setSettings, socialPosts, addSocialPost, updateSocialPost, deleteSocialPost } = useData();
     const [form, setForm] = useState(settings);
     useEffect(() => setForm(settings), [settings]);
     const [toast, setToast] = useState('');
@@ -1410,7 +1494,7 @@ function SettingsView() {
                         <ImageUpload value={form.aboutImage || ''} onChange={v => setForm({ ...form, aboutImage: v })} label="Photo de la section" hint="Si vide, la photo d'équipe par défaut sera utilisée" />
                     </div>
                     <div className="admin-card">
-                        <h3>Section &quot;Rejoignez-nous&quot; (CTA bas de page d&apos;accueil)</h3>
+                        <h3>Section &quot;Rejoignez-nous&quot; (bandeau en bas de la page d&apos;accueil)</h3>
                         <div className="form-group"><label>Titre</label><input value={form.ctaTitle} onChange={e => setForm({ ...form, ctaTitle: e.target.value })} /></div>
                         <div className="form-group"><label>Texte</label><textarea value={form.ctaText} onChange={e => setForm({ ...form, ctaText: e.target.value })} rows={2} /></div>
                     </div>
@@ -1420,8 +1504,8 @@ function SettingsView() {
             {activeTab === 'club' && (
                 <div className="admin-card">
                     <h3>Page Club</h3>
-                    <div className="form-group"><label>Titre Hero</label><input value={form.clubPage.heroTitle} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, heroTitle: e.target.value } })} /></div>
-                    <div className="form-group"><label>Sous-titre Hero</label><input value={form.clubPage.heroSubtitle} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, heroSubtitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Titre de la page</label><input value={form.clubPage.heroTitle} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, heroTitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Sous-titre de la page</label><input value={form.clubPage.heroSubtitle} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, heroSubtitle: e.target.value } })} /></div>
                     <div className="form-group"><label>Titre Intro (Histoire)</label><input value={form.clubPage.introTitle} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, introTitle: e.target.value } })} /></div>
 
                     <div className="form-group"><label>Texte de présentation (Histoire)</label><textarea value={form.clubPage.description || ''} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, description: e.target.value } })} rows={5} /></div>
@@ -1474,8 +1558,8 @@ function SettingsView() {
 
                     <div className="form-group"><label>Titre Équipe</label><input value={form.clubPage.teamTitle} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, teamTitle: e.target.value } })} /></div>
                     <div className="form-group"><label>Sous-titre Équipe</label><input value={form.clubPage.teamSubtitle} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, teamSubtitle: e.target.value } })} /></div>
-                    <div className="form-group"><label>Titre CTA</label><input value={form.clubPage.ctaTitle} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, ctaTitle: e.target.value } })} /></div>
-                    <div className="form-group"><label>Texte CTA</label><input value={form.clubPage.ctaText} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, ctaText: e.target.value } })} /></div>
+                    <div className="form-group"><label>Titre du bandeau d&apos;action</label><input value={form.clubPage.ctaTitle} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, ctaTitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Texte du bouton d&apos;action</label><input value={form.clubPage.ctaText} onChange={e => setForm({ ...form, clubPage: { ...form.clubPage, ctaText: e.target.value } })} /></div>
 
                     <h3 style={{ marginTop: 24 }}>Nos Valeurs (affichées sur page Club)</h3>
                     {(form.clubValues || []).map((val, i) => (
@@ -1495,8 +1579,8 @@ function SettingsView() {
             {activeTab === 'activities' && (
                 <div className="admin-card">
                     <h3>Page Activités</h3>
-                    <div className="form-group"><label>Titre Hero</label><input value={form.activitesPage.heroTitle} onChange={e => setForm({ ...form, activitesPage: { ...form.activitesPage, heroTitle: e.target.value } })} /></div>
-                    <div className="form-group"><label>Sous-titre Hero</label><input value={form.activitesPage.heroSubtitle} onChange={e => setForm({ ...form, activitesPage: { ...form.activitesPage, heroSubtitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Titre de la page</label><input value={form.activitesPage.heroTitle} onChange={e => setForm({ ...form, activitesPage: { ...form.activitesPage, heroTitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Sous-titre de la page</label><input value={form.activitesPage.heroSubtitle} onChange={e => setForm({ ...form, activitesPage: { ...form.activitesPage, heroSubtitle: e.target.value } })} /></div>
                     <div className="form-group"><label>Titre Planning</label><input value={form.activitesPage.planningTitle} onChange={e => setForm({ ...form, activitesPage: { ...form.activitesPage, planningTitle: e.target.value } })} /></div>
                     <div className="form-group"><label>Sous-titre Planning</label><textarea value={form.activitesPage.planningSubtitle} onChange={e => setForm({ ...form, activitesPage: { ...form.activitesPage, planningSubtitle: e.target.value } })} rows={2} /></div>
                     <div className="form-group"><label>Info Lieux Planning</label><input value={form.activitesPage.planningLocation} onChange={e => setForm({ ...form, activitesPage: { ...form.activitesPage, planningLocation: e.target.value } })} /></div>
@@ -1506,24 +1590,24 @@ function SettingsView() {
             {activeTab === 'articles' && (
                 <div className="admin-card">
                     <h3>Page Actualités</h3>
-                    <div className="form-group"><label>Titre Hero</label><input value={form.actualitesPage.heroTitle} onChange={e => setForm({ ...form, actualitesPage: { ...form.actualitesPage, heroTitle: e.target.value } })} /></div>
-                    <div className="form-group"><label>Sous-titre Hero</label><input value={form.actualitesPage.heroSubtitle} onChange={e => setForm({ ...form, actualitesPage: { ...form.actualitesPage, heroSubtitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Titre de la page</label><input value={form.actualitesPage.heroTitle} onChange={e => setForm({ ...form, actualitesPage: { ...form.actualitesPage, heroTitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Sous-titre de la page</label><input value={form.actualitesPage.heroSubtitle} onChange={e => setForm({ ...form, actualitesPage: { ...form.actualitesPage, heroSubtitle: e.target.value } })} /></div>
                 </div>
             )}
 
             {activeTab === 'agenda' && (
                 <div className="admin-card">
                     <h3>Page Agenda</h3>
-                    <div className="form-group"><label>Titre Hero</label><input value={form.agendaPage.heroTitle} onChange={e => setForm({ ...form, agendaPage: { ...form.agendaPage, heroTitle: e.target.value } })} /></div>
-                    <div className="form-group"><label>Sous-titre Hero</label><input value={form.agendaPage.heroSubtitle} onChange={e => setForm({ ...form, agendaPage: { ...form.agendaPage, heroSubtitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Titre de la page</label><input value={form.agendaPage.heroTitle} onChange={e => setForm({ ...form, agendaPage: { ...form.agendaPage, heroTitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Sous-titre de la page</label><input value={form.agendaPage.heroSubtitle} onChange={e => setForm({ ...form, agendaPage: { ...form.agendaPage, heroSubtitle: e.target.value } })} /></div>
                 </div>
             )}
 
             {activeTab === 'results' && (
                 <div className="admin-card">
                     <h3>Page Résultats</h3>
-                    <div className="form-group"><label>Titre Hero (HTML autorisé)</label><input value={form.resultatsPage.heroTitle} onChange={e => setForm({ ...form, resultatsPage: { ...form.resultatsPage, heroTitle: e.target.value } })} /></div>
-                    <div className="form-group"><label>Sous-titre Hero</label><input value={form.resultatsPage.heroSubtitle} onChange={e => setForm({ ...form, resultatsPage: { ...form.resultatsPage, heroSubtitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Titre de la page</label><input value={form.resultatsPage.heroTitle} onChange={e => setForm({ ...form, resultatsPage: { ...form.resultatsPage, heroTitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Sous-titre de la page</label><input value={form.resultatsPage.heroSubtitle} onChange={e => setForm({ ...form, resultatsPage: { ...form.resultatsPage, heroSubtitle: e.target.value } })} /></div>
                     <div className="form-group"><label>Titre 'Derniers résultats'</label><input value={form.resultatsPage.latestTitle} onChange={e => setForm({ ...form, resultatsPage: { ...form.resultatsPage, latestTitle: e.target.value } })} /></div>
                 </div>
             )}
@@ -1531,8 +1615,8 @@ function SettingsView() {
             {activeTab === 'records' && (
                 <div className="admin-card">
                     <h3>Page Records</h3>
-                    <div className="form-group"><label>Titre Hero (HTML autorisé)</label><input value={form.recordsPage.heroTitle} onChange={e => setForm({ ...form, recordsPage: { ...form.recordsPage, heroTitle: e.target.value } })} /></div>
-                    <div className="form-group"><label>Sous-titre Hero</label><input value={form.recordsPage.heroSubtitle} onChange={e => setForm({ ...form, recordsPage: { ...form.recordsPage, heroSubtitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Titre de la page</label><input value={form.recordsPage.heroTitle} onChange={e => setForm({ ...form, recordsPage: { ...form.recordsPage, heroTitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Sous-titre de la page</label><input value={form.recordsPage.heroSubtitle} onChange={e => setForm({ ...form, recordsPage: { ...form.recordsPage, heroSubtitle: e.target.value } })} /></div>
                 </div>
             )}
 
@@ -1540,7 +1624,7 @@ function SettingsView() {
                 <>
                     <div className="admin-card">
                         <h3>En-tête de page</h3>
-                        <div className="form-group"><label>Titre (HTML autorisé)</label><input value={form.partnersPage.heroTitle} onChange={e => setForm({ ...form, partnersPage: { ...form.partnersPage, heroTitle: e.target.value } })} /></div>
+                        <div className="form-group"><label>Titre de la page</label><input value={form.partnersPage.heroTitle} onChange={e => setForm({ ...form, partnersPage: { ...form.partnersPage, heroTitle: e.target.value } })} /></div>
                         <div className="form-group"><label>Sous-titre</label><textarea value={form.partnersPage.heroSubtitle} onChange={e => setForm({ ...form, partnersPage: { ...form.partnersPage, heroSubtitle: e.target.value } })} rows={3} /></div>
                     </div>
                     <div className="admin-card">
@@ -1597,14 +1681,14 @@ function SettingsView() {
             {activeTab === 'contact' && (
                 <div className="admin-card">
                     <h3>Page Contact</h3>
-                    <div className="form-group"><label>Titre Hero</label><input value={form.contactPage.heroTitle} onChange={e => setForm({ ...form, contactPage: { ...form.contactPage, heroTitle: e.target.value } })} /></div>
-                    <div className="form-group"><label>Sous-titre Hero</label><input value={form.contactPage.heroSubtitle} onChange={e => setForm({ ...form, contactPage: { ...form.contactPage, heroSubtitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Titre de la page</label><input value={form.contactPage.heroTitle} onChange={e => setForm({ ...form, contactPage: { ...form.contactPage, heroTitle: e.target.value } })} /></div>
+                    <div className="form-group"><label>Sous-titre de la page</label><input value={form.contactPage.heroSubtitle} onChange={e => setForm({ ...form, contactPage: { ...form.contactPage, heroSubtitle: e.target.value } })} /></div>
                     <div className="form-group"><label>Titre Adresse</label><input value={form.contactPage.addressTitle} onChange={e => setForm({ ...form, contactPage: { ...form.contactPage, addressTitle: e.target.value } })} /></div>
                     <div className="form-group"><label>Titre Réseaux</label><input value={form.contactPage.socialTitle} onChange={e => setForm({ ...form, contactPage: { ...form.contactPage, socialTitle: e.target.value } })} /></div>
                     <div className="form-group"><label>Titre Liens</label><input value={form.contactPage.linksTitle} onChange={e => setForm({ ...form, contactPage: { ...form.contactPage, linksTitle: e.target.value } })} /></div>
 
-                    <h3 style={{ marginTop: 24 }}>Adresses email (fonctionnelles)</h3>
-                    <p className="form-hint" style={{ marginBottom: 16 }}>Ces adresses sont utilisées pour les liens &quot;mailto:&quot;</p>
+                    <h3 style={{ marginTop: 24 }}>Adresses email de contact</h3>
+                    <p className="form-hint" style={{ marginBottom: 16 }}>Ces adresses apparaissent sur la page Contact. En cliquant dessus, le visiteur pourra envoyer un email directement.</p>
                     <div className="form-group"><label>Email bureau</label><input value={form.contactEmail} onChange={e => setForm({ ...form, contactEmail: e.target.value })} /></div>
                     <div className="form-group"><label>Email inscriptions</label><input value={form.contactEmailInscription} onChange={e => setForm({ ...form, contactEmailInscription: e.target.value })} /></div>
                     <div className="form-group"><label>Email président</label><input value={form.contactEmailPresident} onChange={e => setForm({ ...form, contactEmailPresident: e.target.value })} /></div>
@@ -1625,12 +1709,233 @@ function SettingsView() {
             {activeTab === 'social' && (
                 <>
                     <div className="admin-card">
-                        <h3>Post mis en avant (Page d'accueil)</h3>
-                        <div className="form-group">
-                            <label>URL du post</label>
-                            <input value={form.instagramPostUrl || ''} onChange={e => setForm({ ...form, instagramPostUrl: e.target.value })} placeholder="https://instagram.com/..., https://facebook.com/..." />
-                            <p className="form-hint">Collez ici le lien du post à mettre en avant (Instagram, Facebook, YouTube, LinkedIn).</p>
-                        </div>
+                        <h3>Publications mises en avant (Page d&apos;accueil)</h3>
+                        <p className="form-hint" style={{ marginBottom: 16 }}>
+                            Ajoutez ci-dessous les <strong>liens</strong> vers vos publications sur les réseaux sociaux
+                            (Instagram, Facebook, YouTube, TikTok, LinkedIn). Elles défileront automatiquement sur la page d&apos;accueil.
+                        </p>
+
+                        {(form.featuredPostUrls || []).map((url, i) => (
+                            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+                                <span style={{ color: '#9ca3af', fontSize: '0.85rem', minWidth: 20 }}>{i + 1}.</span>
+                                <input
+                                    value={url}
+                                    onChange={e => {
+                                        const newUrls = [...(form.featuredPostUrls || [])];
+                                        newUrls[i] = e.target.value;
+                                        setForm({ ...form, featuredPostUrls: newUrls });
+                                    }}
+                                    placeholder="Collez le lien de la publication ici (ex: https://www.instagram.com/p/...)"
+                                    style={{ flex: 1, fontSize: '0.9rem' }}
+                                />
+                                <button
+                                    className="wp-btn-icon wp-btn-icon-danger"
+                                    title="Supprimer"
+                                    onClick={() => {
+                                        const newUrls = (form.featuredPostUrls || []).filter((_, idx) => idx !== i);
+                                        setForm({ ...form, featuredPostUrls: newUrls });
+                                    }}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            className="wp-btn wp-btn-sm"
+                            style={{ marginTop: 8 }}
+                            onClick={() => setForm({ ...form, featuredPostUrls: [...(form.featuredPostUrls || []), ''] })}
+                        >
+                            + Ajouter une publication
+                        </button>
+
+                        {/* Section Avancé — Import API */}
+                        <details style={{ marginTop: 24, borderTop: '1px solid #e5e7eb', paddingTop: 16 }}>
+                            <summary style={{ cursor: 'pointer', fontWeight: 600, color: '#6b7280', fontSize: '0.9rem', marginBottom: 12 }}>
+                                ⚙️ Import automatique (avancé — nécessite des clés API)
+                            </summary>
+                            <p className="form-hint" style={{ marginBottom: 16 }}>
+                                Ces outils permettent d&apos;importer automatiquement vos dernières publications depuis les réseaux sociaux.
+                                Ils nécessitent des clés API techniques. Contactez votre webmaster si vous avez besoin d&apos;aide.
+                            </p>
+
+                            {/* Auto Import Section Instagram */}
+                            <div style={{ background: '#f0f9ff', padding: 16, borderRadius: 8, marginBottom: 20, border: '1px solid #bae6fd' }}>
+                                <h4 style={{ margin: '0 0 12px 0', color: '#0284c7', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: '1.2em' }}>⚡</span> Import Automatique Instagram
+                                </h4>
+                                <div className="form-group">
+                                    <label style={{ fontSize: '0.9rem' }}>Token d&apos;accès Instagram</label>
+                                    <input
+                                        value={form.instagramAccessToken || ''}
+                                        onChange={e => setForm({ ...form, instagramAccessToken: e.target.value })}
+                                        placeholder="Collez le token ici..."
+                                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                                    />
+                                </div>
+                                <button
+                                    className="wp-btn"
+                                    style={{ background: '#0ea5e9', color: 'white', width: '100%' }}
+                                    disabled={!form.instagramAccessToken}
+                                    onClick={async () => {
+                                        if (!form.instagramAccessToken) return;
+                                        const btn = document.getElementById('btn-insta-sync');
+                                        if (btn) btn.textContent = 'Chargement...';
+
+                                        try {
+                                            const res = await fetch(`https://graph.instagram.com/me/media?fields=id,permalink,media_url,media_type&access_token=${form.instagramAccessToken}&limit=5`);
+                                            const data = await res.json();
+
+                                            if (data.error) throw new Error(data.error.message);
+
+                                            if (data.data && Array.isArray(data.data)) {
+                                                const newUrls = data.data.map((post: any) => post.permalink);
+                                                if (confirm(`Trouvé ${newUrls.length} posts. Voulez-vous remplacer la liste actuelle ?`)) {
+                                                    setForm({ ...form, featuredPostUrls: newUrls });
+                                                    setToast(`✓ ${newUrls.length} posts importés !`);
+                                                }
+                                            } else {
+                                                alert("Aucun post trouvé ou format inattendu.");
+                                            }
+                                        } catch (e: any) {
+                                            console.error(e);
+                                            alert(`Erreur : ${e.message}`);
+                                        } finally {
+                                            if (btn) btn.textContent = '🔄 Importer les 5 derniers posts';
+                                        }
+                                    }}
+                                >
+                                    <span id="btn-insta-sync">🔄 Importer les 5 derniers posts</span>
+                                </button>
+                            </div>
+
+                            {/* Auto Import Section Facebook */}
+                            <div style={{ background: '#eff6ff', padding: 16, borderRadius: 8, marginBottom: 20, border: '1px solid #dbeafe' }}>
+                                <h4 style={{ margin: '0 0 12px 0', color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: '1.2em' }}>📘</span> Import Automatique Facebook
+                                </h4>
+                                <div className="form-group">
+                                    <label style={{ fontSize: '0.9rem' }}>ID de la Page Facebook</label>
+                                    <input
+                                        value={form.facebookPageId || ''}
+                                        onChange={e => setForm({ ...form, facebookPageId: e.target.value })}
+                                        placeholder="Ex: 1029384756..."
+                                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label style={{ fontSize: '0.9rem' }}>Token d&apos;accès Page Facebook</label>
+                                    <input
+                                        value={form.facebookAccessToken || ''}
+                                        onChange={e => setForm({ ...form, facebookAccessToken: e.target.value })}
+                                        placeholder="Collez le token ici..."
+                                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                                    />
+                                </div>
+                                <button
+                                    className="wp-btn"
+                                    style={{ background: '#2563eb', color: 'white', width: '100%' }}
+                                    disabled={!form.facebookAccessToken || !form.facebookPageId}
+                                    onClick={async () => {
+                                        if (!form.facebookAccessToken || !form.facebookPageId) return;
+                                        const btn = document.getElementById('btn-fb-sync');
+                                        if (btn) btn.textContent = 'Chargement...';
+
+                                        try {
+                                            const res = await fetch(`https://graph.facebook.com/v19.0/${form.facebookPageId}/posts?fields=permalink_url,message,full_picture&access_token=${form.facebookAccessToken}&limit=5`);
+                                            const data = await res.json();
+
+                                            if (data.error) throw new Error(data.error.message);
+
+                                            if (data.data && Array.isArray(data.data)) {
+                                                const newUrls = data.data.map((post: any) => post.permalink_url);
+                                                if (confirm(`Trouvé ${newUrls.length} posts Facebook. Voulez-vous les AJOUTER à la liste actuelle ?`)) {
+                                                    setForm({ ...form, featuredPostUrls: [...(form.featuredPostUrls || []), ...newUrls] });
+                                                    setToast(`✓ ${newUrls.length} posts ajoutés !`);
+                                                }
+                                            } else {
+                                                alert("Aucun post trouvé ou format inattendu.");
+                                            }
+                                        } catch (e: any) {
+                                            console.error(e);
+                                            alert(`Erreur : ${e.message}`);
+                                        } finally {
+                                            if (btn) btn.textContent = '🔄 Importer les 5 derniers posts';
+                                        }
+                                    }}
+                                >
+                                    <span id="btn-fb-sync">🔄 Importer les 5 derniers posts</span>
+                                </button>
+                            </div>
+
+                            {/* Auto Import Section YouTube */}
+                            <div style={{ background: '#fef2f2', padding: 16, borderRadius: 8, marginBottom: 20, border: '1px solid #fee2e2' }}>
+                                <h4 style={{ margin: '0 0 12px 0', color: '#b91c1c', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: '1.2em' }}>📺</span> Import Automatique YouTube
+                                </h4>
+                                <div className="form-group">
+                                    <label style={{ fontSize: '0.9rem' }}>ID de la Chaîne YouTube</label>
+                                    <input
+                                        value={form.youtubeChannelId || ''}
+                                        onChange={e => setForm({ ...form, youtubeChannelId: e.target.value })}
+                                        placeholder="UC-..."
+                                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label style={{ fontSize: '0.9rem' }}>Clé API YouTube</label>
+                                    <input
+                                        value={form.youtubeApiKey || ''}
+                                        onChange={e => setForm({ ...form, youtubeApiKey: e.target.value })}
+                                        placeholder="Collez la clé ici..."
+                                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                                    />
+                                </div>
+                                <button
+                                    className="wp-btn"
+                                    style={{ background: '#dc2626', color: 'white', width: '100%' }}
+                                    disabled={!form.youtubeApiKey || !form.youtubeChannelId}
+                                    onClick={async () => {
+                                        if (!form.youtubeApiKey || !form.youtubeChannelId) return;
+                                        const btn = document.getElementById('btn-yt-sync');
+                                        if (btn) btn.textContent = 'Chargement...';
+
+                                        try {
+                                            const res = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${form.youtubeApiKey}&channelId=${form.youtubeChannelId}&part=snippet,id&order=date&maxResults=5&type=video`);
+                                            const data = await res.json();
+
+                                            if (data.error) throw new Error(data.error.message);
+
+                                            if (data.items && Array.isArray(data.items)) {
+                                                const newUrls = data.items.map((item: any) => `https://www.youtube.com/watch?v=${item.id.videoId}`);
+                                                if (confirm(`Trouvé ${newUrls.length} vidéos. Voulez-vous les AJOUTER à la liste actuelle ?`)) {
+                                                    setForm({ ...form, featuredPostUrls: [...(form.featuredPostUrls || []), ...newUrls] });
+                                                    setToast(`✓ ${newUrls.length} vidéos ajoutées !`);
+                                                }
+                                            } else {
+                                                alert("Aucune vidéo trouvée.");
+                                            }
+                                        } catch (e: any) {
+                                            console.error(e);
+                                            alert(`Erreur : ${e.message}`);
+                                        } finally {
+                                            if (btn) btn.textContent = '🔄 Importer les 5 dernières vidéos';
+                                        }
+                                    }}
+                                >
+                                    <span id="btn-yt-sync">🔄 Importer les 5 dernières vidéos</span>
+                                </button>
+                            </div>
+
+                            {/* TikTok Hint */}
+                            <div style={{ background: '#f0fff4', padding: 16, borderRadius: 8, marginBottom: 8, border: '1px solid #bbf7d0' }}>
+                                <h4 style={{ margin: '0 0 8px 0', color: '#166534', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: '1.2em' }}>🎵</span> TikTok
+                                </h4>
+                                <p className="form-hint" style={{ color: '#14532d', margin: 0 }}>
+                                    Pour ajouter un TikTok, copiez simplement le <strong>lien</strong> de la vidéo dans la liste des publications ci-dessus. Pas besoin de clé API !
+                                </p>
+                            </div>
+                        </details>
                     </div>
 
                     <div className="admin-card">
@@ -1671,6 +1976,16 @@ function SettingsView() {
                                 <input value={form.youtubeUrl} onChange={e => setForm({ ...form, youtubeUrl: e.target.value })} placeholder="https://youtube.com/..." />
                                 <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
                                     <input type="checkbox" checked={form.socialVisibility?.youtube} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, youtube: e.target.checked } })} />
+                                    Actif
+                                </label>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label>TikTok</label>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                <input value={form.tiktokUrl} onChange={e => setForm({ ...form, tiktokUrl: e.target.value })} placeholder="https://tiktok.com/@..." />
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                                    <input type="checkbox" checked={form.socialVisibility?.tiktok} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, tiktok: e.target.checked } })} />
                                     Actif
                                 </label>
                             </div>
@@ -1798,7 +2113,36 @@ function SettingsView() {
                                             }`} style={{ textTransform: 'capitalize' }}>
                                             {post.platform}
                                         </span>
-                                        <button className="wp-btn-icon wp-btn-icon-danger" style={{ width: 24, height: 24 }} onClick={() => deleteSocialPost(post.id)}>✕</button>
+                                        <div className="wp-action-btns">
+                                            <button
+                                                className="wp-btn-icon"
+                                                title="Mettre à jour"
+                                                onClick={async () => {
+                                                    try {
+                                                        const btn = document.getElementById(`refresh-${post.id}`);
+                                                        if (btn) btn.classList.add('spin');
+                                                        const res = await fetch(`/api/fetch-metadata?url=${encodeURIComponent(post.postUrl)}`);
+                                                        const data = await res.json();
+                                                        if (data.error) throw new Error(data.error);
+
+                                                        updateSocialPost(post.id, {
+                                                            content: data.description || data.title || post.content,
+                                                            imageUrl: data.image || post.imageUrl
+                                                        });
+                                                        setToast('✓ Post mis à jour !');
+                                                    } catch (e) {
+                                                        console.error(e);
+                                                        setToast('❌ Erreur mise à jour');
+                                                    } finally {
+                                                        const btn = document.getElementById(`refresh-${post.id}`);
+                                                        if (btn) btn.classList.remove('spin');
+                                                    }
+                                                }}
+                                            >
+                                                <span id={`refresh-${post.id}`}>🔄</span>
+                                            </button>
+                                            <button className="wp-btn-icon wp-btn-icon-danger" onClick={() => deleteSocialPost(post.id)}>✕</button>
+                                        </div>
                                     </div>
                                     <p style={{ fontSize: '0.9rem', marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.content}</p>
                                     {post.imageUrl && <img src={post.imageUrl} alt="preview" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }} />}

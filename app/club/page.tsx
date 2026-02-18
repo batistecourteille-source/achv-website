@@ -67,10 +67,10 @@ export default function ClubPage() {
                         <div className="section-label">Lieux de pratique</div>
                         <h2 className="section-title">{settings.clubPage.facilitiesTitle}</h2>
                     </div>
-                    <div className="sponsors-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+                    <div className="sponsors-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: 24 }}>
                         {(settings.clubPage.facilities || []).map((f, i) => (
-                            <div key={i} className="sponsor-card" style={{ padding: 0, overflow: 'hidden', textAlign: 'left', minHeight: 300, display: 'flex', flexDirection: 'column' }}>
-                                <div style={{ height: 180, background: '#e2e8f0', backgroundImage: `url(${f.image})`, backgroundSize: 'cover' }}></div>
+                            <div key={i} className="sponsor-card" style={{ padding: 0, overflow: 'hidden', textAlign: 'left', minHeight: 'auto', display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ height: 180, background: '#e2e8f0', backgroundImage: `url(${f.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
                                 <div style={{ padding: 24, flex: 1 }}>
                                     <h3 style={{ marginBottom: 8 }}>{f.title}</h3>
                                     <p style={{ color: '#666', fontSize: '0.9em' }}>{f.description}</p>

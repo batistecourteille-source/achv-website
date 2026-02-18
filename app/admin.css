@@ -1140,3 +1140,13 @@
 }
 .wp-spinner { width: 20px; height: 20px; border: 2px solid #ddd; border-top-color: #3b82f6; border-radius: 50%; animation: wp-spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
 @keyframes wp-spin { to { transform: rotate(360deg); } }
+
+.spin {
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

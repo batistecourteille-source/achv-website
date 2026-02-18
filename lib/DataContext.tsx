@@ -20,6 +20,7 @@ export interface Article {
     date: string;
     category: string;
     image?: string;
+    images?: string[];
     published: boolean;
     city?: 'Noyal' | 'Nouvoitou' | 'Les deux';
 }
@@ -121,11 +122,13 @@ export interface SiteSettings {
     instagramUrl: string;
     linkedinUrl: string;
     youtubeUrl: string;
+    tiktokUrl: string;
     socialVisibility: {
         facebook: boolean;
         instagram: boolean;
         linkedin: boolean;
         youtube: boolean;
+        tiktok: boolean;
     };
     address: string;
     tickerMessages: string[];
@@ -138,7 +141,13 @@ export interface SiteSettings {
     heroBadge: string;
     ctaTitle: string;
     ctaText: string;
-    instagramPostUrl?: string;
+    instagramPostUrl?: string; // Legacy
+    featuredPostUrls: string[];
+    instagramAccessToken?: string;
+    facebookAccessToken?: string;
+    facebookPageId?: string;
+    youtubeApiKey?: string;
+    youtubeChannelId?: string;
     clubValues: { icon: string; title: string; desc: string }[];
     partnersPage: {
         heroTitle: string;
@@ -296,11 +305,13 @@ const defaultSettings: SiteSettings = {
     instagramUrl: 'https://www.instagram.com/achv_athle/',
     linkedinUrl: '',
     youtubeUrl: '',
+    tiktokUrl: '',
     socialVisibility: {
         facebook: false,
         instagram: true,
         linkedin: false,
         youtube: false,
+        tiktok: false,
     },
     address: 'Noyal-sur-Vilaine / Nouvoitou, Ille-et-Vilaine (35)',
     tickerMessages: [
@@ -318,7 +329,9 @@ const defaultSettings: SiteSettings = {
     heroBadge: '🏃 Section HBA • Noyal & Nouvoitou',
     ctaTitle: "💙 Rejoignez l'aventure ACHV",
     ctaText: 'Envie de courir, marcher, progresser ? Contactez-nous !',
+
     instagramPostUrl: 'https://www.instagram.com/p/DUvL_eWjVUb/',
+    featuredPostUrls: ['https://www.instagram.com/p/DUvL_eWjVUb/'],
     clubValues: [
         { icon: '🎓', title: 'Formation', desc: 'Des entraîneurs diplômés FFA pour tous les niveaux, du débutant au compétiteur.' },
         { icon: '🤝', title: 'Convivialité', desc: "Un esprit d'équipe, des sorties, des events — l'ambiance ACHV, c'est unique." },
@@ -648,6 +661,12 @@ const mergeSettings = (stored: any, defaults: SiteSettings): SiteSettings => {
         resultatsPage: { ...defaults.resultatsPage, ...(stored?.resultatsPage || {}) },
         recordsPage: { ...defaults.recordsPage, ...(stored?.recordsPage || {}) },
         instagramPostUrl: stored?.instagramPostUrl || defaults.instagramPostUrl,
+        featuredPostUrls: stored?.featuredPostUrls || defaults.featuredPostUrls,
+        instagramAccessToken: stored?.instagramAccessToken || '',
+        facebookAccessToken: stored?.facebookAccessToken || '',
+        facebookPageId: stored?.facebookPageId || '',
+        youtubeApiKey: stored?.youtubeApiKey || '',
+        youtubeChannelId: stored?.youtubeChannelId || '',
     };
 };
 
@@ -826,7 +845,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const updateSocialPost = (id: string, data: Partial<SocialPost>) => setSocialPosts(socialPosts.map(p => p.id === id ? { ...p, ...data } : p));
     const deleteSocialPost = (id: string) => setSocialPosts(socialPosts.filter(p => p.id !== id));
 
-    if (!loaded) return null;
+    // We always render children to avoid hydration mismatches and allow SSR
+    // The data will be default values until Firestore loads on the client
+
 
     return (
         <DataContext.Provider value={{

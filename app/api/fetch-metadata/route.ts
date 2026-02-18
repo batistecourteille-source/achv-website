@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     try {
         const response = await fetch(url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'
             },
             next: { revalidate: 3600 }
         });
@@ -38,28 +38,38 @@ export async function GET(request: Request) {
             return '';
         };
 
-        const title = getMeta('og:title') || getMeta('twitter:title') || (html.match(/<title>(.*?)<\/title>/is)?.[1] || '');
-        const description = getMeta('og:description') || getMeta('twitter:description') || getMeta('description') || '';
+        let title = getMeta('og:title') || getMeta('twitter:title') || (html.match(/<title>(.*?)<\/title>/is)?.[1] || '');
+        let description = getMeta('og:description') || getMeta('twitter:description') || getMeta('description') || '';
         let image = getMeta('og:image') || getMeta('twitter:image') || getMeta('og:image:secure_url') || '';
         const siteName = getMeta('og:site_name') || '';
 
-        // Instagram Fallback: construct media URL if direct scraping failed
-        if (url.includes('instagram.com/p/') || url.includes('instagram.com/reel/')) {
-            if (!image) {
-                const shortcode = url.match(/instagram\.com\/(?:p|reel)\/([^/?#]+)/)?.[1];
-                if (shortcode) {
-                    image = `https://www.instagram.com/p/${shortcode}/media/?size=l`;
+        // Instagram specific handling
+        if (url.includes('instagram.com/p/') || url.includes('instagram.com/reel/') || url.includes('instagr.am/p/')) {
+            // 1. Check if scraping worked (og:image found)
+            if (!image || image.includes('instagram.com/static/')) {
+                // 2. Try Microlink API as fallback for Instagram
+                try {
+                    const mlRes = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
+                    if (mlRes.ok) {
+                        const mkData = await mlRes.json();
+                        if (mkData.data && mkData.data.image && mkData.data.image.url) {
+                            // Use proxy to avoid CORS/Referer issues with Instagram CDN
+                            image = `/api/image-proxy?url=${encodeURIComponent(mkData.data.image.url)}`;
+                            if (mkData.data.description && !description) description = mkData.data.description;
+                            if (mkData.data.title && !title) title = mkData.data.title;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Microlink fallback failed", e);
                 }
-            }
-            // Always use proxy for Instagram images to avoid CORS
-            if (image) {
+            } else {
+                // If scraping worked, ensure image is proxied too
                 image = `/api/image-proxy?url=${encodeURIComponent(image)}`;
             }
         }
 
-        // Clean up common bad descriptions
-        const cleanDescription = description.trim();
-        const cleanTitle = title.trim();
+        const cleanDescription = description ? description.trim() : '';
+        const cleanTitle = title ? title.trim() : '';
 
         return NextResponse.json({
             title: cleanTitle,

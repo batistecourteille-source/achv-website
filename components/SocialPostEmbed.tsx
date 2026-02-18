@@ -21,6 +21,21 @@ export default function SocialPostEmbed({ url }: { url?: string }) {
 
     // INSTAGRAM
     if (postUrl.includes('instagram.com')) {
+        // If the user pasted a full HTML embed code (blockquote...)
+        if (postUrl.includes('<blockquote')) {
+            // Patch the HTML: convert /reel/ URLs to /p/ URLs to fix the "random reel" redirect issue
+            const safeHtml = postUrl.replace(/\/reel\//g, '/p/');
+            return (
+                <div className="instagram-embed-container" style={{ display: 'flex', justifyContent: 'center', margin: '40px 0' }}>
+                    <div dangerouslySetInnerHTML={{ __html: safeHtml }} />
+                    <Script src="//www.instagram.com/embed.js" strategy="lazyOnload" />
+                </div>
+            );
+        }
+
+        // Standard URL handling
+        // Force conversion of /reel/ to /p/ for standard post behavior (prevents "random reel" redirects)
+        const cleanUrl = postUrl.split('?')[0].replace(/\/reel\//, '/p/');
         const embedUrl = `${cleanUrl}?utm_source=ig_embed&utm_campaign=loading`;
         return (
             <div className="instagram-embed-container" style={{ display: 'flex', justifyContent: 'center', margin: '40px 0' }}>
@@ -133,6 +148,11 @@ export default function SocialPostEmbed({ url }: { url?: string }) {
         );
     }
 
+    // TIKTOK
+    if (postUrl.includes('tiktok.com')) {
+        return <TikTokEmbed url={postUrl} />;
+    }
+
     // FALLBACK LINK CARD
     return (
         <div style={{ display: 'flex', justifyContent: 'center', margin: '40px 0' }}>
@@ -161,6 +181,41 @@ export default function SocialPostEmbed({ url }: { url?: string }) {
                     Ouvrir le lien →
                 </span>
             </a>
+        </div>
+    );
+}
+
+function TikTokEmbed({ url }: { url: string }) {
+    const [embedHtml, setEmbedHtml] = React.useState<string | null>(null);
+
+    useEffect(() => {
+        // If it's already an embed code, just use it
+        if (url.includes('<blockquote')) {
+            setEmbedHtml(url);
+            return;
+        }
+
+        // Otherwise fetch oembed
+        fetch(`/api/tiktok-oembed?url=${encodeURIComponent(url)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.html) setEmbedHtml(data.html);
+            })
+            .catch(err => console.error("TikTok embed error:", err));
+    }, [url]);
+
+    if (!embedHtml) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '40px 0', minHeight: '300px', alignItems: 'center', color: '#666' }}>
+                <div className="spinner">Chargement TikTok...</div>
+            </div>
+        );
+    }
+
+    return (
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '40px 0' }}>
+            <div dangerouslySetInnerHTML={{ __html: embedHtml }} />
+            <Script src="https://www.tiktok.com/embed.js" strategy="lazyOnload" />
         </div>
     );
 }

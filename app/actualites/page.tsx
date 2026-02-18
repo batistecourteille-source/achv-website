@@ -1,13 +1,23 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useData } from '@/lib/DataContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
-export default function ActualitesPage() {
+import { Suspense } from 'react';
+
+function ActualitesContent() {
     const { articles, socialPosts, settings } = useData();
-    const [activeTab, setActiveTab] = useState<'blog' | 'social'>('blog');
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get('tab');
+    const [activeTab, setActiveTab] = useState<'blog' | 'social'>(tabParam === 'social' ? 'social' : 'blog');
+
+    useEffect(() => {
+        if (tabParam === 'social') setActiveTab('social');
+        else if (tabParam === 'blog') setActiveTab('blog');
+    }, [tabParam]);
 
     // BLOG LOGIC
     const published = articles.filter(a => a.published);
@@ -86,7 +96,7 @@ export default function ActualitesPage() {
                         >
                             📝 Blog / Articles
                         </button>
-                        {(settings.socialVisibility?.facebook || settings.socialVisibility?.instagram || settings.socialVisibility?.linkedin || settings.socialVisibility?.youtube) && (
+                        {(settings.socialVisibility?.facebook || settings.socialVisibility?.instagram || settings.socialVisibility?.linkedin || settings.socialVisibility?.youtube || settings.socialVisibility?.tiktok) && (
                             <button
                                 className={`tab ${activeTab === 'social' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('social')}
@@ -172,5 +182,13 @@ export default function ActualitesPage() {
             </section>
             <Footer />
         </>
+    );
+}
+
+export default function ActualitesPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ActualitesContent />
+        </Suspense>
     );
 }

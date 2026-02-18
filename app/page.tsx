@@ -42,9 +42,9 @@ function HeroSection() {
             <div className="hero-particles">
                 {Array.from({ length: 25 }).map((_, i) => (
                     <div key={i} className="hero-particle" style={{
-                        left: `${Math.random() * 100}%`,
-                        animationDelay: `${Math.random() * 15}s`,
-                        animationDuration: `${10 + Math.random() * 12}s`,
+                        left: `${(i * 4) % 100}%`,
+                        animationDelay: `${(i * 0.6) % 15}s`,
+                        animationDuration: `${10 + (i % 12)}s`,
                     }}></div>
                 ))}
             </div>
@@ -440,16 +440,25 @@ function CTASection() {
 import SocialPostEmbed from '@/components/SocialPostEmbed';
 
 function SocialFeed() {
-    const { socialPosts, settings } = useData();
-    const [selectedReel, setSelectedReel] = useState<string | null>(null);
+    const { settings } = useData();
+    const [currentIndex, setCurrentIndex] = useState(0);
 
-    // Filter posts based on visibility flags
-    const visiblePosts = socialPosts.filter(post => {
-        const platform = post.platform as keyof typeof settings.socialVisibility;
-        return settings.socialVisibility?.[platform] ?? true;
-    });
+    // Get valid URLs: prioritize new array, fallback to legacy, filter empty strings
+    const featuredUrls = (settings.featuredPostUrls && settings.featuredPostUrls.length > 0)
+        ? settings.featuredPostUrls.filter(u => u.trim() !== '')
+        : (settings.instagramPostUrl ? [settings.instagramPostUrl] : []);
 
-    if (!visiblePosts || visiblePosts.length === 0) return null;
+    useEffect(() => {
+        if (featuredUrls.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setCurrentIndex(prev => (prev + 1) % featuredUrls.length);
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, [featuredUrls.length]);
+
+    if (featuredUrls.length === 0) return null;
 
     return (
         <section className="section" id="social-feed">
@@ -460,116 +469,36 @@ function SocialFeed() {
                     <p className="section-subtitle">Retrouvez nos derniers posts Facebook, Instagram, LinkedIn et YouTube</p>
                 </div>
 
-                <div style={{ marginBottom: 40 }}>
-                    <SocialPostEmbed url={undefined} />
+                <div style={{ marginBottom: 40, minHeight: 'clamp(300px, 50vw, 600px)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ width: '100%', maxWidth: 800 }}>
+                        <SocialPostEmbed key={featuredUrls[currentIndex]} url={featuredUrls[currentIndex]} />
+                    </div>
+
+                    {featuredUrls.length > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 20 }}>
+                            {featuredUrls.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setCurrentIndex(idx)}
+                                    style={{
+                                        width: 12, height: 12, borderRadius: '50%', border: 'none', padding: 0,
+                                        background: idx === currentIndex ? 'var(--primary)' : '#cbd5e1',
+                                        cursor: 'pointer', transition: 'all 0.3s',
+                                        transform: idx === currentIndex ? 'scale(1.2)' : 'scale(1)'
+                                    }}
+                                    aria-label={`Voir le post ${idx + 1}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                <div className="social-feed-container">
-                    <div className="social-feed-track">
-                        {visiblePosts.map(post => {
-                            const isReel = post.postUrl && post.postUrl.includes('/reel/');
-                            return (
-                                <a
-                                    key={post.id}
-                                    href={post.postUrl || '#'}
-                                    target="_blank"
-                                    rel="noopener"
-                                    className="social-card"
-                                    onClick={(e) => {
-                                        if (isReel) {
-                                            e.preventDefault();
-                                            setSelectedReel(post.postUrl || '');
-                                        }
-                                    }}
-                                >
-                                    <div className="social-card-header">
-                                        <span className={`social-icon ${post.platform}`}>
-                                            {post.platform === 'facebook' && '📘'}
-                                            {post.platform === 'instagram' && '📸'}
-                                            {post.platform === 'linkedin' && '💼'}
-                                            {post.platform === 'youtube' && '🎥'}
-                                        </span>
-                                        <span className="social-date">{post.date}</span>
-                                    </div>
-                                    {post.imageUrl && (
-                                        <div className="social-card-media">
-                                            <div className="social-card-bg" style={{ backgroundImage: `url(${post.imageUrl})` }}></div>
-                                            <div className="social-card-img" style={{ backgroundImage: `url(${post.imageUrl})` }}></div>
-                                            {isReel && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    inset: 0,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    background: 'rgba(0,0,0,0.3)',
-                                                    transition: 'background 0.3s',
-                                                    zIndex: 2
-                                                }}>
-                                                    <div style={{
-                                                        width: 60,
-                                                        height: 60,
-                                                        borderRadius: '50%',
-                                                        background: 'rgba(255,255,255,0.9)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                                                    }}>
-                                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M8 5V19L19 12L8 5Z" fill="#E1306C" />
-                                                        </svg>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                    <div className="social-card-content">
-                                        <p>{post.content}</p>
-                                    </div>
-                                    <div className="social-card-footer">
-                                        Voir sur {post.platform} →
-                                    </div>
-                                </a>
-                            );
-                        })}
-                    </div>
+                <div style={{ textAlign: 'center', marginTop: 32 }}>
+                    <Link href="/actualites?tab=social" className="btn btn-primary">
+                        Voir tous nos réseaux sociaux
+                    </Link>
                 </div>
             </div>
-
-            {/* Video Modal */}
-            {selectedReel && (
-                <div style={{
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 9999,
-                    background: 'rgba(0,0,0,0.85)',
-                    backdropFilter: 'blur(10px)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 20
-                }} onClick={() => setSelectedReel(null)}>
-                    <div style={{ position: 'relative', width: '100%', maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
-                        <button
-                            onClick={() => setSelectedReel(null)}
-                            style={{
-                                position: 'absolute',
-                                top: -40,
-                                right: 0,
-                                background: 'transparent',
-                                border: 'none',
-                                color: 'white',
-                                fontSize: '2rem',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            ×
-                        </button>
-                        <SocialPostEmbed url={selectedReel} />
-                    </div>
-                </div>
-            )}
         </section>
     );
 }

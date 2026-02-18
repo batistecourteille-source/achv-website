@@ -67,7 +67,7 @@ export default function ActivitesPage() {
                             <div key={a.id} style={{
                                 background: 'var(--white)',
                                 borderRadius: 'var(--radius-lg)',
-                                padding: '32px',
+                                padding: 'clamp(16px, 4vw, 32px)',
                                 marginBottom: '20px',
                                 boxShadow: 'var(--shadow-sm)',
                                 border: '1px solid var(--light-gray)',
@@ -80,7 +80,7 @@ export default function ActivitesPage() {
                     </div>
 
                     {/* PLANNING SECTION */}
-                    <div id="planning" style={{ marginTop: 80, marginBottom: 80 }}>
+                    <div id="planning" style={{ marginTop: 'clamp(40px, 8vw, 80px)', marginBottom: 'clamp(40px, 8vw, 80px)' }}>
                         <h2 className="section-title" style={{ textAlign: 'center', marginBottom: 12 }}>{settings.activitesPage.planningTitle}</h2>
                         <p className="section-subtitle" style={{ textAlign: 'center', marginBottom: 40, maxWidth: 800, margin: '0 auto 40px' }}>
                             {settings.activitesPage.planningSubtitle}<br />
@@ -137,10 +137,10 @@ export default function ActivitesPage() {
                         </div>
 
                         {sortedCats.map(cat => (
-                            <div key={cat} style={{ marginBottom: 40, background: 'var(--white)', padding: 24, borderRadius: 16, border: '1px solid var(--light-gray)' }}>
+                            <div key={cat} style={{ marginBottom: 40, background: 'var(--white)', padding: 'clamp(12px, 3vw, 24px)', borderRadius: 16, border: '1px solid var(--light-gray)' }}>
                                 <h3 style={{ fontSize: '1.2rem', color: 'var(--primary)', marginBottom: 16, paddingBottom: 12, borderBottom: '2px solid var(--super-light-gray)' }}>{cat}</h3>
-                                <div style={{ overflowX: 'auto' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+                                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem', minWidth: 500 }}>
                                         <thead>
                                             <tr style={{ textAlign: 'left', color: '#666', fontSize: '0.85em', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                                 <th style={{ padding: '12px 16px' }}>Discipline</th>
