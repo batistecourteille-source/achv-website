@@ -6,6 +6,9 @@ import Footer from '@/components/Footer';
 
 export default function ClubPage() {
     const { team, settings } = useData();
+    const bureauMain = team.filter(t => t.category === 'bureau' && (!t.subBureau || t.subBureau === ''));
+    const bureauNoyal = team.filter(t => t.category === 'bureau' && t.subBureau === 'noyal');
+    const bureauNouvoitou = team.filter(t => t.category === 'bureau' && t.subBureau === 'nouvoitou');
     const bureau = team.filter(t => t.category === 'bureau');
     const coachs = team.filter(t => t.category === 'coach');
 
@@ -91,17 +94,67 @@ export default function ClubPage() {
                     </div>
 
                     <h3 id="bureau" style={{ marginTop: 40, marginBottom: 24, fontSize: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: 12, scrollMarginTop: 100 }}>Bureau</h3>
-                    <div className="team-grid">
-                        {bureau.map(m => (
-                            <div key={m.id} className="team-card">
-                                <div className="team-avatar" style={m.photo ? { backgroundImage: `url(${m.photo})`, backgroundSize: 'cover', fontSize: 0 } : {}}>
-                                    {!m.photo && m.name.charAt(0)}
+
+                    {/* Bureau principal */}
+                    {bureauMain.length > 0 && (
+                        <div className="team-grid">
+                            {bureauMain.map(m => (
+                                <div key={m.id} className="team-card">
+                                    <div className="team-avatar" style={m.photo ? { backgroundImage: `url(${m.photo})`, backgroundSize: 'cover', fontSize: 0 } : {}}>
+                                        {!m.photo && m.name.charAt(0)}
+                                    </div>
+                                    <h3>{m.name}</h3>
+                                    <div className="team-role">{m.role}</div>
                                 </div>
-                                <h3>{m.name}</h3>
-                                <div className="team-role">{m.role}</div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Sous-bureau Noyal-sur-Vilaine */}
+                    {bureauNoyal.length > 0 && (
+                        <>
+                            <h4 style={{ marginTop: 40, marginBottom: 20, fontSize: '1.2rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ background: 'var(--primary)', color: 'white', borderRadius: '50%', width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>📍</span>
+                                Bureau Noyal-sur-Vilaine
+                            </h4>
+                            <div className="team-grid">
+                                {bureauNoyal.map(m => (
+                                    <div key={m.id} className="team-card">
+                                        <div className="team-avatar" style={m.photo ? { backgroundImage: `url(${m.photo})`, backgroundSize: 'cover', fontSize: 0 } : {}}>
+                                            {!m.photo && m.name.charAt(0)}
+                                        </div>
+                                        <h3>{m.name}</h3>
+                                        <div className="team-role">{m.role}</div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600, marginTop: 4 }}>📍 Noyal-sur-Vilaine</div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </>
+                    )}
+
+                    {/* Sous-bureau Nouvoitou */}
+                    {bureauNouvoitou.length > 0 && (
+                        <>
+                            <h4 style={{ marginTop: 40, marginBottom: 20, fontSize: '1.2rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ background: 'var(--primary)', color: 'white', borderRadius: '50%', width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>📍</span>
+                                Bureau Nouvoitou
+                            </h4>
+                            <div className="team-grid">
+                                {bureauNouvoitou.map(m => (
+                                    <div key={m.id} className="team-card">
+                                        <div className="team-avatar" style={m.photo ? { backgroundImage: `url(${m.photo})`, backgroundSize: 'cover', fontSize: 0 } : {}}>
+                                            {!m.photo && m.name.charAt(0)}
+                                        </div>
+                                        <h3>{m.name}</h3>
+                                        <div className="team-role">{m.role}</div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600, marginTop: 4 }}>📍 Nouvoitou</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    {bureau.length === 0 && <p style={{ color: 'var(--medium-gray)', textAlign: 'center', padding: '20px 0' }}>Aucun membre du bureau pour le moment.</p>}
 
                     <h3 id="coachs" style={{ marginTop: 60, marginBottom: 24, fontSize: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: 12, scrollMarginTop: 100 }}>Coachs</h3>
                     <div className="team-grid">

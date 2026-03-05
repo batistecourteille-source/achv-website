@@ -42,6 +42,7 @@ export interface TeamMember {
     role: string;
     category: 'bureau' | 'coach';
     photo?: string;
+    subBureau?: 'noyal' | 'nouvoitou' | '';
 }
 
 export interface Activity {

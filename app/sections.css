@@ -902,10 +902,23 @@
 
 .social-card-image {
     width: 100%;
-    height: 300px;
-    background-size: cover;
-    background-position: center;
+    height: 200px;
+    overflow: hidden;
     border-bottom: 1px solid var(--light-gray);
+    position: relative;
+    background: #f1f5f9;
+}
+
+.social-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.social-card:hover .social-card-image img {
+    transform: scale(1.05);
 }
 
 .social-card-media {

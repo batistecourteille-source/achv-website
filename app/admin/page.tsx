@@ -631,13 +631,13 @@ function TeamView() {
     const { team, addTeamMember, updateTeamMember, deleteTeamMember } = useData();
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState<TeamMember | null>(null);
-    const [form, setForm] = useState({ name: '', role: '', category: 'bureau' as 'bureau' | 'coach', photo: '' });
+    const [form, setForm] = useState({ name: '', role: '', category: 'bureau' as 'bureau' | 'coach', photo: '', subBureau: '' as '' | 'noyal' | 'nouvoitou' });
     const [toast, setToast] = useState('');
     const [tab, setTab] = useState<'bureau' | 'coach'>('bureau');
     const [confirmId, setConfirmId] = useState<string | null>(null);
 
-    const openNew = (cat: 'bureau' | 'coach') => { setEditing(null); setForm({ name: '', role: '', category: cat, photo: '' }); setShowModal(true); };
-    const openEdit = (m: TeamMember) => { setEditing(m); setForm({ name: m.name, role: m.role, category: m.category, photo: m.photo || '' }); setShowModal(true); };
+    const openNew = (cat: 'bureau' | 'coach') => { setEditing(null); setForm({ name: '', role: '', category: cat, photo: '', subBureau: '' }); setShowModal(true); };
+    const openEdit = (m: TeamMember) => { setEditing(m); setForm({ name: m.name, role: m.role, category: m.category, photo: m.photo || '', subBureau: (m.subBureau as '' | 'noyal' | 'nouvoitou') || '' }); setShowModal(true); };
 
     const save = () => {
         if (!form.name.trim()) return;
@@ -677,6 +677,16 @@ function TeamView() {
                 <Modal title={editing ? 'Modifier le membre' : 'Ajouter un membre'} onClose={() => setShowModal(false)}>
                     <div className="form-group"><label>Nom complet</label><input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Prénom Nom" /></div>
                     <div className="form-group"><label>Rôle / Fonction</label><input value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} placeholder="Ex: Président, Coach Piste..." /></div>
+                    {form.category === 'bureau' && (
+                        <div className="form-group">
+                            <label>Sous-bureau (optionnel)</label>
+                            <select value={form.subBureau} onChange={e => setForm({ ...form, subBureau: e.target.value as '' | 'noyal' | 'nouvoitou' })} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: '0.9rem' }}>
+                                <option value="">— Bureau principal (tous) —</option>
+                                <option value="noyal">📍 Bureau Noyal-sur-Vilaine</option>
+                                <option value="nouvoitou">📍 Bureau Nouvoitou</option>
+                            </select>
+                        </div>
+                    )}
                     <ImageUpload value={form.photo} onChange={v => setForm({ ...form, photo: v })} label="Photo" hint="Format portrait recommandé" />
                     <div className="modal-actions"><button className="wp-btn wp-btn-cancel" onClick={() => setShowModal(false)}>Annuler</button><button className="wp-btn wp-btn-primary" onClick={save}>💾 Enregistrer</button></div>
                 </Modal>
@@ -2035,7 +2045,7 @@ function SettingsView() {
                                                     ...prev,
                                                     platform,
                                                     content: data.description || data.title || prev.content,
-                                                    imageUrl: data.image || prev.imageUrl || '/img/placeholder-social.jpg'
+                                                    imageUrl: data.image || prev.imageUrl || ''
                                                 }));
                                                 setToast('✓ Informations récupérées !');
                                             } catch (e) {
@@ -2090,8 +2100,20 @@ function SettingsView() {
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                    <label>Image (URL)</label>
-                                    <input value={newPost.imageUrl} onChange={e => setNewPost({ ...newPost, imageUrl: e.target.value })} placeholder="/img.jpg" />
+                                    <label>Image du post</label>
+                                    <ImageUpload
+                                        value={newPost.imageUrl}
+                                        onChange={v => setNewPost({ ...newPost, imageUrl: v })}
+                                        label=""
+                                        hint="Uploadez l'image ou collez une URL ci-dessous"
+                                        folder="social"
+                                    />
+                                    <input
+                                        value={newPost.imageUrl}
+                                        onChange={e => setNewPost({ ...newPost, imageUrl: e.target.value })}
+                                        placeholder="Ou collez une URL d'image..."
+                                        style={{ marginTop: 4, fontSize: '0.8rem' }}
+                                    />
                                 </div>
                                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                                     <label>Contenu du post</label>

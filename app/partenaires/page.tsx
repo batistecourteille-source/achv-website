@@ -22,6 +22,24 @@ export default function PartenairesPage() {
     const pp = settings.partnersPage;
     const [formData, setFormData] = useState({ name: '', company: '', email: '', phone: '', message: '', formule: '' });
     const [formSent, setFormSent] = useState(false);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+    const validateEmail = (email: string) => {
+        return email.includes('@') && email.indexOf('@') > 0 && email.indexOf('@') < email.length - 1 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+
+    const validateForm = () => {
+        const errors: Record<string, string> = {};
+        if (!formData.name.trim()) errors.name = 'Le nom est requis';
+        if (!formData.company.trim()) errors.company = "Le nom de l'entreprise est requis";
+        if (!formData.email.trim()) errors.email = "L'email est requis";
+        else if (!validateEmail(formData.email)) errors.email = 'Veuillez entrer un email valide avec @';
+        if (!formData.phone.trim()) errors.phone = 'Le téléphone est requis';
+        if (!formData.formule) errors.formule = 'Veuillez sélectionner une formule';
+        if (!formData.message.trim()) errors.message = 'Le message est requis';
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
     const FORMULES = [
         { tier: 'bronze' as const, price: pp.pricing.bronze.price, features: pp.pricing.bronze.features },
@@ -36,6 +54,9 @@ export default function PartenairesPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate before sending
+        if (!validateForm()) return;
 
         // Indicateur de chargement (optionnel, ici on le fait simple)
         const submitBtn = document.querySelector('.partner-form-submit') as HTMLButtonElement;
@@ -62,6 +83,7 @@ export default function PartenairesPage() {
             if (res.ok) {
                 setFormSent(true);
                 setFormData({ name: '', company: '', email: '', phone: '', message: '', formule: '' });
+                setFormErrors({});
                 // Reset après 10s
                 setTimeout(() => setFormSent(false), 10000);
             } else {
@@ -279,60 +301,66 @@ export default function PartenairesPage() {
                                 <p>Merci pour votre intérêt. Nous vous recontacterons très rapidement.</p>
                             </div>
                         ) : (
-                            <form className="partner-form" onSubmit={handleSubmit}>
+                            <form className="partner-form" onSubmit={handleSubmit} noValidate>
                                 <div className="partner-form-row">
                                     <div className="partner-form-group">
-                                        <label htmlFor="pf-name">Nom & Prénom *</label>
+                                        <label htmlFor="pf-name">Nom &amp; Prénom *</label>
                                         <input
                                             id="pf-name"
                                             type="text"
-                                            required
                                             placeholder="Jean Dupont"
                                             value={formData.name}
-                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                            onChange={e => { setFormData({ ...formData, name: e.target.value }); if (formErrors.name) setFormErrors({ ...formErrors, name: '' }); }}
+                                            style={formErrors.name ? { borderColor: '#ef4444' } : {}}
                                         />
+                                        {formErrors.name && <span className="partner-form-error">{formErrors.name}</span>}
                                     </div>
                                     <div className="partner-form-group">
                                         <label htmlFor="pf-company">Entreprise *</label>
                                         <input
                                             id="pf-company"
                                             type="text"
-                                            required
                                             placeholder="Nom de votre entreprise"
                                             value={formData.company}
-                                            onChange={e => setFormData({ ...formData, company: e.target.value })}
+                                            onChange={e => { setFormData({ ...formData, company: e.target.value }); if (formErrors.company) setFormErrors({ ...formErrors, company: '' }); }}
+                                            style={formErrors.company ? { borderColor: '#ef4444' } : {}}
                                         />
+                                        {formErrors.company && <span className="partner-form-error">{formErrors.company}</span>}
                                     </div>
                                 </div>
                                 <div className="partner-form-row">
                                     <div className="partner-form-group">
-                                        <label htmlFor="pf-email">Email *</label>
+                                        <label htmlFor="pf-email">Email * <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--medium-gray)' }}>(avec @)</span></label>
                                         <input
                                             id="pf-email"
                                             type="email"
-                                            required
                                             placeholder="contact@entreprise.fr"
                                             value={formData.email}
-                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                            onChange={e => { setFormData({ ...formData, email: e.target.value }); if (formErrors.email) setFormErrors({ ...formErrors, email: '' }); }}
+                                            style={formErrors.email ? { borderColor: '#ef4444' } : {}}
                                         />
+                                        {formErrors.email && <span className="partner-form-error">{formErrors.email}</span>}
                                     </div>
                                     <div className="partner-form-group">
-                                        <label htmlFor="pf-phone">Téléphone</label>
+                                        <label htmlFor="pf-phone">Téléphone *</label>
                                         <input
                                             id="pf-phone"
                                             type="tel"
                                             placeholder="06 12 34 56 78"
                                             value={formData.phone}
-                                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                            onChange={e => { setFormData({ ...formData, phone: e.target.value }); if (formErrors.phone) setFormErrors({ ...formErrors, phone: '' }); }}
+                                            style={formErrors.phone ? { borderColor: '#ef4444' } : {}}
                                         />
+                                        {formErrors.phone && <span className="partner-form-error">{formErrors.phone}</span>}
                                     </div>
                                 </div>
                                 <div className="partner-form-group">
-                                    <label htmlFor="pf-formule">Formule intéressée</label>
+                                    <label htmlFor="pf-formule">Formule intéressée *</label>
                                     <select
                                         id="pf-formule"
                                         value={formData.formule}
-                                        onChange={e => setFormData({ ...formData, formule: e.target.value })}
+                                        onChange={e => { setFormData({ ...formData, formule: e.target.value }); if (formErrors.formule) setFormErrors({ ...formErrors, formule: '' }); }}
+                                        style={formErrors.formule ? { borderColor: '#ef4444' } : {}}
                                     >
                                         <option value="">— Sélectionner une formule —</option>
                                         <option value="bronze">Pack Bronze (à partir de 200€)</option>
@@ -340,17 +368,21 @@ export default function PartenairesPage() {
                                         <option value="gold">Pack Or (à partir de 1 000€)</option>
                                         <option value="custom">Sur mesure</option>
                                     </select>
+                                    {formErrors.formule && <span className="partner-form-error">{formErrors.formule}</span>}
                                 </div>
                                 <div className="partner-form-group">
-                                    <label htmlFor="pf-message">Message</label>
+                                    <label htmlFor="pf-message">Message *</label>
                                     <textarea
                                         id="pf-message"
                                         rows={4}
                                         placeholder="Décrivez votre projet de partenariat, vos attentes…"
                                         value={formData.message}
-                                        onChange={e => setFormData({ ...formData, message: e.target.value })}
+                                        onChange={e => { setFormData({ ...formData, message: e.target.value }); if (formErrors.message) setFormErrors({ ...formErrors, message: '' }); }}
+                                        style={formErrors.message ? { borderColor: '#ef4444' } : {}}
                                     />
+                                    {formErrors.message && <span className="partner-form-error">{formErrors.message}</span>}
                                 </div>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--medium-gray)', margin: '-8px 0 4px', textAlign: 'center' }}>* Tous les champs sont obligatoires</p>
                                 <button type="submit" className="partner-form-submit">
                                     🤝 Envoyer ma demande de partenariat
                                 </button>
@@ -790,6 +822,13 @@ export default function PartenairesPage() {
                     background: var(--primary-hover);
                     transform: scale(1.03);
                     box-shadow: 0 8px 24px rgba(230, 57, 70, 0.3);
+                }
+                .partner-form-error {
+                    display: block;
+                    color: #ef4444;
+                    font-size: 0.78rem;
+                    margin-top: 4px;
+                    font-weight: 500;
                 }
                 .partner-form-success {
                     text-align: center;

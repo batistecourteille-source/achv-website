@@ -38,6 +38,19 @@ function ActualitesContent() {
     const linkedinPosts = socialPosts.filter(p => p.platform === 'linkedin');
     const youtubePosts = socialPosts.filter(p => p.platform === 'youtube');
 
+    const platformGradients: Record<string, string> = {
+        instagram: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)',
+        facebook: 'linear-gradient(135deg, #1877f2 0%, #0d47a1 100%)',
+        linkedin: 'linear-gradient(135deg, #0077b5 0%, #004471 100%)',
+        youtube: 'linear-gradient(135deg, #ff0000 0%, #8b0000 100%)',
+    };
+    const platformEmojis: Record<string, string> = {
+        instagram: '📸',
+        facebook: '📘',
+        linkedin: '💼',
+        youtube: '🎥',
+    };
+
     const renderSocialSection = (title: string, posts: typeof socialPosts, icon: string) => {
         if (posts.length === 0) return null;
         return (
@@ -58,8 +71,41 @@ function ActualitesContent() {
                                     </span>
                                     <span className="social-date">{post.date}</span>
                                 </div>
-                                {post.imageUrl && (
-                                    <div className="social-card-image" style={{ backgroundImage: `url(${post.imageUrl})` }}></div>
+                                {post.imageUrl ? (
+                                    <div className="social-card-image" style={{ position: 'relative', overflow: 'hidden' }}>
+                                        <img
+                                            src={post.imageUrl}
+                                            alt={post.content?.slice(0, 50) || 'Post'}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                            onError={(e) => {
+                                                // Si l'image ne charge pas, on remplace par un placeholder stylé
+                                                const parent = (e.target as HTMLImageElement).parentElement;
+                                                if (parent) {
+                                                    parent.style.background = platformGradients[post.platform] || '#e2e8f0';
+                                                    parent.style.display = 'flex';
+                                                    parent.style.alignItems = 'center';
+                                                    parent.style.justifyContent = 'center';
+                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                    const emoji = document.createElement('span');
+                                                    emoji.textContent = platformEmojis[post.platform] || '📷';
+                                                    emoji.style.fontSize = '3rem';
+                                                    emoji.style.opacity = '0.8';
+                                                    parent.appendChild(emoji);
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="social-card-image" style={{
+                                        background: platformGradients[post.platform] || '#e2e8f0',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}>
+                                        <span style={{ fontSize: '3rem', opacity: 0.8 }}>
+                                            {platformEmojis[post.platform] || '📷'}
+                                        </span>
+                                    </div>
                                 )}
                                 <div className="social-card-content">
                                     <p>{post.content}</p>
