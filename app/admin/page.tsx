@@ -2053,7 +2053,8 @@ function SettingsView() {
                                                     ...prev,
                                                     platform,
                                                     content: data.description || data.title || prev.content,
-                                                    imageUrl: data.image || prev.imageUrl || ''
+                                                    imageUrl: data.image || prev.imageUrl || '',
+                                                    date: data.date || prev.date
                                                 }));
                                                 setToast('✓ Informations récupérées !');
                                             } catch (e) {
@@ -2084,7 +2085,8 @@ function SettingsView() {
                                                 ...prev,
                                                 platform,
                                                 content: data.description || data.title || '',
-                                                imageUrl: data.image || '/img/placeholder-social.jpg'
+                                                imageUrl: data.image || '/img/placeholder-social.jpg',
+                                                date: data.date || prev.date
                                             }));
                                             setToast('✓ Informations récupérées !');
                                         } catch (e) {
