@@ -1438,7 +1438,7 @@ function SettingsView() {
     const [activeTab, setActiveTab] = useState('general');
 
     // New state for adding social post
-    const [newPost, setNewPost] = useState({ platform: 'facebook', content: '', imageUrl: '', postUrl: '' });
+    const [newPost, setNewPost] = useState({ platform: 'facebook', content: '', imageUrl: '', postUrl: '', date: new Date().toISOString().split('T')[0] });
 
     const handleAddPost = () => {
         if (!newPost.content) return;
@@ -1448,9 +1448,9 @@ function SettingsView() {
             content: newPost.content,
             imageUrl: newPost.imageUrl,
             postUrl: newPost.postUrl,
-            date: new Date().toISOString().split('T')[0]
+            date: newPost.date || new Date().toISOString().split('T')[0]
         });
-        setNewPost({ platform: 'facebook', content: '', imageUrl: '', postUrl: '' });
+        setNewPost({ platform: 'facebook', content: '', imageUrl: '', postUrl: '', date: new Date().toISOString().split('T')[0] });
         setToast('Checking... Post ajouté !');
         setTimeout(() => setToast(''), 3000);
     };
@@ -2098,14 +2098,21 @@ function SettingsView() {
                             </div>
 
                             <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                <div className="form-group">
-                                    <label>Plateforme</label>
-                                    <select value={newPost.platform} onChange={e => setNewPost({ ...newPost, platform: e.target.value as any })}>
-                                        <option value="facebook">Facebook</option>
-                                        <option value="instagram">Instagram</option>
-                                        <option value="linkedin">LinkedIn</option>
-                                        <option value="youtube">YouTube</option>
-                                    </select>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div className="form-group">
+                                        <label>Plateforme</label>
+                                        <select value={newPost.platform} onChange={e => setNewPost({ ...newPost, platform: e.target.value as any })}>
+                                            <option value="facebook">Facebook</option>
+                                            <option value="instagram">Instagram</option>
+                                            <option value="linkedin">LinkedIn</option>
+                                            <option value="youtube">YouTube</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Date de publication <span style={{ color: '#ef4444' }}>*</span></label>
+                                        <input type="date" value={newPost.date} onChange={e => setNewPost({ ...newPost, date: e.target.value })} required />
+                                        <p className="form-hint">Sert à trier les posts du plus récent au plus ancien.</p>
+                                    </div>
                                 </div>
                                 <div className="form-group">
                                     <label>Image du post</label>
@@ -2182,7 +2189,7 @@ function SettingsView() {
                                     ) : (
                                         post.imageUrl && <img src={post.imageUrl} alt="preview" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }} />
                                     )}
-                                    <small style={{ color: '#94a3b8', display: 'block', marginTop: 8 }}>{post.date}</small>
+                                    <input type="date" value={post.date || ''} onChange={e => updateSocialPost(post.id, { date: e.target.value })} style={{ marginTop: 8, padding: '4px', border: '1px solid #e2e8f0', borderRadius: '4px', color: '#64748b', fontSize: '0.8rem', outline: 'none', background: 'transparent' }} title="Modifier la date" />
                                 </div>
                             ))}
                         </div>

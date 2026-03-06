@@ -32,10 +32,11 @@ function ActualitesContent() {
     });
 
     // SOCIAL LOGIC
-    const facebookPosts = socialPosts.filter(p => p.platform === 'facebook');
-    const instagramPosts = socialPosts.filter(p => p.platform === 'instagram');
-    const linkedinPosts = socialPosts.filter(p => p.platform === 'linkedin');
-    const youtubePosts = socialPosts.filter(p => p.platform === 'youtube');
+    const sortedSocialPosts = [...socialPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const facebookPosts = sortedSocialPosts.filter(p => p.platform === 'facebook');
+    const instagramPosts = sortedSocialPosts.filter(p => p.platform === 'instagram');
+    const linkedinPosts = sortedSocialPosts.filter(p => p.platform === 'linkedin');
+    const youtubePosts = sortedSocialPosts.filter(p => p.platform === 'youtube');
 
     const platformGradients: Record<string, string> = {
         instagram: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)',
