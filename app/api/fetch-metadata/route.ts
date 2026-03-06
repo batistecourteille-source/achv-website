@@ -74,46 +74,52 @@ export async function GET(request: Request) {
                     console.error("Microlink fallback failed", e);
                 }
             } else {
-                // General Microlink fallback for non-IG if meta empty 
-                if (!image || !title) {
-                    try {
-                        const mlRes = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
-                        if (mlRes.ok) {
-                            const mkData = await mlRes.json();
-                            if (mkData.data) {
-                                if (!image && mkData.data.image?.url) image = mkData.data.image.url;
-                                if (!description && mkData.data.description) description = mkData.data.description;
-                                if (!title && mkData.data.title) title = mkData.data.title;
-                                if (!publishedDate && mkData.data.date) publishedDate = mkData.data.date;
-                            }
-                        }
-                    } catch (e) { }
-                }
-
-                // If scraping worked, ensure image is proxied too
-                if (image && !image.startsWith('data:')) {
+                // If scraping worked for Instagram, ensure image is proxied too
+                if (!image.startsWith('data:')) {
                     image = `/api/image-proxy?url=${encodeURIComponent(image)}`;
                 }
             }
-
-            const cleanDescription = description ? description.trim() : '';
-            const cleanTitle = title ? title.trim() : '';
-            let cleanDate = '';
-            if (publishedDate) {
+        } else {
+            // General Microlink fallback for non-IG if meta empty 
+            if (!image || !title) {
                 try {
-                    cleanDate = new Date(publishedDate).toISOString().split('T')[0];
+                    const mlRes = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
+                    if (mlRes.ok) {
+                        const mkData = await mlRes.json();
+                        if (mkData.data) {
+                            if (!image && mkData.data.image?.url) image = mkData.data.image.url;
+                            if (!description && mkData.data.description) description = mkData.data.description;
+                            if (!title && mkData.data.title) title = mkData.data.title;
+                            if (!publishedDate && mkData.data.date) publishedDate = mkData.data.date;
+                        }
+                    }
                 } catch (e) { }
             }
 
-            return NextResponse.json({
-                title: cleanTitle,
-                description: cleanDescription,
-                image,
-                siteName,
-                date: cleanDate
-            });
-        } catch (error) {
-            console.error('Error fetching metadata:', error);
-            return NextResponse.json({ error: 'Failed to parse metadata' }, { status: 500 });
+            // If scraping worked for non-IG, ensure image is proxied too
+            if (image && !image.startsWith('data:')) {
+                image = `/api/image-proxy?url=${encodeURIComponent(image)}`;
+            }
         }
+
+        const cleanDescription = description ? description.trim() : '';
+        const cleanTitle = title ? title.trim() : '';
+        let cleanDate = '';
+        if (publishedDate) {
+            try {
+                cleanDate = new Date(publishedDate).toISOString().split('T')[0];
+            } catch (e) { }
+        }
+
+        return NextResponse.json({
+            title: cleanTitle,
+            description: cleanDescription,
+            image,
+            siteName,
+            date: cleanDate
+        });
+    } catch (error) {
+        console.error('Error fetching metadata:', error);
+        return NextResponse.json({ error: 'Failed to parse metadata' }, { status: 500 });
     }
+}
