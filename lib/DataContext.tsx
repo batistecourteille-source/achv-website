@@ -226,6 +226,39 @@ export interface SiteSettings {
         heroTitle: string;
         heroSubtitle: string;
     };
+    rejoindrePage: {
+        heroTitle: string;
+        heroSubtitle: string;
+        stepIntroTitle: string;
+        stepIntroText: string;
+        guideTitle: string;
+        guideSubtitle: string;
+        trialText: string;
+        ctaTitle: string;
+        ctaText: string;
+        profiles: Array<{
+            id: string;
+            emoji: string;
+            title: string;
+            subtitle: string;
+            age: string;
+            color: string;
+            categories: string[];
+            description: string;
+            highlights: string[];
+            icon: string;
+        }>;
+        inscriptionSteps: Array<{
+            title: string;
+            text: string;
+            note?: string;
+        }>;
+        reinscriptionSteps: Array<{
+            title: string;
+            text: string;
+            note?: string;
+        }>;
+    };
 }
 
 interface DataContextType {
@@ -445,6 +478,119 @@ const defaultSettings: SiteSettings = {
     recordsPage: {
         heroTitle: "Records du Club",
         heroSubtitle: "Les meilleures performances de l'ACHV, stade et hors stade, toutes catégories"
+    },
+    rejoindrePage: {
+        heroTitle: "Rejoindre le club",
+        heroSubtitle: "Trouvez l'activité qui vous correspond en quelques clics",
+        stepIntroTitle: "Quel sportif êtes-vous ?",
+        stepIntroText: "Sélectionnez votre profil pour découvrir les activités, horaires et tarifs adaptés.",
+        guideTitle: "Comment s'inscrire ?",
+        guideSubtitle: "Suivez les étapes ci-dessous pour rejoindre l'ACHV. Le processus est simple et rapide !",
+        trialText: "Bonne nouvelle ! Vous pouvez faire 2 séances d'essai gratuites avant de vous décider. Il vous suffit de vous présenter à l'heure du cours choisi sur le lieu d'entraînement. Nos coachs vous accueilleront tout au long de l'année et il n'y a pas de date limite d'inscription.",
+        ctaTitle: "Prêt à rejoindre l'aventure ?",
+        ctaText: "Inscrivez-vous en ligne ou contactez-nous pour plus d'informations. Une séance d'essai gratuite est possible !",
+        profiles: [
+            {
+                id: 'enfant',
+                emoji: '🧒',
+                title: 'Enfant / Jeune',
+                subtitle: "De l'éveil athlétique aux compétitions jeunes",
+                age: '4 à 17 ans',
+                color: '#f59e0b',
+                categories: ['Jeunes'],
+                description: "L'école d'athlétisme de l'ACHV accueille vos enfants dès 4 ans. Encadrés par des entraîneurs diplomés FFA, ils découvrent toutes les disciplines de l'athlétisme dans un cadre bienveillant et motivant.",
+                highlights: ['Encadrement diplomé FFA', 'Toutes les disciplines', 'Compétitions adaptées', 'Ambiance conviviale'],
+                icon: '🏃‍♂️'
+            },
+            {
+                id: 'coureur',
+                emoji: '🏃',
+                title: 'Coureur Adulte',
+                subtitle: 'Running, trail & route en groupe',
+                age: '16 ans et +',
+                color: '#3b82f6',
+                categories: ['Adultes Hors-Stade'],
+                description: "Que vous soyez débutant ou confirmé, nos groupes de running et trail vous permettent de progresser à votre rythme. Sorties encadrées plusieurs fois par semaine, sur route et en nature.",
+                highlights: ['Tous niveaux acceptés', 'Groupes par niveau', 'Sorties nature & route', 'Préparation compétitions'],
+                icon: '🏅'
+            },
+            {
+                id: 'piste',
+                emoji: '🏟️',
+                title: 'Athlétisme Piste',
+                subtitle: 'Entraînement sur piste & compétition',
+                age: '14 ans et +',
+                color: '#ef4444',
+                categories: ['Adultes Piste'],
+                description: "Pour les compétiteurs dans l'âme ! Entraînements structurés sur piste avec VMA, fractionné, technique de course, musculation spécifique.",
+                highlights: ['Entraînements structurés', 'Préparation compétitions', 'Musculation athlétisme', 'Suivi personnalisé'],
+                icon: '🏆'
+            },
+            {
+                id: 'marcheur',
+                emoji: '🥞',
+                title: 'Marche Nordique',
+                subtitle: 'Bien-être et sport en plein air',
+                age: 'Tous âges',
+                color: '#10b981',
+                categories: ['Marche Nordique'],
+                description: "La marche nordique est bien plus qu'une simple promenade ! C'est un sport complet qui fait travailler 80% des muscles du corps. Nos groupes partent plusieurs fois par semaine dans les chemins autour de Noyal et Nouvoitou.",
+                highlights: ['Sport doux et complet', 'En pleine nature', 'Convivialité garantie', 'Matériel prêté aux débutants'],
+                icon: '🌿'
+            },
+            {
+                id: 'forme',
+                emoji: '💪',
+                title: 'Forme & Santé',
+                subtitle: 'Pilates, renforcement & circuit training',
+                age: 'Adultes',
+                color: '#8b5cf6',
+                categories: ['Forme & Santé'],
+                description: "Pas besoin de courir pour faire du sport à l'ACHV ! Nos cours de Pilates, renforcement musculaire et circuit training sont accessibles à tous. En salle ou en extérieur.",
+                highlights: ['Accessible à tous', 'Pas de course à pied', 'Cours en salle', 'Renforcement global'],
+                icon: '🧘'
+            }
+        ],
+        inscriptionSteps: [
+            {
+                title: "Renseignez-vous sur nos activités, nos horaires et nos tarifs",
+                text: "Vous trouverez dans la plaquette du club les horaires des activités et les tarifs d'inscription."
+            },
+            {
+                title: "Pour les mineurs, remplissez le questionnaire de santé",
+                text: "Il faut répondre à un questionnaire sur la santé de l'enfant. Lisez-le attentivement avec votre enfant et complétez-le.",
+                note: "Si vous avez répondu NON à toutes les questions, votre enfant n'a pas besoin de certificat médical. Sinon il faut que votre enfant aille voir votre médecin pour obtenir un certificat médical."
+            },
+            {
+                title: "Adhérez à l'ACHV via l'application MonClub",
+                text: "L'adhésion se fait en ligne, via l'application MonClub. Vous pouvez aussi payer en ligne si vous le souhaitez. Vous pouvez vous connecter à l'application MonClub depuis votre PC ou depuis votre mobile.",
+                note: "Pour plus d'informations sur l'application MonClub et notamment savoir comment l'utiliser depuis votre mobile, rendez-vous sur monclub.ffa.fr"
+            },
+            {
+                title: "Nous créons votre dossier dans la base de la FFA",
+                text: "Vous recevrez un premier mail de la FFA dont l'objet est \"FFA – Voici accès à votre Espace Athlé\", envoyé par l'adresse athletesffalt@ffa.fr. Ce mail contient un bouton pour accéder à votre Espace Licencié. Il contient aussi votre identifiant et votre mot de passe. Il faut conserver ces informations. Dans l'Espace Licencié, cliquez sur le bouton \"Prise de licence\" et suivez ce qui est expliqué sur \"Renouvellement et Parcours Prévention Santé\". Vous allez pouvoir compléter votre dossier, valider vos conditions d'assurance et réaliser votre Parcours Prévention Santé."
+            }
+        ],
+        reinscriptionSteps: [
+            {
+                title: "Renouvellement de la licence et Parcours Prévention Santé (PPS)",
+                text: "Vous avez reçu un message provenant de l'adresse \"athletesffalt@ffa.fr\" dont l'objet contient \"tu peux dès à présent renouveler ta licence pour la saison 2024-2025\". Ce message vous explique comment procéder pour cette étape de renouvellement de la licence FFA."
+            },
+            {
+                title: "Validez votre PPS (Parcours Prévention Santé)",
+                text: "Allez sur le site FFA pour réaliser votre \"Renouvellement et Parcours Prévention Santé\". Vous trouverez plus d'informations sur le \"Parcours Prévention Santé\" dans la page Renouvellement et Parcours Prévention Santé de notre site.",
+                note: "Pour les mineurs : allez sur le site de la FFA pour réaliser le renouvellement de la licence de votre enfant. Si vous avez répondu NON à toutes les questions, votre enfant n'a pas besoin de certificat médical. Sinon il faut que votre enfant aille voir votre médecin."
+            },
+            {
+                title: "Adhérez à l'ACHV via MonClub",
+                text: "L'adhésion se fait en ligne, via l'application MonClub. Vous pouvez aussi payer en ligne si vous le souhaitez.",
+                note: "Si vous souhaitez plus d'informations sur l'application MonClub et notamment savoir comment l'utiliser depuis votre mobile, rendez-vous sur monclub.ffa.fr"
+            },
+            {
+                title: "Nous validons votre licence, que vous recevez par mail de la FFA",
+                text: "Dès que nous aurons validé votre dossier côté club, la FFA vous enverra un mail contenant votre licence au format PDF."
+            }
+        ]
     }
 };
 
@@ -665,6 +811,7 @@ const mergeSettings = (stored: any, defaults: SiteSettings): SiteSettings => {
         agendaPage: { ...defaults.agendaPage, ...(stored?.agendaPage || {}) },
         resultatsPage: { ...defaults.resultatsPage, ...(stored?.resultatsPage || {}) },
         recordsPage: { ...defaults.recordsPage, ...(stored?.recordsPage || {}) },
+        rejoindrePage: { ...defaults.rejoindrePage, ...(stored?.rejoindrePage || {}) },
         instagramPostUrl: stored?.instagramPostUrl || defaults.instagramPostUrl,
         featuredPostUrls: stored?.featuredPostUrls || defaults.featuredPostUrls,
         instagramAccessToken: stored?.instagramAccessToken || '',
@@ -672,7 +819,7 @@ const mergeSettings = (stored: any, defaults: SiteSettings): SiteSettings => {
         facebookPageId: stored?.facebookPageId || '',
         youtubeApiKey: stored?.youtubeApiKey || '',
         youtubeChannelId: stored?.youtubeChannelId || '',
-    };
+    }
 };
 
 export function DataProvider({ children }: { children: ReactNode }) {

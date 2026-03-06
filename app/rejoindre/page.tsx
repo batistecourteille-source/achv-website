@@ -1,91 +1,39 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useData } from '@/lib/DataContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
-type Profile = 'enfant' | 'coureur' | 'piste' | 'marcheur' | 'forme' | null;
+// Gradient de couleur à partir d'une couleur hex
+function makeGradient(color: string) {
+    // Darken the hex color manually (subtract ~20%)
+    const hex = color.replace('#', '');
+    const r = Math.max(0, parseInt(hex.slice(0, 2), 16) - 40);
+    const g = Math.max(0, parseInt(hex.slice(2, 4), 16) - 40);
+    const b = Math.max(0, parseInt(hex.slice(4, 6), 16) - 40);
+    const dark = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    return `linear-gradient(135deg, ${color} 0%, ${dark} 100%)`;
+}
 
-const PROFILES = [
-    {
-        id: 'enfant' as Profile,
-        emoji: '🧒',
-        title: 'Enfant / Jeune',
-        subtitle: 'De l\'éveil athlétique aux compétitions jeunes',
-        age: '4 à 17 ans',
-        color: '#f59e0b',
-        gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-        categories: ['Jeunes'],
-        description: 'L\'école d\'athlétisme de l\'ACHV accueille vos enfants dès 4 ans. Encadrés par des entraîneurs diplômés FFA, ils découvrent toutes les disciplines de l\'athlétisme dans un cadre bienveillant et motivant. Éveil, poussins, benjamins, minimes... chaque tranche d\'âge a son créneau adapté.',
-        highlights: ['Encadrement diplômé FFA', 'Toutes les disciplines', 'Compétitions adaptées', 'Ambiance conviviale'],
-        icon: '🏃‍♂️'
-    },
-    {
-        id: 'coureur' as Profile,
-        emoji: '🏃',
-        title: 'Coureur Adulte',
-        subtitle: 'Running, trail & route en groupe',
-        age: '16 ans et +',
-        color: '#3b82f6',
-        gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-        categories: ['Adultes Hors-Stade'],
-        description: 'Que vous soyez débutant ou confirmé, nos groupes de running et trail vous permettent de progresser à votre rythme. Sorties encadrées plusieurs fois par semaine, sur route et en nature, avec des parcours variés autour de Noyal et Nouvoitou.',
-        highlights: ['Tous niveaux acceptés', 'Groupes par niveau', 'Sorties nature & route', 'Préparation compétitions'],
-        icon: '🏅'
-    },
-    {
-        id: 'piste' as Profile,
-        emoji: '🏟️',
-        title: 'Athlétisme Piste',
-        subtitle: 'Entraînement sur piste & compétition',
-        age: '14 ans et +',
-        color: '#ef4444',
-        gradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-        categories: ['Adultes Piste'],
-        description: 'Pour les compétiteurs dans l\'âme ! Entraînements structurés sur piste avec VMA, fractionné, technique de course, musculation spécifique. Préparation des championnats départementaux, régionaux et nationaux.',
-        highlights: ['Entraînements structurés', 'Préparation compétitions', 'Musculation athlétisme', 'Suivi personnalisé'],
-        icon: '🏆'
-    },
-    {
-        id: 'marcheur' as Profile,
-        emoji: '🥾',
-        title: 'Marche Nordique',
-        subtitle: 'Bien-être et sport en plein air',
-        age: 'Tous âges',
-        color: '#10b981',
-        gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-        categories: ['Marche Nordique'],
-        description: 'La marche nordique est bien plus qu\'une simple promenade ! C\'est un sport complet qui fait travailler 80% des muscles du corps. Nos groupes partent plusieurs fois par semaine dans les chemins autour de Noyal et Nouvoitou, dans une ambiance conviviale.',
-        highlights: ['Sport doux et complet', 'En pleine nature', 'Convivialité garantie', 'Matériel prêté aux débutants'],
-        icon: '🌿'
-    },
-    {
-        id: 'forme' as Profile,
-        emoji: '💪',
-        title: 'Forme & Santé',
-        subtitle: 'Pilates, renforcement & circuit training',
-        age: 'Adultes',
-        color: '#8b5cf6',
-        gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-        categories: ['Forme & Santé'],
-        description: 'Pas besoin de courir pour faire du sport à l\'ACHV ! Nos cours de Pilates, renforcement musculaire et circuit training sont accessibles à tous. En salle ou en extérieur, retrouvez la forme avec nos coachs motivants.',
-        highlights: ['Accessible à tous', 'Pas de course à pied', 'Cours en salle', 'Renforcement global'],
-        icon: '🧘'
-    },
-];
+const STEP_COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899'];
 
 export default function RejoindrePage() {
     const { schedules, settings } = useData();
-    const [selected, setSelected] = useState<Profile>(null);
+    const rp = settings.rejoindrePage;
+
+    const profiles = rp?.profiles || [];
+    const inscriptionSteps = rp?.inscriptionSteps || [];
+    const reinscriptionSteps = rp?.reinscriptionSteps || [];
+
+    const [selectedId, setSelectedId] = useState<string | null>(null);
     const [animating, setAnimating] = useState(false);
 
-    const handleSelect = (profile: Profile) => {
+    const handleSelect = (id: string) => {
         setAnimating(true);
         setTimeout(() => {
-            setSelected(profile);
+            setSelectedId(id);
             setAnimating(false);
-            // Scroll to results
             setTimeout(() => {
                 document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
@@ -95,7 +43,7 @@ export default function RejoindrePage() {
     const handleBack = () => {
         setAnimating(true);
         setTimeout(() => {
-            setSelected(null);
+            setSelectedId(null);
             setAnimating(false);
             setTimeout(() => {
                 document.getElementById('profile-grid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -103,89 +51,81 @@ export default function RejoindrePage() {
         }, 300);
     };
 
-    const selectedProfile = PROFILES.find(p => p.id === selected);
-    const relevantSchedules = selectedProfile
-        ? (schedules || []).filter(s => selectedProfile.categories.includes(s.category))
-        : [];
+    const selectedProfile = profiles.find(p => p.id === selectedId) || null;
 
     // Sort by day
     const dayOrder = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    const relevantSchedules = selectedProfile
+        ? (schedules || []).filter(s => (selectedProfile.categories || []).includes(s.category))
+        : [];
     const sortedSchedules = [...relevantSchedules].sort((a, b) => {
         const dA = dayOrder.findIndex(d => (a.dayTime || '').toLowerCase().startsWith(d));
         const dB = dayOrder.findIndex(d => (b.dayTime || '').toLowerCase().startsWith(d));
         return (dA === -1 ? 99 : dA) - (dB === -1 ? 99 : dB);
     });
 
+    const gradient = selectedProfile ? makeGradient(selectedProfile.color || '#3b82f6') : '';
+
     return (
         <>
             <Header />
             <div className="page-hero" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)' }}>
                 <div className="page-hero-content">
-                    <h1>Rejoindre le club</h1>
-                    <p>Trouvez l&apos;activité qui vous correspond en quelques clics</p>
+                    <h1>{rp?.heroTitle || 'Rejoindre le club'}</h1>
+                    <p>{rp?.heroSubtitle || "Trouvez l'activité qui vous correspond en quelques clics"}</p>
                 </div>
             </div>
 
-            <section className="section" style={{ background: 'var(--bg-alt)' }}>
-                <div className="container">
-                    {/* Step indicator */}
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 48 }}>
-                        <div style={{
-                            display: 'flex', alignItems: 'center', gap: 12, padding: '12px 24px',
-                            background: !selected ? 'var(--primary)' : 'var(--white)',
-                            color: !selected ? 'white' : 'var(--medium-gray)',
-                            borderRadius: 99, fontWeight: 700, fontSize: '0.95rem',
-                            transition: 'all 0.3s ease',
-                            boxShadow: !selected ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
-                            border: '2px solid ' + (!selected ? 'var(--primary)' : '#e2e8f0'),
-                        }}>
-                            <span style={{
-                                width: 28, height: 28, borderRadius: '50%',
-                                background: !selected ? 'rgba(255,255,255,0.3)' : '#e2e8f0',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '0.85rem', fontWeight: 800,
-                            }}>1</span>
-                            Votre profil
-                        </div>
-                        <div style={{
-                            display: 'flex', alignItems: 'center', gap: 12, padding: '12px 24px',
-                            background: selected ? 'var(--primary)' : 'var(--white)',
-                            color: selected ? 'white' : 'var(--medium-gray)',
-                            borderRadius: 99, fontWeight: 700, fontSize: '0.95rem',
-                            transition: 'all 0.3s ease',
-                            boxShadow: selected ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
-                            border: '2px solid ' + (selected ? 'var(--primary)' : '#e2e8f0'),
-                        }}>
-                            <span style={{
-                                width: 28, height: 28, borderRadius: '50%',
-                                background: selected ? 'rgba(255,255,255,0.3)' : '#e2e8f0',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '0.85rem', fontWeight: 800,
-                            }}>2</span>
-                            Votre activité
-                        </div>
+            {/* ═══ SÉLECTION PROFIL ═══ */}
+            <section className="section" style={{ background: '#f8fafc' }}>
+                <div className="container" style={{ maxWidth: 900 }}>
+
+                    {/* Stepper */}
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 0, marginBottom: 48 }}>
+                        {['Votre profil', 'Votre activité'].map((step, i) => {
+                            const active = i === 0 ? !selectedId : !!selectedId;
+                            return (
+                                <div key={i} style={{
+                                    display: 'flex', alignItems: 'center', gap: 10,
+                                    padding: '12px 28px',
+                                    background: active ? 'var(--primary)' : 'var(--white)',
+                                    color: active ? 'white' : 'var(--medium-gray)',
+                                    borderRadius: i === 0 ? '99px 0 0 99px' : '0 99px 99px 0',
+                                    border: `2px solid ${active ? 'var(--primary)' : '#e2e8f0'}`,
+                                    fontWeight: 700, fontSize: '0.95rem',
+                                    cursor: 'default', transition: 'all 0.3s ease',
+                                }}>
+                                    <span style={{
+                                        width: 28, height: 28, borderRadius: '50%',
+                                        background: active ? 'rgba(255,255,255,0.25)' : '#f1f5f9',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontWeight: 800, fontSize: '0.85rem',
+                                        color: active ? 'white' : 'var(--medium-gray)',
+                                    }}>{i + 1}</span>
+                                    {step}
+                                </div>
+                            );
+                        })}
                     </div>
 
-                    {/* STEP 1: Profile selection */}
-                    {!selected && (
+                    {/* STEP 1: Grille de profils */}
+                    {!selectedId && (
                         <div id="profile-grid" style={{ opacity: animating ? 0 : 1, transform: animating ? 'translateY(20px)' : 'none', transition: 'all 0.3s ease' }}>
                             <div style={{ textAlign: 'center', marginBottom: 40 }}>
                                 <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', color: 'var(--dark)', marginBottom: 12 }}>
-                                    Quel sportif êtes-vous ?
+                                    {rp?.stepIntroTitle || 'Quel sportif êtes-vous ?'}
                                 </h2>
                                 <p style={{ color: 'var(--medium-gray)', fontSize: '1.1rem', maxWidth: 600, margin: '0 auto' }}>
-                                    Sélectionnez votre profil pour découvrir les activités, horaires et tarifs adaptés.
+                                    {rp?.stepIntroText || 'Sélectionnez votre profil pour découvrir les activités, horaires et tarifs adaptés.'}
                                 </p>
                             </div>
 
                             <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
                                 gap: 20,
-                                maxWidth: 1000,
-                                margin: '0 auto',
                             }}>
-                                {PROFILES.map(profile => (
+                                {profiles.map((profile) => (
                                     <button
                                         key={profile.id}
                                         onClick={() => handleSelect(profile.id)}
@@ -193,17 +133,17 @@ export default function RejoindrePage() {
                                             background: 'var(--white)',
                                             border: '2px solid #e2e8f0',
                                             borderRadius: 16,
-                                            padding: '32px 24px',
+                                            padding: 'clamp(20px, 3vw, 28px)',
                                             cursor: 'pointer',
                                             textAlign: 'left',
-                                            transition: 'all 0.3s ease',
+                                            transition: 'all 0.2s ease',
                                             position: 'relative',
                                             overflow: 'hidden',
                                         }}
                                         onMouseEnter={(e) => {
-                                            (e.currentTarget as HTMLButtonElement).style.borderColor = profile.color;
+                                            (e.currentTarget as HTMLButtonElement).style.borderColor = profile.color || '#3b82f6';
                                             (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-4px)';
-                                            (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 12px 24px ${profile.color}25`;
+                                            (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 12px 24px ${profile.color || '#3b82f6'}25`;
                                         }}
                                         onMouseLeave={(e) => {
                                             (e.currentTarget as HTMLButtonElement).style.borderColor = '#e2e8f0';
@@ -214,12 +154,10 @@ export default function RejoindrePage() {
                                         <div style={{
                                             position: 'absolute', top: 0, right: 0,
                                             width: 80, height: 80,
-                                            background: profile.gradient,
+                                            background: makeGradient(profile.color || '#3b82f6'),
                                             opacity: 0.08, borderRadius: '0 0 0 80px'
                                         }} />
-                                        <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>
-                                            {profile.emoji}
-                                        </div>
+                                        <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>{profile.emoji}</div>
                                         <h3 style={{ fontSize: '1.25rem', color: 'var(--dark)', marginBottom: 6, fontWeight: 700 }}>
                                             {profile.title}
                                         </h3>
@@ -229,8 +167,8 @@ export default function RejoindrePage() {
                                         <span style={{
                                             display: 'inline-block',
                                             padding: '4px 12px',
-                                            background: `${profile.color}15`,
-                                            color: profile.color,
+                                            background: `${profile.color || '#3b82f6'}15`,
+                                            color: profile.color || '#3b82f6',
                                             borderRadius: 99,
                                             fontSize: '0.8rem',
                                             fontWeight: 700,
@@ -238,7 +176,7 @@ export default function RejoindrePage() {
                                             {profile.age}
                                         </span>
                                         <div style={{
-                                            marginTop: 16, color: profile.color,
+                                            marginTop: 16, color: profile.color || '#3b82f6',
                                             fontSize: '0.9rem', fontWeight: 600,
                                             display: 'flex', alignItems: 'center', gap: 6
                                         }}>
@@ -250,10 +188,9 @@ export default function RejoindrePage() {
                         </div>
                     )}
 
-                    {/* STEP 2: Result */}
-                    {selected && selectedProfile && (
+                    {/* STEP 2: Résultat profil sélectionné */}
+                    {selectedId && selectedProfile && (
                         <div id="result-section" style={{ opacity: animating ? 0 : 1, transform: animating ? 'translateY(20px)' : 'none', transition: 'all 0.3s ease' }}>
-                            {/* Back button */}
                             <button
                                 onClick={handleBack}
                                 style={{
@@ -268,7 +205,7 @@ export default function RejoindrePage() {
 
                             {/* Profile header */}
                             <div style={{
-                                background: selectedProfile.gradient,
+                                background: gradient,
                                 borderRadius: 20,
                                 padding: 'clamp(24px, 5vw, 48px)',
                                 color: 'white',
@@ -294,32 +231,34 @@ export default function RejoindrePage() {
                             </div>
 
                             {/* Highlights */}
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                                gap: 16,
-                                marginBottom: 40,
-                            }}>
-                                {selectedProfile.highlights.map((h, i) => (
-                                    <div key={i} style={{
-                                        background: 'var(--white)',
-                                        borderRadius: 12,
-                                        padding: '20px 24px',
-                                        display: 'flex', alignItems: 'center', gap: 12,
-                                        border: '1px solid #e2e8f0',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                                    }}>
-                                        <span style={{
-                                            width: 36, height: 36, borderRadius: '50%',
-                                            background: `${selectedProfile.color}15`,
-                                            color: selectedProfile.color,
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontWeight: 800, fontSize: '0.85rem', flexShrink: 0,
-                                        }}>✓</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--dark)', fontSize: '0.95rem' }}>{h}</span>
-                                    </div>
-                                ))}
-                            </div>
+                            {(selectedProfile.highlights || []).length > 0 && (
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                    gap: 16,
+                                    marginBottom: 40,
+                                }}>
+                                    {selectedProfile.highlights.map((h, i) => (
+                                        <div key={i} style={{
+                                            background: 'var(--white)',
+                                            borderRadius: 12,
+                                            padding: '20px 24px',
+                                            display: 'flex', alignItems: 'center', gap: 12,
+                                            border: '1px solid #e2e8f0',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                        }}>
+                                            <span style={{
+                                                width: 36, height: 36, borderRadius: '50%',
+                                                background: `${selectedProfile.color || '#3b82f6'}15`,
+                                                color: selectedProfile.color || '#3b82f6',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontWeight: 800, fontSize: '0.85rem', flexShrink: 0,
+                                            }}>✓</span>
+                                            <span style={{ fontWeight: 600, color: 'var(--dark)', fontSize: '0.95rem' }}>{h}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
                             {/* Schedules */}
                             {sortedSchedules.length > 0 && (
@@ -374,10 +313,10 @@ export default function RejoindrePage() {
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
                             }}>
                                 <h3 style={{ fontSize: '1.5rem', color: 'var(--dark)', marginBottom: 12 }}>
-                                    Prêt à rejoindre l&apos;aventure ? {selectedProfile.icon}
+                                    {rp?.ctaTitle || "Prêt à rejoindre l'aventure ?"} {selectedProfile.icon}
                                 </h3>
                                 <p style={{ color: 'var(--medium-gray)', marginBottom: 32, maxWidth: 500, margin: '0 auto 32px', lineHeight: 1.7 }}>
-                                    Inscrivez-vous en ligne ou contactez-nous pour plus d&apos;informations. Une séance d&apos;essai gratuite est possible !
+                                    {rp?.ctaText || "Inscrivez-vous en ligne ou contactez-nous pour plus d'informations. Une séance d'essai gratuite est possible !"}
                                 </p>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
                                     {settings.inscriptionUrl && (
@@ -386,11 +325,7 @@ export default function RejoindrePage() {
                                             target="_blank"
                                             rel="noopener"
                                             className="btn btn-primary btn-lg"
-                                            style={{
-                                                background: selectedProfile.gradient,
-                                                border: 'none', fontSize: '1.05rem',
-                                                padding: '14px 32px',
-                                            }}
+                                            style={{ background: gradient, border: 'none', fontSize: '1.05rem', padding: '14px 32px' }}
                                         >
                                             ✅ M&apos;inscrire en ligne
                                         </a>
@@ -400,13 +335,10 @@ export default function RejoindrePage() {
                                         className="btn btn-lg"
                                         style={{
                                             background: 'var(--white)',
-                                            border: `2px solid ${selectedProfile.color}`,
-                                            color: selectedProfile.color,
-                                            fontSize: '1.05rem',
-                                            padding: '14px 32px',
-                                            fontWeight: 700,
-                                            borderRadius: 12,
-                                            textDecoration: 'none',
+                                            border: `2px solid ${selectedProfile.color || '#3b82f6'}`,
+                                            color: selectedProfile.color || '#3b82f6',
+                                            fontSize: '1.05rem', padding: '14px 32px',
+                                            fontWeight: 700, borderRadius: 12, textDecoration: 'none',
                                         }}
                                     >
                                         💰 Voir les tarifs
@@ -415,14 +347,9 @@ export default function RejoindrePage() {
                                         href="/contact"
                                         className="btn btn-lg"
                                         style={{
-                                            background: '#f8fafc',
-                                            border: '2px solid #e2e8f0',
-                                            color: 'var(--dark)',
-                                            fontSize: '1.05rem',
-                                            padding: '14px 32px',
-                                            fontWeight: 700,
-                                            borderRadius: 12,
-                                            textDecoration: 'none',
+                                            background: '#f8fafc', border: '2px solid #e2e8f0',
+                                            color: 'var(--dark)', fontSize: '1.05rem', padding: '14px 32px',
+                                            fontWeight: 700, borderRadius: 12, textDecoration: 'none',
                                         }}
                                     >
                                         📧 Nous contacter
@@ -434,22 +361,35 @@ export default function RejoindrePage() {
                 </div>
             </section>
 
-            {/* ═══════════════════════════════════════════════════ */}
-            {/* SECTION INSCRIPTION / RÉINSCRIPTION                */}
-            {/* ═══════════════════════════════════════════════════ */}
-            <InscriptionGuide settings={settings} />
+            {/* ═══ GUIDE D'INSCRIPTION ═══ */}
+            <InscriptionGuide
+                settings={settings}
+                inscriptionSteps={inscriptionSteps}
+                reinscriptionSteps={reinscriptionSteps}
+            />
 
             <Footer />
         </>
     );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════ */
 /*  COMPOSANT : Guide d'inscription / réinscription                      */
-/* ═══════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════ */
 
-function InscriptionGuide({ settings }: { settings: any }) {
+type Step = { title: string; text: string; note?: string };
+
+function InscriptionGuide({
+    settings,
+    inscriptionSteps,
+    reinscriptionSteps,
+}: {
+    settings: any;
+    inscriptionSteps: Step[];
+    reinscriptionSteps: Step[];
+}) {
     const [tab, setTab] = useState<'inscription' | 'reinscription'>('inscription');
+    const rp = settings.rejoindrePage;
 
     const stepStyle: React.CSSProperties = {
         background: 'var(--white)',
@@ -460,13 +400,6 @@ function InscriptionGuide({ settings }: { settings: any }) {
         boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
         position: 'relative',
     };
-
-    const stepNumberStyle = (color: string): React.CSSProperties => ({
-        width: 40, height: 40, borderRadius: '50%',
-        background: color, color: 'white',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontWeight: 800, fontSize: '1.1rem', flexShrink: 0,
-    });
 
     const noteStyle: React.CSSProperties = {
         background: '#fefce8', border: '1px solid #fde68a',
@@ -481,14 +414,16 @@ function InscriptionGuide({ settings }: { settings: any }) {
         transition: 'all 0.2s ease', marginTop: 12, marginRight: 12,
     };
 
+    const steps = tab === 'inscription' ? inscriptionSteps : reinscriptionSteps;
+
     return (
         <section id="guide-inscription" className="section" style={{ background: 'var(--white)' }}>
             <div className="container">
                 <div className="section-header" style={{ textAlign: 'center' }}>
                     <div className="section-label">Guide pas à pas</div>
-                    <h2 className="section-title">Comment s&apos;inscrire ?</h2>
+                    <h2 className="section-title">{rp?.guideTitle || "Comment s'inscrire ?"}</h2>
                     <p className="section-subtitle" style={{ maxWidth: 650, margin: '0 auto' }}>
-                        Suivez les étapes ci-dessous pour rejoindre l&apos;ACHV. Le processus est simple et rapide !
+                        {rp?.guideSubtitle || "Suivez les étapes ci-dessous pour rejoindre l'ACHV. Le processus est simple et rapide !"}
                     </p>
                 </div>
 
@@ -498,33 +433,32 @@ function InscriptionGuide({ settings }: { settings: any }) {
                         onClick={() => setTab('inscription')}
                         style={{
                             padding: '14px 28px', borderRadius: '12px 0 0 12px', border: '2px solid var(--primary)',
-                            background: tab === 'inscription' ? 'var(--primary)' : 'transparent',
+                            background: tab === 'inscription' ? 'var(--primary)' : 'white',
                             color: tab === 'inscription' ? 'white' : 'var(--primary)',
-                            fontWeight: 700, fontSize: '1rem', cursor: 'pointer',
-                            transition: 'all 0.2s ease',
+                            fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+                            transition: 'all 0.2s',
                         }}
                     >
-                        🆕 Première inscription
+                        🎉 Première inscription
                     </button>
                     <button
                         onClick={() => setTab('reinscription')}
                         style={{
                             padding: '14px 28px', borderRadius: '0 12px 12px 0', border: '2px solid var(--primary)',
-                            background: tab === 'reinscription' ? 'var(--primary)' : 'transparent',
+                            background: tab === 'reinscription' ? 'var(--primary)' : 'white',
                             color: tab === 'reinscription' ? 'white' : 'var(--primary)',
-                            fontWeight: 700, fontSize: '1rem', cursor: 'pointer',
-                            transition: 'all 0.2s ease',
+                            fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+                            transition: 'all 0.2s',
                         }}
                     >
                         🔄 Réinscription
                     </button>
                 </div>
 
-                {/* ==================== PREMIÈRE INSCRIPTION ==================== */}
-                {tab === 'inscription' && (
-                    <div style={{ maxWidth: 800, margin: '0 auto' }}>
+                <div style={{ maxWidth: 800, margin: '0 auto' }}>
 
-                        {/* Note importante */}
+                    {/* Note essai gratuit (inscription only) */}
+                    {tab === 'inscription' && (
                         <div style={{
                             background: 'linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%)',
                             borderRadius: 16, padding: 'clamp(20px, 4vw, 32px)', marginBottom: 32,
@@ -534,293 +468,117 @@ function InscriptionGuide({ settings }: { settings: any }) {
                                 💡 Vous n&apos;êtes pas encore inscrit à l&apos;ACHV ?
                             </p>
                             <p style={{ color: '#334155', lineHeight: 1.7 }}>
-                                Bonne nouvelle ! Vous pouvez faire <strong>2 séances d&apos;essai gratuites</strong> avant de vous décider.
-                                Il vous suffit de vous présenter à l&apos;heure du cours choisi sur le lieu d&apos;entraînement.
-                                Nos coachs vous accueilleront tout au long de l&apos;année et il n&apos;y a pas de date limite d&apos;inscription.
+                                {rp?.trialText || "Bonne nouvelle ! Vous pouvez faire 2 séances d'essai gratuites avant de vous décider."}
                             </p>
                         </div>
+                    )}
 
-                        {/* Étape 1 */}
-                        <div style={stepStyle}>
+                    {/* Étapes dynamiques */}
+                    {steps.map((step, i) => (
+                        <div key={i} style={stepStyle}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                                <div style={stepNumberStyle('#3b82f6')}>1</div>
+                                <div style={{
+                                    width: 40, height: 40, borderRadius: '50%',
+                                    background: STEP_COLORS[i % STEP_COLORS.length],
+                                    color: 'white',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontWeight: 800, fontSize: '1.1rem', flexShrink: 0,
+                                }}>{i + 1}</div>
                                 <div style={{ flex: 1 }}>
                                     <h3 style={{ fontSize: '1.2rem', color: 'var(--dark)', marginBottom: 8 }}>
-                                        Renseignez-vous sur nos activités, nos horaires et nos tarifs
+                                        {step.title}
                                     </h3>
-                                    <p style={{ color: '#64748b', lineHeight: 1.7 }}>
-                                        Vous trouverez dans la plaquette du club les horaires des activités et les tarifs d&apos;inscription.
+                                    <p style={{ color: '#64748b', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                                        {step.text}
                                     </p>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
-                                        <Link href="/activites" style={{ ...linkBtnStyle, background: '#eff6ff', color: '#2563eb' }}>
-                                            📋 Activités &amp; Planning
-                                        </Link>
-                                        <Link href="/tarifs" style={{ ...linkBtnStyle, background: '#fef3c7', color: '#d97706' }}>
-                                            💰 Tarifs
-                                        </Link>
-                                        {settings.plaquetteUrl && (
-                                            <a href={settings.plaquetteUrl} target="_blank" rel="noopener" style={{ ...linkBtnStyle, background: '#f0fdf4', color: '#16a34a' }}>
-                                                📄 Plaquette du club
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Étape 2 */}
-                        <div style={stepStyle}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                                <div style={stepNumberStyle('#f59e0b')}>2</div>
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '1.2rem', color: 'var(--dark)', marginBottom: 8 }}>
-                                        Pour les mineurs, remplissez le questionnaire de santé
-                                    </h3>
-                                    <p style={{ color: '#64748b', lineHeight: 1.7 }}>
-                                        Il faut répondre à un <strong>questionnaire sur la santé de l&apos;enfant</strong>.
-                                        Lisez-le attentivement avec votre enfant et complétez-le.
-                                    </p>
-                                    <div style={noteStyle}>
-                                        💡 Si vous avez répondu <strong>NON</strong> à toutes les questions, votre enfant n&apos;a pas besoin de certificat médical.
-                                        Sinon il faut que votre enfant aille voir votre médecin pour obtenir un certificat médical.
-                                    </div>
-                                    <a href="https://admin.ffa.fr/planning/questionnaire-sante-mineur.pdf" target="_blank" rel="noopener" style={{ ...linkBtnStyle, background: '#fef3c7', color: '#d97706' }}>
-                                        📝 Questionnaire de santé (mineur)
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Étape 3 */}
-                        <div style={stepStyle}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                                <div style={stepNumberStyle('#10b981')}>3</div>
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '1.2rem', color: 'var(--dark)', marginBottom: 8 }}>
-                                        Adhérez à l&apos;ACHV via l&apos;application MonClub
-                                    </h3>
-                                    <p style={{ color: '#64748b', lineHeight: 1.7 }}>
-                                        L&apos;adhésion se fait en ligne, via l&apos;application <strong>MonClub</strong>. Vous pouvez aussi payer en ligne si vous le souhaitez.
-                                    </p>
-                                    <p style={{ color: '#64748b', lineHeight: 1.7, marginTop: 8 }}>
-                                        Vous pouvez vous connecter à l&apos;application MonClub depuis votre PC ou depuis votre mobile.
-                                    </p>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 16, alignItems: 'center' }}>
-                                        {settings.inscriptionUrl && (
-                                            <a href={settings.inscriptionUrl} target="_blank" rel="noopener" style={{
-                                                ...linkBtnStyle,
-                                                background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)',
-                                                color: 'white', padding: '12px 24px',
-                                            }}>
-                                                🏅 Adhérer à l&apos;ACHV
-                                            </a>
-                                        )}
-                                    </div>
-                                    <div style={noteStyle}>
-                                        📱 Pour plus d&apos;informations sur l&apos;application MonClub et notamment savoir comment l&apos;utiliser depuis votre mobile, rendez-vous sur{' '}
-                                        <a href="https://monclub.ffa.fr" target="_blank" rel="noopener" style={{ color: '#2563eb', fontWeight: 600 }}>monclub.ffa.fr</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Étape 4 */}
-                        <div style={stepStyle}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                                <div style={stepNumberStyle('#8b5cf6')}>4</div>
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '1.2rem', color: 'var(--dark)', marginBottom: 8 }}>
-                                        Nous créons votre dossier dans la base de la FFA
-                                    </h3>
-
-                                    <div style={{ marginBottom: 20 }}>
-                                        <h4 style={{ color: '#1e293b', fontWeight: 700, marginBottom: 8, fontSize: '1rem' }}>Pour les majeurs :</h4>
-                                        <p style={{ color: '#64748b', lineHeight: 1.7 }}>
-                                            Vous recevrez un premier mail de la FFA dont l&apos;objet est <em>&quot;FFA – Voici accès à votre Espace Athlé&quot;</em>, envoyé par l&apos;adresse <strong>athletesffalt@ffa.fr</strong>.
-                                            Ce mail contient un bouton pour accéder à votre <strong>Espace Licencié</strong>. Il contient aussi votre identifiant et votre mot de passe. <strong>Il faut conserver ces informations.</strong>
-                                        </p>
-                                        <p style={{ color: '#64748b', lineHeight: 1.7, marginTop: 8 }}>
-                                            Dans l&apos;Espace Licencié, cliquez sur le bouton &quot;Prise de licence 2024-2025&quot; et suivez ce qui est expliqué sur &quot;Renouvellement et Parcours Prévention Santé&quot;.
-                                            Vous allez pouvoir compléter votre dossier, valider vos conditions d&apos;assurance et réaliser votre <strong>Parcours Prévention Santé</strong>.
-                                        </p>
-                                        <p style={{ color: '#64748b', lineHeight: 1.7, marginTop: 8 }}>
-                                            Quand vous aurez terminé ces opérations, côté club nous pourrons alors valider votre licence. Vous recevrez ensuite un second mail de la FFA qui contiendra votre licence en fichier PDF.
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <h4 style={{ color: '#1e293b', fontWeight: 700, marginBottom: 8, fontSize: '1rem' }}>Pour les mineurs :</h4>
-                                        <p style={{ color: '#64748b', lineHeight: 1.7 }}>
-                                            Vous recevrez immédiatement un mail de la FFA dans lequel il vous est demandé de valider les conditions d&apos;assurance de la FFA.
-                                            Lorsque vous aurez fait cela, vous recevrez un second mail contenant la licence de votre enfant dans un fichier PDF.
-                                        </p>
-                                    </div>
-
-                                    <div style={{
-                                        marginTop: 20, padding: '20px 24px',
-                                        background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
-                                        borderRadius: 12, border: '1px solid #bbf7d0',
-                                    }}>
-                                        <p style={{ color: '#166534', fontWeight: 700, fontSize: '1.05rem' }}>
-                                            🎉 Vous voilà membre de l&apos;ACHV : bienvenue !
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* ==================== RÉINSCRIPTION ==================== */}
-                {tab === 'reinscription' && (
-                    <div style={{ maxWidth: 800, margin: '0 auto' }}>
-
-                        {/* Étape 1 */}
-                        <div style={stepStyle}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                                <div style={stepNumberStyle('#3b82f6')}>1</div>
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '1.2rem', color: 'var(--dark)', marginBottom: 8 }}>
-                                        Renouvellement de la licence et Parcours Prévention Santé (PPS)
-                                    </h3>
-                                    <p style={{ color: '#64748b', lineHeight: 1.7 }}>
-                                        Vous avez reçu un message provenant de l&apos;adresse <strong>&quot;athletesffalt@ffa.fr&quot;</strong>{' '}
-                                        dont l&apos;objet contient <em>&quot;tu peux dès à présent renouveler ta licence pour la saison 2024-2025&quot;</em>.
-                                        Ce message vous explique comment procéder pour cette étape de renouvellement de la licence FFA.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Étape 2.1 */}
-                        <div style={stepStyle}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                                <div style={stepNumberStyle('#f59e0b')}>2</div>
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '1.2rem', color: 'var(--dark)', marginBottom: 8 }}>
-                                        Validez votre PPS (Parcours Prévention Santé)
-                                    </h3>
-
-                                    <div style={{
-                                        background: '#eff6ff', borderRadius: 12, padding: '16px 20px',
-                                        marginBottom: 16, border: '1px solid #bfdbfe',
-                                    }}>
-                                        <h4 style={{ color: '#1d4ed8', fontWeight: 700, marginBottom: 6 }}>👤 Pour les majeurs : validez votre PPS</h4>
-                                        <p style={{ color: '#334155', lineHeight: 1.7 }}>
-                                            Allez sur le site FFA pour réaliser votre{' '}
-                                            <a href="https://preventiondopage.ffa.fr" target="_blank" rel="noopener" style={{ color: '#2563eb', fontWeight: 600 }}>
-                                                &quot;Renouvellement et Parcours Prévention Santé&quot;
-                                            </a>.
-                                        </p>
-                                        <p style={{ color: '#334155', lineHeight: 1.7, marginTop: 8 }}>
-                                            Vous trouverez plus d&apos;informations sur le &quot;Parcours Prévention Santé&quot; dans la page{' '}
-                                            <a href="https://preventiondopage.ffa.fr" target="_blank" rel="noopener" style={{ color: '#2563eb', fontWeight: 600 }}>
-                                                Renouvellement et Parcours Prévention Santé
-                                            </a>{' '} de notre site.
-                                        </p>
-                                    </div>
-
-                                    <div style={{
-                                        background: '#fefce8', borderRadius: 12, padding: '16px 20px',
-                                        border: '1px solid #fde68a',
-                                    }}>
-                                        <h4 style={{ color: '#92400e', fontWeight: 700, marginBottom: 6 }}>🧒 Pour les mineurs : questionnaire de santé</h4>
-                                        <p style={{ color: '#78350f', lineHeight: 1.7 }}>
-                                            Allez sur le site de la FFA pour réaliser le renouvellement de la licence de votre enfant :{' '}
-                                            <a href="https://admin.ffa.fr/planning/questionnaire-sante-mineur.pdf" target="_blank" rel="noopener" style={{ color: '#d97706', fontWeight: 600 }}>
-                                                ouvrir le formulaire
-                                            </a>.
-                                        </p>
-                                        <p style={{ color: '#78350f', lineHeight: 1.7, marginTop: 8 }}>
-                                            Vous aurez à compléter un questionnaire de santé, lisez-le attentivement avec votre enfant et complétez-le.
-                                        </p>
+                                    {step.note && (
                                         <div style={noteStyle}>
-                                            💡 Si vous avez répondu <strong>NON</strong> à toutes les questions, votre enfant n&apos;a pas besoin de certificat médical.
-                                            Sinon il faut que votre enfant aille voir votre médecin pour obtenir un certificat médical.
+                                            💡 {step.note}
                                         </div>
-                                    </div>
+                                    )}
+
+                                    {/* Boutons spéciaux selon la position dans le flow */}
+                                    {tab === 'inscription' && i === 0 && (
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
+                                            <Link href="/activites" style={{ ...linkBtnStyle, background: '#eff6ff', color: '#2563eb' }}>
+                                                📋 Activités &amp; Planning
+                                            </Link>
+                                            <Link href="/tarifs" style={{ ...linkBtnStyle, background: '#fef3c7', color: '#d97706' }}>
+                                                💰 Tarifs
+                                            </Link>
+                                            {settings.plaquetteUrl && (
+                                                <a href={settings.plaquetteUrl} target="_blank" rel="noopener" style={{ ...linkBtnStyle, background: '#f0fdf4', color: '#16a34a' }}>
+                                                    📄 Plaquette du club
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
+                                    {tab === 'inscription' && i === 1 && (
+                                        <a href="https://admin.ffa.fr/planning/questionnaire-sante-mineur.pdf" target="_blank" rel="noopener" style={{ ...linkBtnStyle, background: '#fef3c7', color: '#d97706' }}>
+                                            📝 Questionnaire de santé (mineur)
+                                        </a>
+                                    )}
+                                    {tab === 'inscription' && i === 2 && settings.inscriptionUrl && (
+                                        <a href={settings.inscriptionUrl} target="_blank" rel="noopener" style={{
+                                            ...linkBtnStyle,
+                                            background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)',
+                                            color: 'white', padding: '12px 24px',
+                                        }}>
+                                            🏅 Adhérer à l&apos;ACHV
+                                        </a>
+                                    )}
+                                    {tab === 'reinscription' && i === 2 && settings.reinscriptionUrl && (
+                                        <a href={settings.reinscriptionUrl} target="_blank" rel="noopener" style={{
+                                            ...linkBtnStyle,
+                                            background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)',
+                                            color: 'white', padding: '12px 24px',
+                                        }}>
+                                            🏅 Accéder à MonClub
+                                        </a>
+                                    )}
+
+                                    {/* Message final (dernière étape) */}
+                                    {i === steps.length - 1 && (
+                                        <div style={{
+                                            marginTop: 20, padding: '20px 24px',
+                                            background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+                                            borderRadius: 12, border: '1px solid #bbf7d0',
+                                        }}>
+                                            <p style={{ color: '#166534', fontWeight: 700, fontSize: '1.05rem' }}>
+                                                {tab === 'inscription'
+                                                    ? "🎉 Vous voilà membre de l'ACHV : bienvenue !"
+                                                    : "🎉 Votre licence est renouvelée, à bientôt sur les pistes !"}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
+                    ))}
 
-                        {/* Étape 3 */}
-                        <div style={stepStyle}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                                <div style={stepNumberStyle('#10b981')}>3</div>
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '1.2rem', color: 'var(--dark)', marginBottom: 8 }}>
-                                        Adhérez à l&apos;ACHV via MonClub
-                                    </h3>
-                                    <p style={{ color: '#64748b', lineHeight: 1.7 }}>
-                                        L&apos;adhésion se fait en ligne, via l&apos;application <strong>MonClub</strong>. Vous pouvez aussi payer en ligne si vous le souhaitez.
-                                    </p>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 16, alignItems: 'center' }}>
-                                        {settings.reinscriptionUrl && (
-                                            <a href={settings.reinscriptionUrl} target="_blank" rel="noopener" style={{
-                                                ...linkBtnStyle,
-                                                background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)',
-                                                color: 'white', padding: '12px 24px',
-                                            }}>
-                                                🏅 Accéder à MonClub
-                                            </a>
-                                        )}
-                                    </div>
-                                    <div style={noteStyle}>
-                                        📱 Si vous souhaitez plus d&apos;informations sur l&apos;application MonClub et notamment savoir comment l&apos;utiliser depuis votre mobile, rendez-vous sur{' '}
-                                        <a href="https://monclub.ffa.fr" target="_blank" rel="noopener" style={{ color: '#2563eb', fontWeight: 600 }}>monclub.ffa.fr</a>
-                                    </div>
-                                </div>
-                            </div>
+                    {/* Contact CTA */}
+                    <div style={{
+                        textAlign: 'center', marginTop: 48,
+                        padding: '32px', background: '#f8fafc',
+                        borderRadius: 16, border: '1px solid #e2e8f0',
+                        maxWidth: 700, margin: '48px auto 0',
+                    }}>
+                        <p style={{ color: '#64748b', fontSize: '1rem', marginBottom: 16, lineHeight: 1.7 }}>
+                            Vous avez une question sur l&apos;inscription ou la réinscription ?
+                        </p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
+                            <a
+                                href={`mailto:${settings.contactEmailInscription || settings.contactEmail}`}
+                                style={{ ...linkBtnStyle, background: 'var(--primary)', color: 'white' }}
+                            >
+                                📧 {settings.contactEmailInscription || settings.contactEmail}
+                            </a>
+                            <Link href="/contact" style={{ ...linkBtnStyle, background: '#f1f5f9', color: '#334155' }}>
+                                💬 Page Contact
+                            </Link>
                         </div>
-
-                        {/* Étape 4 */}
-                        <div style={stepStyle}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                                <div style={stepNumberStyle('#8b5cf6')}>4</div>
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '1.2rem', color: 'var(--dark)', marginBottom: 8 }}>
-                                        Nous validons votre licence, que vous recevez par mail de la FFA
-                                    </h3>
-                                    <p style={{ color: '#64748b', lineHeight: 1.7 }}>
-                                        Dès que nous aurons validé votre dossier côté club, la FFA vous enverra un mail contenant votre licence au format PDF.
-                                    </p>
-                                    <div style={{
-                                        marginTop: 20, padding: '20px 24px',
-                                        background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
-                                        borderRadius: 12, border: '1px solid #bbf7d0',
-                                    }}>
-                                        <p style={{ color: '#166534', fontWeight: 700, fontSize: '1.05rem' }}>
-                                            🎉 Votre licence est renouvelée, à bientôt sur les pistes !
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Contact CTA */}
-                <div style={{
-                    textAlign: 'center', marginTop: 48,
-                    padding: '32px', background: '#f8fafc',
-                    borderRadius: 16, border: '1px solid #e2e8f0',
-                    maxWidth: 700, margin: '48px auto 0',
-                }}>
-                    <p style={{ color: '#64748b', fontSize: '1rem', marginBottom: 16, lineHeight: 1.7 }}>
-                        Vous avez une question sur l&apos;inscription ou la réinscription ?
-                    </p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-                        <a href={`mailto:${settings.contactEmailInscription || settings.contactEmail}`}
-                            style={{ ...linkBtnStyle, background: 'var(--primary)', color: 'white' }}
-                        >
-                            📧 {settings.contactEmailInscription || settings.contactEmail}
-                        </a>
-                        <Link href="/contact" style={{ ...linkBtnStyle, background: '#f1f5f9', color: '#334155' }}>
-                            💬 Page Contact
-                        </Link>
                     </div>
                 </div>
-
             </div>
         </section>
     );
