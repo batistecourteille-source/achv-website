@@ -139,8 +139,8 @@ export default function ActivitesPage() {
                         {sortedCats.map(cat => (
                             <div key={cat} style={{ marginBottom: 40, background: 'var(--white)', padding: 'clamp(12px, 3vw, 24px)', borderRadius: 16, border: '1px solid var(--light-gray)' }}>
                                 <h3 style={{ fontSize: '1.2rem', color: 'var(--primary)', marginBottom: 16, paddingBottom: 12, borderBottom: '2px solid var(--super-light-gray)' }}>{cat}</h3>
-                                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem', minWidth: 500 }}>
+                                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem', minWidth: 'min(500px, 100%)' }}>
                                         <thead>
                                             <tr style={{ textAlign: 'left', color: '#666', fontSize: '0.85em', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                                 <th style={{ padding: '12px 16px' }}>Discipline</th>
