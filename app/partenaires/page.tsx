@@ -63,7 +63,8 @@ export default function PartenairesPage() {
         if (submitBtn) submitBtn.disabled = true;
 
         try {
-            const res = await fetch("https://formsubmit.co/ajax/batiste.courteille@gmail.com", {
+            const targetEmail = settings.contactEmailPartenariat || settings.contactEmail || 'contact.achv@gmail.com';
+            const res = await fetch(`https://formsubmit.co/ajax/${targetEmail}`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',

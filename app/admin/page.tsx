@@ -1710,6 +1710,7 @@ function SettingsView() {
                     <div className="form-group"><label>Email bureau</label><input value={form.contactEmail} onChange={e => setForm({ ...form, contactEmail: e.target.value })} /></div>
                     <div className="form-group"><label>Email inscriptions</label><input value={form.contactEmailInscription} onChange={e => setForm({ ...form, contactEmailInscription: e.target.value })} /></div>
                     <div className="form-group"><label>Email président</label><input value={form.contactEmailPresident} onChange={e => setForm({ ...form, contactEmailPresident: e.target.value })} /></div>
+                    <div className="form-group"><label>Email partenariats (réception du formulaire)</label><input value={form.contactEmailPartenariat} onChange={e => setForm({ ...form, contactEmailPartenariat: e.target.value })} /></div>
                 </div>
             )}
 
