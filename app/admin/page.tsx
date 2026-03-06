@@ -1820,6 +1820,11 @@ function SettingsView() {
                                         </div>
                                     </div>
                                     <div className="form-group">
+                                        <label>Image de fond (Optionnel)</label>
+                                        <input value={p.imageBg || ''} onChange={e => updateProfile(i, { imageBg: e.target.value })} placeholder="URL de l'image (ex: /images/kid-bg.png)" />
+                                    </div>
+                                    </div>
+                                    <div className="form-group">
                                         <label>Description (affichée après sélection du profil)</label>
                                         <textarea value={p.description || ''} onChange={e => updateProfile(i, { description: e.target.value })} rows={3} placeholder="Décrivez ce profil..." />
                                     </div>
@@ -1829,11 +1834,11 @@ function SettingsView() {
                                     </div>
                                 </div>
                             ))}
-                            {profiles.length === 0 && <p className="wp-empty">Aucun profil. Ajoutez-en un avec le bouton ci-dessus.</p>}
-                        </div>
+                        {profiles.length === 0 && <p className="wp-empty">Aucun profil. Ajoutez-en un avec le bouton ci-dessus.</p>}
+                    </div >
 
-                        {/* GUIDE — TITRES GLOBAUX */}
-                        <div className="admin-card">
+                        {/* GUIDE — TITRES GLOBAUX */ }
+                        < div className = "admin-card" >
                             <h3>📋 Guide d&apos;inscription — Textes généraux</h3>
                             <div className="wp-form-row">
                                 <div className="form-group"><label>Titre du guide</label><input value={rp.guideTitle || ''} onChange={e => setRp({ guideTitle: e.target.value })} placeholder="Comment s'inscrire ?" /></div>
@@ -1843,52 +1848,57 @@ function SettingsView() {
                                 <label>Texte encadré « Essai gratuit »</label>
                                 <textarea value={rp.trialText || ''} onChange={e => setRp({ trialText: e.target.value })} rows={3} placeholder="Bonne nouvelle ! Vous pouvez faire 2 séances d'essai gratuites..." />
                             </div>
-                        </div>
+                        </div >
 
-                        {/* ÉTAPES — PREMIÈRE INSCRIPTION */}
-                        <div className="admin-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                                <h3 style={{ margin: 0 }}>🎉 Étapes — Première inscription</h3>
-                                <button className="wp-btn wp-btn-primary wp-btn-sm" onClick={() => addStep('inscriptionSteps')}>+ Ajouter une étape</button>
-                            </div>
-                            {inscriptionSteps.map((step: any, i: number) => (
-                                <div key={i} style={{ border: '2px solid #dbeafe', borderRadius: 12, padding: 20, marginBottom: 16, background: '#f8fafc', position: 'relative' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#3b82f6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
-                                        <strong style={{ color: '#1e40af' }}>Étape {i + 1}</strong>
-                                        <button className="wp-btn-icon wp-btn-icon-danger" style={{ marginLeft: 'auto' }} onClick={() => deleteStep('inscriptionSteps', i)}>🗑️</button>
-                                    </div>
-                                    <div className="form-group"><label>Titre</label><input value={step.title || ''} onChange={e => updateStep('inscriptionSteps', i, { title: e.target.value })} placeholder="Titre de l'étape..." /></div>
-                                    <div className="form-group"><label>Texte</label><textarea value={step.text || ''} onChange={e => updateStep('inscriptionSteps', i, { text: e.target.value })} rows={4} placeholder="Décrivez cette étape..." /></div>
-                                    <div className="form-group"><label>Note (optionnel — encadré jaune)</label><textarea value={step.note || ''} onChange={e => updateStep('inscriptionSteps', i, { note: e.target.value })} rows={2} placeholder="Info complémentaire..." /></div>
-                                </div>
-                            ))}
-                            {inscriptionSteps.length === 0 && <p className="wp-empty">Aucune étape. Ajoutez-en une.</p>}
-                        </div>
+        {/* ÉTAPES — PREMIÈRE INSCRIPTION */ }
+        < div className = "admin-card" >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h3 style={{ margin: 0 }}>🎉 Étapes — Première inscription</h3>
+                <button className="wp-btn wp-btn-primary wp-btn-sm" onClick={() => addStep('inscriptionSteps')}>+ Ajouter une étape</button>
+            </div>
+    {
+        inscriptionSteps.map((step: any, i: number) => (
+            <div key={i} style={{ border: '2px solid #dbeafe', borderRadius: 12, padding: 20, marginBottom: 16, background: '#f8fafc', position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#3b82f6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
+                    <strong style={{ color: '#1e40af' }}>Étape {i + 1}</strong>
+                    <button className="wp-btn-icon wp-btn-icon-danger" style={{ marginLeft: 'auto' }} onClick={() => deleteStep('inscriptionSteps', i)}>🗑️</button>
+                </div>
+                <div className="form-group"><label>Titre</label><input value={step.title || ''} onChange={e => updateStep('inscriptionSteps', i, { title: e.target.value })} placeholder="Titre de l'étape..." /></div>
+                <div className="form-group"><label>Texte</label><textarea value={step.text || ''} onChange={e => updateStep('inscriptionSteps', i, { text: e.target.value })} rows={4} placeholder="Décrivez cette étape..." /></div>
+                <div className="form-group"><label>Note (optionnel — encadré jaune)</label><textarea value={step.note || ''} onChange={e => updateStep('inscriptionSteps', i, { note: e.target.value })} rows={2} placeholder="Info complémentaire..." /></div>
+            </div>
+        ))
+    }
+    { inscriptionSteps.length === 0 && <p className="wp-empty">Aucune étape. Ajoutez-en une.</p> }
+                        </div >
 
-                        {/* ÉTAPES — RÉINSCRIPTION */}
-                        <div className="admin-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                                <h3 style={{ margin: 0 }}>🔄 Étapes — Réinscription</h3>
-                                <button className="wp-btn wp-btn-primary wp-btn-sm" onClick={() => addStep('reinscriptionSteps')}>+ Ajouter une étape</button>
-                            </div>
-                            {reinscriptionSteps.map((step: any, i: number) => (
-                                <div key={i} style={{ border: '2px solid #d1fae5', borderRadius: 12, padding: 20, marginBottom: 16, background: '#f8fafc', position: 'relative' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#10b981', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
-                                        <strong style={{ color: '#065f46' }}>Étape {i + 1}</strong>
-                                        <button className="wp-btn-icon wp-btn-icon-danger" style={{ marginLeft: 'auto' }} onClick={() => deleteStep('reinscriptionSteps', i)}>🗑️</button>
-                                    </div>
-                                    <div className="form-group"><label>Titre</label><input value={step.title || ''} onChange={e => updateStep('reinscriptionSteps', i, { title: e.target.value })} placeholder="Titre de l'étape..." /></div>
-                                    <div className="form-group"><label>Texte</label><textarea value={step.text || ''} onChange={e => updateStep('reinscriptionSteps', i, { text: e.target.value })} rows={4} placeholder="Décrivez cette étape..." /></div>
-                                    <div className="form-group"><label>Note (optionnel — encadré jaune)</label><textarea value={step.note || ''} onChange={e => updateStep('reinscriptionSteps', i, { note: e.target.value })} rows={2} placeholder="Info complémentaire..." /></div>
-                                </div>
-                            ))}
-                            {reinscriptionSteps.length === 0 && <p className="wp-empty">Aucune étape. Ajoutez-en une.</p>}
-                        </div>
+        {/* ÉTAPES — RÉINSCRIPTION */ }
+        < div className = "admin-card" >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h3 style={{ margin: 0 }}>🔄 Étapes — Réinscription</h3>
+                <button className="wp-btn wp-btn-primary wp-btn-sm" onClick={() => addStep('reinscriptionSteps')}>+ Ajouter une étape</button>
+            </div>
+    {
+        reinscriptionSteps.map((step: any, i: number) => (
+            <div key={i} style={{ border: '2px solid #d1fae5', borderRadius: 12, padding: 20, marginBottom: 16, background: '#f8fafc', position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#10b981', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
+                    <strong style={{ color: '#065f46' }}>Étape {i + 1}</strong>
+                    <button className="wp-btn-icon wp-btn-icon-danger" style={{ marginLeft: 'auto' }} onClick={() => deleteStep('reinscriptionSteps', i)}>🗑️</button>
+                </div>
+                <div className="form-group"><label>Titre</label><input value={step.title || ''} onChange={e => updateStep('reinscriptionSteps', i, { title: e.target.value })} placeholder="Titre de l'étape..." /></div>
+                <div className="form-group"><label>Texte</label><textarea value={step.text || ''} onChange={e => updateStep('reinscriptionSteps', i, { text: e.target.value })} rows={4} placeholder="Décrivez cette étape..." /></div>
+                <div className="form-group"><label>Note (optionnel — encadré jaune)</label><textarea value={step.note || ''} onChange={e => updateStep('reinscriptionSteps', i, { note: e.target.value })} rows={2} placeholder="Info complémentaire..." /></div>
+            </div>
+        ))
+    }
+    { reinscriptionSteps.length === 0 && <p className="wp-empty">Aucune étape. Ajoutez-en une.</p> }
+                        </div >
 
-                        {/* Liens rapides */}
-                        <div className="admin-card" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+        {/* Liens rapides */ }
+        < div className = "admin-card" style = {{ background: '#f0fdf4', border: '1px solid #bbf7d0' }
+}>
                             <h3 style={{ color: '#166534' }}>💡 Liens utilisés automatiquement sur la page</h3>
                             <p className="form-hint">Ces liens sont configurés dans l&apos;onglet <strong>🔗 Liens</strong>.</p>
                             <ul style={{ margin: 0, paddingLeft: 20, color: '#374151', lineHeight: 1.8 }}>
@@ -1897,506 +1907,508 @@ function SettingsView() {
                                 <li><strong>Plaquette</strong> → Bouton &quot;📄 Plaquette du club&quot; (étape 1 du guide)</li>
                             </ul>
                             <button className="wp-btn wp-btn-sm" style={{ marginTop: 12 }} onClick={() => setActiveTab('links')}>→ Configurer les liens</button>
-                        </div>
+                        </div >
                     </>
                 );
-            })()}
+            }) ()}
 
-            {activeTab === 'social' && (
-                <>
-                    <div className="admin-card">
-                        <h3>Publications mises en avant (Page d&apos;accueil)</h3>
-                        <p className="form-hint" style={{ marginBottom: 16 }}>
-                            Ajoutez ci-dessous les <strong>liens</strong> vers vos publications sur les réseaux sociaux
-                            (Instagram, Facebook, YouTube, TikTok, LinkedIn). Elles défileront automatiquement sur la page d&apos;accueil.
-                        </p>
+{
+    activeTab === 'social' && (
+        <>
+            <div className="admin-card">
+                <h3>Publications mises en avant (Page d&apos;accueil)</h3>
+                <p className="form-hint" style={{ marginBottom: 16 }}>
+                    Ajoutez ci-dessous les <strong>liens</strong> vers vos publications sur les réseaux sociaux
+                    (Instagram, Facebook, YouTube, TikTok, LinkedIn). Elles défileront automatiquement sur la page d&apos;accueil.
+                </p>
 
-                        {(form.featuredPostUrls || []).map((url, i) => (
-                            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
-                                <span style={{ color: '#9ca3af', fontSize: '0.85rem', minWidth: 20 }}>{i + 1}.</span>
-                                <input
-                                    value={url}
-                                    onChange={e => {
-                                        const newUrls = [...(form.featuredPostUrls || [])];
-                                        newUrls[i] = e.target.value;
-                                        setForm({ ...form, featuredPostUrls: newUrls });
-                                    }}
-                                    placeholder="Collez le lien de la publication ici (ex: https://www.instagram.com/p/...)"
-                                    style={{ flex: 1, fontSize: '0.9rem' }}
-                                />
-                                <button
-                                    className="wp-btn-icon wp-btn-icon-danger"
-                                    title="Supprimer"
-                                    onClick={() => {
-                                        const newUrls = (form.featuredPostUrls || []).filter((_, idx) => idx !== i);
-                                        setForm({ ...form, featuredPostUrls: newUrls });
-                                    }}
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        ))}
+                {(form.featuredPostUrls || []).map((url, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+                        <span style={{ color: '#9ca3af', fontSize: '0.85rem', minWidth: 20 }}>{i + 1}.</span>
+                        <input
+                            value={url}
+                            onChange={e => {
+                                const newUrls = [...(form.featuredPostUrls || [])];
+                                newUrls[i] = e.target.value;
+                                setForm({ ...form, featuredPostUrls: newUrls });
+                            }}
+                            placeholder="Collez le lien de la publication ici (ex: https://www.instagram.com/p/...)"
+                            style={{ flex: 1, fontSize: '0.9rem' }}
+                        />
                         <button
-                            className="wp-btn wp-btn-sm"
-                            style={{ marginTop: 8 }}
-                            onClick={() => setForm({ ...form, featuredPostUrls: [...(form.featuredPostUrls || []), ''] })}
+                            className="wp-btn-icon wp-btn-icon-danger"
+                            title="Supprimer"
+                            onClick={() => {
+                                const newUrls = (form.featuredPostUrls || []).filter((_, idx) => idx !== i);
+                                setForm({ ...form, featuredPostUrls: newUrls });
+                            }}
                         >
-                            + Ajouter une publication
+                            ✕
                         </button>
+                    </div>
+                ))}
+                <button
+                    className="wp-btn wp-btn-sm"
+                    style={{ marginTop: 8 }}
+                    onClick={() => setForm({ ...form, featuredPostUrls: [...(form.featuredPostUrls || []), ''] })}
+                >
+                    + Ajouter une publication
+                </button>
 
-                        {/* Section Avancé — Import API */}
-                        <details style={{ marginTop: 24, borderTop: '1px solid #e5e7eb', paddingTop: 16 }}>
-                            <summary style={{ cursor: 'pointer', fontWeight: 600, color: '#6b7280', fontSize: '0.9rem', marginBottom: 12 }}>
-                                ⚙️ Import automatique (avancé — nécessite des clés API)
-                            </summary>
-                            <p className="form-hint" style={{ marginBottom: 16 }}>
-                                Ces outils permettent d&apos;importer automatiquement vos dernières publications depuis les réseaux sociaux.
-                                Ils nécessitent des clés API techniques. Contactez votre webmaster si vous avez besoin d&apos;aide.
-                            </p>
+                {/* Section Avancé — Import API */}
+                <details style={{ marginTop: 24, borderTop: '1px solid #e5e7eb', paddingTop: 16 }}>
+                    <summary style={{ cursor: 'pointer', fontWeight: 600, color: '#6b7280', fontSize: '0.9rem', marginBottom: 12 }}>
+                        ⚙️ Import automatique (avancé — nécessite des clés API)
+                    </summary>
+                    <p className="form-hint" style={{ marginBottom: 16 }}>
+                        Ces outils permettent d&apos;importer automatiquement vos dernières publications depuis les réseaux sociaux.
+                        Ils nécessitent des clés API techniques. Contactez votre webmaster si vous avez besoin d&apos;aide.
+                    </p>
 
-                            {/* Auto Import Section Instagram */}
-                            <div style={{ background: '#f0f9ff', padding: 16, borderRadius: 8, marginBottom: 20, border: '1px solid #bae6fd' }}>
-                                <h4 style={{ margin: '0 0 12px 0', color: '#0284c7', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <span style={{ fontSize: '1.2em' }}>⚡</span> Import Automatique Instagram
-                                </h4>
-                                <div className="form-group">
-                                    <label style={{ fontSize: '0.9rem' }}>Token d&apos;accès Instagram</label>
-                                    <input
-                                        value={form.instagramAccessToken || ''}
-                                        onChange={e => setForm({ ...form, instagramAccessToken: e.target.value })}
-                                        placeholder="Collez le token ici..."
-                                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
-                                    />
-                                </div>
-                                <button
-                                    className="wp-btn"
-                                    style={{ background: '#0ea5e9', color: 'white', width: '100%' }}
-                                    disabled={!form.instagramAccessToken}
-                                    onClick={async () => {
-                                        if (!form.instagramAccessToken) return;
-                                        const btn = document.getElementById('btn-insta-sync');
-                                        if (btn) btn.textContent = 'Chargement...';
+                    {/* Auto Import Section Instagram */}
+                    <div style={{ background: '#f0f9ff', padding: 16, borderRadius: 8, marginBottom: 20, border: '1px solid #bae6fd' }}>
+                        <h4 style={{ margin: '0 0 12px 0', color: '#0284c7', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: '1.2em' }}>⚡</span> Import Automatique Instagram
+                        </h4>
+                        <div className="form-group">
+                            <label style={{ fontSize: '0.9rem' }}>Token d&apos;accès Instagram</label>
+                            <input
+                                value={form.instagramAccessToken || ''}
+                                onChange={e => setForm({ ...form, instagramAccessToken: e.target.value })}
+                                placeholder="Collez le token ici..."
+                                style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                            />
+                        </div>
+                        <button
+                            className="wp-btn"
+                            style={{ background: '#0ea5e9', color: 'white', width: '100%' }}
+                            disabled={!form.instagramAccessToken}
+                            onClick={async () => {
+                                if (!form.instagramAccessToken) return;
+                                const btn = document.getElementById('btn-insta-sync');
+                                if (btn) btn.textContent = 'Chargement...';
 
-                                        try {
-                                            const res = await fetch(`https://graph.instagram.com/me/media?fields=id,permalink,media_url,media_type&access_token=${form.instagramAccessToken}&limit=5`);
-                                            const data = await res.json();
+                                try {
+                                    const res = await fetch(`https://graph.instagram.com/me/media?fields=id,permalink,media_url,media_type&access_token=${form.instagramAccessToken}&limit=5`);
+                                    const data = await res.json();
 
-                                            if (data.error) throw new Error(data.error.message);
+                                    if (data.error) throw new Error(data.error.message);
 
-                                            if (data.data && Array.isArray(data.data)) {
-                                                const newUrls = data.data.map((post: any) => post.permalink);
-                                                if (confirm(`Trouvé ${newUrls.length} posts. Voulez-vous remplacer la liste actuelle ?`)) {
-                                                    setForm({ ...form, featuredPostUrls: newUrls });
-                                                    setToast(`✓ ${newUrls.length} posts importés !`);
-                                                }
-                                            } else {
-                                                alert("Aucun post trouvé ou format inattendu.");
-                                            }
-                                        } catch (e: any) {
-                                            console.error(e);
-                                            alert(`Erreur : ${e.message}`);
-                                        } finally {
-                                            if (btn) btn.textContent = '🔄 Importer les 5 derniers posts';
+                                    if (data.data && Array.isArray(data.data)) {
+                                        const newUrls = data.data.map((post: any) => post.permalink);
+                                        if (confirm(`Trouvé ${newUrls.length} posts. Voulez-vous remplacer la liste actuelle ?`)) {
+                                            setForm({ ...form, featuredPostUrls: newUrls });
+                                            setToast(`✓ ${newUrls.length} posts importés !`);
                                         }
-                                    }}
-                                >
-                                    <span id="btn-insta-sync">🔄 Importer les 5 derniers posts</span>
-                                </button>
-                            </div>
-
-                            {/* Auto Import Section Facebook */}
-                            <div style={{ background: '#eff6ff', padding: 16, borderRadius: 8, marginBottom: 20, border: '1px solid #dbeafe' }}>
-                                <h4 style={{ margin: '0 0 12px 0', color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <span style={{ fontSize: '1.2em' }}>📘</span> Import Automatique Facebook
-                                </h4>
-                                <div className="form-group">
-                                    <label style={{ fontSize: '0.9rem' }}>ID de la Page Facebook</label>
-                                    <input
-                                        value={form.facebookPageId || ''}
-                                        onChange={e => setForm({ ...form, facebookPageId: e.target.value })}
-                                        placeholder="Ex: 1029384756..."
-                                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label style={{ fontSize: '0.9rem' }}>Token d&apos;accès Page Facebook</label>
-                                    <input
-                                        value={form.facebookAccessToken || ''}
-                                        onChange={e => setForm({ ...form, facebookAccessToken: e.target.value })}
-                                        placeholder="Collez le token ici..."
-                                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
-                                    />
-                                </div>
-                                <button
-                                    className="wp-btn"
-                                    style={{ background: '#2563eb', color: 'white', width: '100%' }}
-                                    disabled={!form.facebookAccessToken || !form.facebookPageId}
-                                    onClick={async () => {
-                                        if (!form.facebookAccessToken || !form.facebookPageId) return;
-                                        const btn = document.getElementById('btn-fb-sync');
-                                        if (btn) btn.textContent = 'Chargement...';
-
-                                        try {
-                                            const res = await fetch(`https://graph.facebook.com/v19.0/${form.facebookPageId}/posts?fields=permalink_url,message,full_picture&access_token=${form.facebookAccessToken}&limit=5`);
-                                            const data = await res.json();
-
-                                            if (data.error) throw new Error(data.error.message);
-
-                                            if (data.data && Array.isArray(data.data)) {
-                                                const newUrls = data.data.map((post: any) => post.permalink_url);
-                                                if (confirm(`Trouvé ${newUrls.length} posts Facebook. Voulez-vous les AJOUTER à la liste actuelle ?`)) {
-                                                    setForm({ ...form, featuredPostUrls: [...(form.featuredPostUrls || []), ...newUrls] });
-                                                    setToast(`✓ ${newUrls.length} posts ajoutés !`);
-                                                }
-                                            } else {
-                                                alert("Aucun post trouvé ou format inattendu.");
-                                            }
-                                        } catch (e: any) {
-                                            console.error(e);
-                                            alert(`Erreur : ${e.message}`);
-                                        } finally {
-                                            if (btn) btn.textContent = '🔄 Importer les 5 derniers posts';
-                                        }
-                                    }}
-                                >
-                                    <span id="btn-fb-sync">🔄 Importer les 5 derniers posts</span>
-                                </button>
-                            </div>
-
-                            {/* Auto Import Section YouTube */}
-                            <div style={{ background: '#fef2f2', padding: 16, borderRadius: 8, marginBottom: 20, border: '1px solid #fee2e2' }}>
-                                <h4 style={{ margin: '0 0 12px 0', color: '#b91c1c', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <span style={{ fontSize: '1.2em' }}>📺</span> Import Automatique YouTube
-                                </h4>
-                                <div className="form-group">
-                                    <label style={{ fontSize: '0.9rem' }}>ID de la Chaîne YouTube</label>
-                                    <input
-                                        value={form.youtubeChannelId || ''}
-                                        onChange={e => setForm({ ...form, youtubeChannelId: e.target.value })}
-                                        placeholder="UC-..."
-                                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label style={{ fontSize: '0.9rem' }}>Clé API YouTube</label>
-                                    <input
-                                        value={form.youtubeApiKey || ''}
-                                        onChange={e => setForm({ ...form, youtubeApiKey: e.target.value })}
-                                        placeholder="Collez la clé ici..."
-                                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
-                                    />
-                                </div>
-                                <button
-                                    className="wp-btn"
-                                    style={{ background: '#dc2626', color: 'white', width: '100%' }}
-                                    disabled={!form.youtubeApiKey || !form.youtubeChannelId}
-                                    onClick={async () => {
-                                        if (!form.youtubeApiKey || !form.youtubeChannelId) return;
-                                        const btn = document.getElementById('btn-yt-sync');
-                                        if (btn) btn.textContent = 'Chargement...';
-
-                                        try {
-                                            const res = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${form.youtubeApiKey}&channelId=${form.youtubeChannelId}&part=snippet,id&order=date&maxResults=5&type=video`);
-                                            const data = await res.json();
-
-                                            if (data.error) throw new Error(data.error.message);
-
-                                            if (data.items && Array.isArray(data.items)) {
-                                                const newUrls = data.items.map((item: any) => `https://www.youtube.com/watch?v=${item.id.videoId}`);
-                                                if (confirm(`Trouvé ${newUrls.length} vidéos. Voulez-vous les AJOUTER à la liste actuelle ?`)) {
-                                                    setForm({ ...form, featuredPostUrls: [...(form.featuredPostUrls || []), ...newUrls] });
-                                                    setToast(`✓ ${newUrls.length} vidéos ajoutées !`);
-                                                }
-                                            } else {
-                                                alert("Aucune vidéo trouvée.");
-                                            }
-                                        } catch (e: any) {
-                                            console.error(e);
-                                            alert(`Erreur : ${e.message}`);
-                                        } finally {
-                                            if (btn) btn.textContent = '🔄 Importer les 5 dernières vidéos';
-                                        }
-                                    }}
-                                >
-                                    <span id="btn-yt-sync">🔄 Importer les 5 dernières vidéos</span>
-                                </button>
-                            </div>
-
-                            {/* TikTok Hint */}
-                            <div style={{ background: '#f0fff4', padding: 16, borderRadius: 8, marginBottom: 8, border: '1px solid #bbf7d0' }}>
-                                <h4 style={{ margin: '0 0 8px 0', color: '#166534', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <span style={{ fontSize: '1.2em' }}>🎵</span> TikTok
-                                </h4>
-                                <p className="form-hint" style={{ color: '#14532d', margin: 0 }}>
-                                    Pour ajouter un TikTok, copiez simplement le <strong>lien</strong> de la vidéo dans la liste des publications ci-dessus. Pas besoin de clé API !
-                                </p>
-                            </div>
-                        </details>
+                                    } else {
+                                        alert("Aucun post trouvé ou format inattendu.");
+                                    }
+                                } catch (e: any) {
+                                    console.error(e);
+                                    alert(`Erreur : ${e.message}`);
+                                } finally {
+                                    if (btn) btn.textContent = '🔄 Importer les 5 derniers posts';
+                                }
+                            }}
+                        >
+                            <span id="btn-insta-sync">🔄 Importer les 5 derniers posts</span>
+                        </button>
                     </div>
 
-                    <div className="admin-card">
-                        <h3>Liens Profils (Pied de page)</h3>
+                    {/* Auto Import Section Facebook */}
+                    <div style={{ background: '#eff6ff', padding: 16, borderRadius: 8, marginBottom: 20, border: '1px solid #dbeafe' }}>
+                        <h4 style={{ margin: '0 0 12px 0', color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: '1.2em' }}>📘</span> Import Automatique Facebook
+                        </h4>
                         <div className="form-group">
-                            <label>Facebook</label>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                <input value={form.facebookUrl} onChange={e => setForm({ ...form, facebookUrl: e.target.value })} placeholder="https://facebook.com/..." />
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                                    <input type="checkbox" checked={form.socialVisibility?.facebook} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, facebook: e.target.checked } })} />
-                                    Actif
-                                </label>
-                            </div>
+                            <label style={{ fontSize: '0.9rem' }}>ID de la Page Facebook</label>
+                            <input
+                                value={form.facebookPageId || ''}
+                                onChange={e => setForm({ ...form, facebookPageId: e.target.value })}
+                                placeholder="Ex: 1029384756..."
+                                style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                            />
                         </div>
                         <div className="form-group">
-                            <label>Instagram</label>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                <input value={form.instagramUrl} onChange={e => setForm({ ...form, instagramUrl: e.target.value })} placeholder="https://instagram.com/..." />
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                                    <input type="checkbox" checked={form.socialVisibility?.instagram} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, instagram: e.target.checked } })} />
-                                    Actif
-                                </label>
-                            </div>
+                            <label style={{ fontSize: '0.9rem' }}>Token d&apos;accès Page Facebook</label>
+                            <input
+                                value={form.facebookAccessToken || ''}
+                                onChange={e => setForm({ ...form, facebookAccessToken: e.target.value })}
+                                placeholder="Collez le token ici..."
+                                style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                            />
                         </div>
-                        <div className="form-group">
-                            <label>LinkedIn</label>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                <input value={form.linkedinUrl} onChange={e => setForm({ ...form, linkedinUrl: e.target.value })} placeholder="https://linkedin.com/..." />
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                                    <input type="checkbox" checked={form.socialVisibility?.linkedin} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, linkedin: e.target.checked } })} />
-                                    Actif
-                                </label>
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label>YouTube</label>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                <input value={form.youtubeUrl} onChange={e => setForm({ ...form, youtubeUrl: e.target.value })} placeholder="https://youtube.com/..." />
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                                    <input type="checkbox" checked={form.socialVisibility?.youtube} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, youtube: e.target.checked } })} />
-                                    Actif
-                                </label>
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label>TikTok</label>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                <input value={form.tiktokUrl} onChange={e => setForm({ ...form, tiktokUrl: e.target.value })} placeholder="https://tiktok.com/@..." />
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                                    <input type="checkbox" checked={form.socialVisibility?.tiktok} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, tiktok: e.target.checked } })} />
-                                    Actif
-                                </label>
-                            </div>
-                        </div>
+                        <button
+                            className="wp-btn"
+                            style={{ background: '#2563eb', color: 'white', width: '100%' }}
+                            disabled={!form.facebookAccessToken || !form.facebookPageId}
+                            onClick={async () => {
+                                if (!form.facebookAccessToken || !form.facebookPageId) return;
+                                const btn = document.getElementById('btn-fb-sync');
+                                if (btn) btn.textContent = 'Chargement...';
+
+                                try {
+                                    const res = await fetch(`https://graph.facebook.com/v19.0/${form.facebookPageId}/posts?fields=permalink_url,message,full_picture&access_token=${form.facebookAccessToken}&limit=5`);
+                                    const data = await res.json();
+
+                                    if (data.error) throw new Error(data.error.message);
+
+                                    if (data.data && Array.isArray(data.data)) {
+                                        const newUrls = data.data.map((post: any) => post.permalink_url);
+                                        if (confirm(`Trouvé ${newUrls.length} posts Facebook. Voulez-vous les AJOUTER à la liste actuelle ?`)) {
+                                            setForm({ ...form, featuredPostUrls: [...(form.featuredPostUrls || []), ...newUrls] });
+                                            setToast(`✓ ${newUrls.length} posts ajoutés !`);
+                                        }
+                                    } else {
+                                        alert("Aucun post trouvé ou format inattendu.");
+                                    }
+                                } catch (e: any) {
+                                    console.error(e);
+                                    alert(`Erreur : ${e.message}`);
+                                } finally {
+                                    if (btn) btn.textContent = '🔄 Importer les 5 derniers posts';
+                                }
+                            }}
+                        >
+                            <span id="btn-fb-sync">🔄 Importer les 5 derniers posts</span>
+                        </button>
                     </div>
 
-                    <div className="admin-card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                            <h3>Fil d&apos;Actualité (Scroll manuel)</h3>
-                            <button
-                                className="wp-btn wp-btn-sm"
-                                style={{ background: '#f1f5f9', color: '#64748b' }}
-                                onClick={() => {
-                                    if (confirm("Réinitialiser le fil d'actualité avec les vrais derniers posts ? Cela supprimera vos modifications manuelles.")) {
-                                        localStorage.removeItem('social-posts');
-                                        window.location.reload();
+                    {/* Auto Import Section YouTube */}
+                    <div style={{ background: '#fef2f2', padding: 16, borderRadius: 8, marginBottom: 20, border: '1px solid #fee2e2' }}>
+                        <h4 style={{ margin: '0 0 12px 0', color: '#b91c1c', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: '1.2em' }}>📺</span> Import Automatique YouTube
+                        </h4>
+                        <div className="form-group">
+                            <label style={{ fontSize: '0.9rem' }}>ID de la Chaîne YouTube</label>
+                            <input
+                                value={form.youtubeChannelId || ''}
+                                onChange={e => setForm({ ...form, youtubeChannelId: e.target.value })}
+                                placeholder="UC-..."
+                                style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label style={{ fontSize: '0.9rem' }}>Clé API YouTube</label>
+                            <input
+                                value={form.youtubeApiKey || ''}
+                                onChange={e => setForm({ ...form, youtubeApiKey: e.target.value })}
+                                placeholder="Collez la clé ici..."
+                                style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                            />
+                        </div>
+                        <button
+                            className="wp-btn"
+                            style={{ background: '#dc2626', color: 'white', width: '100%' }}
+                            disabled={!form.youtubeApiKey || !form.youtubeChannelId}
+                            onClick={async () => {
+                                if (!form.youtubeApiKey || !form.youtubeChannelId) return;
+                                const btn = document.getElementById('btn-yt-sync');
+                                if (btn) btn.textContent = 'Chargement...';
+
+                                try {
+                                    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${form.youtubeApiKey}&channelId=${form.youtubeChannelId}&part=snippet,id&order=date&maxResults=5&type=video`);
+                                    const data = await res.json();
+
+                                    if (data.error) throw new Error(data.error.message);
+
+                                    if (data.items && Array.isArray(data.items)) {
+                                        const newUrls = data.items.map((item: any) => `https://www.youtube.com/watch?v=${item.id.videoId}`);
+                                        if (confirm(`Trouvé ${newUrls.length} vidéos. Voulez-vous les AJOUTER à la liste actuelle ?`)) {
+                                            setForm({ ...form, featuredPostUrls: [...(form.featuredPostUrls || []), ...newUrls] });
+                                            setToast(`✓ ${newUrls.length} vidéos ajoutées !`);
+                                        }
+                                    } else {
+                                        alert("Aucune vidéo trouvée.");
+                                    }
+                                } catch (e: any) {
+                                    console.error(e);
+                                    alert(`Erreur : ${e.message}`);
+                                } finally {
+                                    if (btn) btn.textContent = '🔄 Importer les 5 dernières vidéos';
+                                }
+                            }}
+                        >
+                            <span id="btn-yt-sync">🔄 Importer les 5 dernières vidéos</span>
+                        </button>
+                    </div>
+
+                    {/* TikTok Hint */}
+                    <div style={{ background: '#f0fff4', padding: 16, borderRadius: 8, marginBottom: 8, border: '1px solid #bbf7d0' }}>
+                        <h4 style={{ margin: '0 0 8px 0', color: '#166534', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: '1.2em' }}>🎵</span> TikTok
+                        </h4>
+                        <p className="form-hint" style={{ color: '#14532d', margin: 0 }}>
+                            Pour ajouter un TikTok, copiez simplement le <strong>lien</strong> de la vidéo dans la liste des publications ci-dessus. Pas besoin de clé API !
+                        </p>
+                    </div>
+                </details>
+            </div>
+
+            <div className="admin-card">
+                <h3>Liens Profils (Pied de page)</h3>
+                <div className="form-group">
+                    <label>Facebook</label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input value={form.facebookUrl} onChange={e => setForm({ ...form, facebookUrl: e.target.value })} placeholder="https://facebook.com/..." />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                            <input type="checkbox" checked={form.socialVisibility?.facebook} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, facebook: e.target.checked } })} />
+                            Actif
+                        </label>
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label>Instagram</label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input value={form.instagramUrl} onChange={e => setForm({ ...form, instagramUrl: e.target.value })} placeholder="https://instagram.com/..." />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                            <input type="checkbox" checked={form.socialVisibility?.instagram} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, instagram: e.target.checked } })} />
+                            Actif
+                        </label>
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label>LinkedIn</label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input value={form.linkedinUrl} onChange={e => setForm({ ...form, linkedinUrl: e.target.value })} placeholder="https://linkedin.com/..." />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                            <input type="checkbox" checked={form.socialVisibility?.linkedin} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, linkedin: e.target.checked } })} />
+                            Actif
+                        </label>
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label>YouTube</label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input value={form.youtubeUrl} onChange={e => setForm({ ...form, youtubeUrl: e.target.value })} placeholder="https://youtube.com/..." />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                            <input type="checkbox" checked={form.socialVisibility?.youtube} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, youtube: e.target.checked } })} />
+                            Actif
+                        </label>
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label>TikTok</label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input value={form.tiktokUrl} onChange={e => setForm({ ...form, tiktokUrl: e.target.value })} placeholder="https://tiktok.com/@..." />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                            <input type="checkbox" checked={form.socialVisibility?.tiktok} onChange={e => setForm({ ...form, socialVisibility: { ...form.socialVisibility, tiktok: e.target.checked } })} />
+                            Actif
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div className="admin-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <h3>Fil d&apos;Actualité (Scroll manuel)</h3>
+                    <button
+                        className="wp-btn wp-btn-sm"
+                        style={{ background: '#f1f5f9', color: '#64748b' }}
+                        onClick={() => {
+                            if (confirm("Réinitialiser le fil d'actualité avec les vrais derniers posts ? Cela supprimera vos modifications manuelles.")) {
+                                localStorage.removeItem('social-posts');
+                                window.location.reload();
+                            }
+                        }}
+                    >
+                        🔄 Réinitialiser par défaut
+                    </button>
+                </div>
+                <p className="form-hint">Ajoutez ici les posts qui défileront sur la page d&apos;accueil.</p>
+
+                <div className="wp-form-row" style={{ alignItems: 'flex-start', marginBottom: 24, background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0', flexDirection: 'column' }}>
+                    <div style={{ width: '100%', display: 'flex', gap: '16px', alignItems: 'flex-end', marginBottom: '16px' }}>
+                        <div className="form-group" style={{ flex: 1 }}>
+                            <label>Lien du Post (URL) <span style={{ color: '#ef4444' }}>*</span></label>
+                            <input
+                                value={newPost.postUrl}
+                                onChange={e => setNewPost({ ...newPost, postUrl: e.target.value })}
+                                placeholder="https://..."
+                                onBlur={async () => {
+                                    if (!newPost.postUrl) return;
+                                    try {
+                                        const res = await fetch(`/api/fetch-metadata?url=${encodeURIComponent(newPost.postUrl)}`);
+                                        const data = await res.json();
+                                        if (data.error) throw new Error(data.error);
+
+                                        let platform = newPost.platform;
+                                        if (newPost.postUrl.includes('facebook')) platform = 'facebook';
+                                        else if (newPost.postUrl.includes('instagram')) platform = 'instagram';
+                                        else if (newPost.postUrl.includes('linkedin')) platform = 'linkedin';
+                                        else if (newPost.postUrl.includes('youtube') || newPost.postUrl.includes('youtu.be')) platform = 'youtube';
+
+                                        setNewPost(prev => ({
+                                            ...prev,
+                                            platform,
+                                            content: data.description || data.title || prev.content,
+                                            imageUrl: data.image || prev.imageUrl || '',
+                                            date: data.date || prev.date
+                                        }));
+                                        setToast('✓ Informations récupérées !');
+                                    } catch (e) {
+                                        console.error(e);
+                                        // Don't alert aggressively on blur, just log
                                     }
                                 }}
-                            >
-                                🔄 Réinitialiser par défaut
-                            </button>
+                            />
+                            <p className="form-hint">Collez le lien et cliquez à côté, nous tenterons de récupérer les infos automatiquement.</p>
                         </div>
-                        <p className="form-hint">Ajoutez ici les posts qui défileront sur la page d&apos;accueil.</p>
+                        <button
+                            className="wp-btn wp-btn-secondary"
+                            onClick={async () => {
+                                if (!newPost.postUrl) return alert('Veuillez entrer une URL');
+                                try {
+                                    setToast('⏳ Récupération...');
+                                    const res = await fetch(`/api/fetch-metadata?url=${encodeURIComponent(newPost.postUrl)}`);
+                                    const data = await res.json();
+                                    if (data.error) throw new Error(data.error);
 
-                        <div className="wp-form-row" style={{ alignItems: 'flex-start', marginBottom: 24, background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0', flexDirection: 'column' }}>
-                            <div style={{ width: '100%', display: 'flex', gap: '16px', alignItems: 'flex-end', marginBottom: '16px' }}>
-                                <div className="form-group" style={{ flex: 1 }}>
-                                    <label>Lien du Post (URL) <span style={{ color: '#ef4444' }}>*</span></label>
-                                    <input
-                                        value={newPost.postUrl}
-                                        onChange={e => setNewPost({ ...newPost, postUrl: e.target.value })}
-                                        placeholder="https://..."
-                                        onBlur={async () => {
-                                            if (!newPost.postUrl) return;
+                                    let platform = newPost.platform;
+                                    if (newPost.postUrl.includes('facebook')) platform = 'facebook';
+                                    else if (newPost.postUrl.includes('instagram')) platform = 'instagram';
+                                    else if (newPost.postUrl.includes('linkedin')) platform = 'linkedin';
+                                    else if (newPost.postUrl.includes('youtube') || newPost.postUrl.includes('youtu.be')) platform = 'youtube';
+
+                                    setNewPost(prev => ({
+                                        ...prev,
+                                        platform,
+                                        content: data.description || data.title || '',
+                                        imageUrl: data.image || '/img/placeholder-social.jpg',
+                                        date: data.date || prev.date
+                                    }));
+                                    setToast('✓ Informations récupérées !');
+                                } catch (e) {
+                                    alert("Impossible de récupérer les infos automatiquement. Merci de remplir les champs manuellement.");
+                                }
+                            }}
+                            style={{ height: '42px', marginBottom: '24px' }}
+                        >
+                            🪄 Remplir auto
+                        </button>
+                    </div>
+
+                    <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div className="form-group">
+                                <label>Plateforme</label>
+                                <select value={newPost.platform} onChange={e => setNewPost({ ...newPost, platform: e.target.value as any })}>
+                                    <option value="facebook">Facebook</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="youtube">YouTube</option>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Date de publication <span style={{ color: '#ef4444' }}>*</span></label>
+                                <input type="date" value={newPost.date} onChange={e => setNewPost({ ...newPost, date: e.target.value })} required />
+                                <p className="form-hint">Sert à trier les posts du plus récent au plus ancien.</p>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label>Image du post</label>
+                            <ImageUpload
+                                value={newPost.imageUrl}
+                                onChange={v => setNewPost({ ...newPost, imageUrl: v })}
+                                label=""
+                                hint="Uploadez l'image ou collez une URL ci-dessous"
+                                folder="social"
+                            />
+                            <input
+                                value={newPost.imageUrl}
+                                onChange={e => setNewPost({ ...newPost, imageUrl: e.target.value })}
+                                placeholder="Ou collez une URL d'image..."
+                                style={{ marginTop: 4, fontSize: '0.8rem' }}
+                            />
+                        </div>
+                        <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                            <label>Contenu du post</label>
+                            <textarea value={newPost.content} onChange={e => setNewPost({ ...newPost, content: e.target.value })} rows={3} placeholder="Texte du post..." />
+                        </div>
+                    </div>
+
+                    <button className="wp-btn wp-btn-primary" onClick={handleAddPost} disabled={!newPost.content || !newPost.postUrl} style={{ marginTop: '16px', alignSelf: 'flex-end' }}>+ Ajouter au flux</button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                    {socialPosts.map(post => (
+                        <div key={post.id} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 16, background: '#fff' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                                <span className={`wp-badge ${post.platform === 'linkedin' ? 'wp-badge-info' :
+                                    post.platform === 'instagram' ? 'wp-badge-warning' :
+                                        post.platform === 'youtube' ? 'wp-badge-danger' :
+                                            'wp-badge-primary'
+                                    }`} style={{ textTransform: 'capitalize' }}>
+                                    {post.platform}
+                                </span>
+                                <div className="wp-action-btns">
+                                    <button
+                                        className="wp-btn-icon"
+                                        title="Mettre à jour"
+                                        onClick={async () => {
                                             try {
-                                                const res = await fetch(`/api/fetch-metadata?url=${encodeURIComponent(newPost.postUrl)}`);
+                                                const btn = document.getElementById(`refresh-${post.id}`);
+                                                if (btn) btn.classList.add('spin');
+                                                const res = await fetch(`/api/fetch-metadata?url=${encodeURIComponent(post.postUrl)}`);
                                                 const data = await res.json();
                                                 if (data.error) throw new Error(data.error);
 
-                                                let platform = newPost.platform;
-                                                if (newPost.postUrl.includes('facebook')) platform = 'facebook';
-                                                else if (newPost.postUrl.includes('instagram')) platform = 'instagram';
-                                                else if (newPost.postUrl.includes('linkedin')) platform = 'linkedin';
-                                                else if (newPost.postUrl.includes('youtube') || newPost.postUrl.includes('youtu.be')) platform = 'youtube';
-
-                                                setNewPost(prev => ({
-                                                    ...prev,
-                                                    platform,
-                                                    content: data.description || data.title || prev.content,
-                                                    imageUrl: data.image || prev.imageUrl || '',
-                                                    date: data.date || prev.date
-                                                }));
-                                                setToast('✓ Informations récupérées !');
+                                                updateSocialPost(post.id, {
+                                                    content: data.description || data.title || post.content,
+                                                    imageUrl: data.image || post.imageUrl
+                                                });
+                                                setToast('✓ Post mis à jour !');
                                             } catch (e) {
                                                 console.error(e);
-                                                // Don't alert aggressively on blur, just log
+                                                setToast('❌ Erreur mise à jour');
+                                            } finally {
+                                                const btn = document.getElementById(`refresh-${post.id}`);
+                                                if (btn) btn.classList.remove('spin');
                                             }
                                         }}
-                                    />
-                                    <p className="form-hint">Collez le lien et cliquez à côté, nous tenterons de récupérer les infos automatiquement.</p>
-                                </div>
-                                <button
-                                    className="wp-btn wp-btn-secondary"
-                                    onClick={async () => {
-                                        if (!newPost.postUrl) return alert('Veuillez entrer une URL');
-                                        try {
-                                            setToast('⏳ Récupération...');
-                                            const res = await fetch(`/api/fetch-metadata?url=${encodeURIComponent(newPost.postUrl)}`);
-                                            const data = await res.json();
-                                            if (data.error) throw new Error(data.error);
-
-                                            let platform = newPost.platform;
-                                            if (newPost.postUrl.includes('facebook')) platform = 'facebook';
-                                            else if (newPost.postUrl.includes('instagram')) platform = 'instagram';
-                                            else if (newPost.postUrl.includes('linkedin')) platform = 'linkedin';
-                                            else if (newPost.postUrl.includes('youtube') || newPost.postUrl.includes('youtu.be')) platform = 'youtube';
-
-                                            setNewPost(prev => ({
-                                                ...prev,
-                                                platform,
-                                                content: data.description || data.title || '',
-                                                imageUrl: data.image || '/img/placeholder-social.jpg',
-                                                date: data.date || prev.date
-                                            }));
-                                            setToast('✓ Informations récupérées !');
-                                        } catch (e) {
-                                            alert("Impossible de récupérer les infos automatiquement. Merci de remplir les champs manuellement.");
-                                        }
-                                    }}
-                                    style={{ height: '42px', marginBottom: '24px' }}
-                                >
-                                    🪄 Remplir auto
-                                </button>
-                            </div>
-
-                            <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                    <div className="form-group">
-                                        <label>Plateforme</label>
-                                        <select value={newPost.platform} onChange={e => setNewPost({ ...newPost, platform: e.target.value as any })}>
-                                            <option value="facebook">Facebook</option>
-                                            <option value="instagram">Instagram</option>
-                                            <option value="linkedin">LinkedIn</option>
-                                            <option value="youtube">YouTube</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Date de publication <span style={{ color: '#ef4444' }}>*</span></label>
-                                        <input type="date" value={newPost.date} onChange={e => setNewPost({ ...newPost, date: e.target.value })} required />
-                                        <p className="form-hint">Sert à trier les posts du plus récent au plus ancien.</p>
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label>Image du post</label>
-                                    <ImageUpload
-                                        value={newPost.imageUrl}
-                                        onChange={v => setNewPost({ ...newPost, imageUrl: v })}
-                                        label=""
-                                        hint="Uploadez l'image ou collez une URL ci-dessous"
-                                        folder="social"
-                                    />
-                                    <input
-                                        value={newPost.imageUrl}
-                                        onChange={e => setNewPost({ ...newPost, imageUrl: e.target.value })}
-                                        placeholder="Ou collez une URL d'image..."
-                                        style={{ marginTop: 4, fontSize: '0.8rem' }}
-                                    />
-                                </div>
-                                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                    <label>Contenu du post</label>
-                                    <textarea value={newPost.content} onChange={e => setNewPost({ ...newPost, content: e.target.value })} rows={3} placeholder="Texte du post..." />
+                                    >
+                                        <span id={`refresh-${post.id}`}>🔄</span>
+                                    </button>
+                                    <button className="wp-btn-icon wp-btn-icon-danger" onClick={() => deleteSocialPost(post.id)}>✕</button>
                                 </div>
                             </div>
-
-                            <button className="wp-btn wp-btn-primary" onClick={handleAddPost} disabled={!newPost.content || !newPost.postUrl} style={{ marginTop: '16px', alignSelf: 'flex-end' }}>+ Ajouter au flux</button>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-                            {socialPosts.map(post => (
-                                <div key={post.id} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 16, background: '#fff' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                                        <span className={`wp-badge ${post.platform === 'linkedin' ? 'wp-badge-info' :
-                                            post.platform === 'instagram' ? 'wp-badge-warning' :
-                                                post.platform === 'youtube' ? 'wp-badge-danger' :
-                                                    'wp-badge-primary'
-                                            }`} style={{ textTransform: 'capitalize' }}>
-                                            {post.platform}
-                                        </span>
-                                        <div className="wp-action-btns">
-                                            <button
-                                                className="wp-btn-icon"
-                                                title="Mettre à jour"
-                                                onClick={async () => {
-                                                    try {
-                                                        const btn = document.getElementById(`refresh-${post.id}`);
-                                                        if (btn) btn.classList.add('spin');
-                                                        const res = await fetch(`/api/fetch-metadata?url=${encodeURIComponent(post.postUrl)}`);
-                                                        const data = await res.json();
-                                                        if (data.error) throw new Error(data.error);
-
-                                                        updateSocialPost(post.id, {
-                                                            content: data.description || data.title || post.content,
-                                                            imageUrl: data.image || post.imageUrl
-                                                        });
-                                                        setToast('✓ Post mis à jour !');
-                                                    } catch (e) {
-                                                        console.error(e);
-                                                        setToast('❌ Erreur mise à jour');
-                                                    } finally {
-                                                        const btn = document.getElementById(`refresh-${post.id}`);
-                                                        if (btn) btn.classList.remove('spin');
-                                                    }
-                                                }}
-                                            >
-                                                <span id={`refresh-${post.id}`}>🔄</span>
-                                            </button>
-                                            <button className="wp-btn-icon wp-btn-icon-danger" onClick={() => deleteSocialPost(post.id)}>✕</button>
-                                        </div>
-                                    </div>
-                                    <p style={{ fontSize: '0.9rem', marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.content}</p>
-                                    {post.platform === 'instagram' && post.postUrl ? (
-                                        <div style={{ pointerEvents: 'none', height: 200, overflow: 'hidden' }}>
-                                            <SocialPostEmbed url={post.postUrl} slim={true} />
-                                        </div>
-                                    ) : (
-                                        post.imageUrl && <img src={post.imageUrl} alt="preview" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }} />
-                                    )}
-                                    <input type="date" value={post.date || ''} onChange={e => updateSocialPost(post.id, { date: e.target.value })} style={{ marginTop: 8, padding: '4px', border: '1px solid #e2e8f0', borderRadius: '4px', color: '#64748b', fontSize: '0.8rem', outline: 'none', background: 'transparent' }} title="Modifier la date" />
+                            <p style={{ fontSize: '0.9rem', marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.content}</p>
+                            {post.platform === 'instagram' && post.postUrl ? (
+                                <div style={{ pointerEvents: 'none', height: 200, overflow: 'hidden' }}>
+                                    <SocialPostEmbed url={post.postUrl} slim={true} />
                                 </div>
-                            ))}
+                            ) : (
+                                post.imageUrl && <img src={post.imageUrl} alt="preview" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }} />
+                            )}
+                            <input type="date" value={post.date || ''} onChange={e => updateSocialPost(post.id, { date: e.target.value })} style={{ marginTop: 8, padding: '4px', border: '1px solid #e2e8f0', borderRadius: '4px', color: '#64748b', fontSize: '0.8rem', outline: 'none', background: 'transparent' }} title="Modifier la date" />
                         </div>
-                    </div>
-                </>
-            )}
+                    ))}
+                </div>
+            </div>
+        </>
+    )
+}
 
-            {
-                activeTab === 'ticker' && (
-                    <div className="admin-card">
-                        <h3>Bandeau défilant (Ticker)</h3>
-                        <p className="form-hint" style={{ marginBottom: 16 }}>Messages affichés dans le bandeau en haut de la page d&apos;accueil</p>
-                        {form.tickerMessages.map((msg, i) => (
-                            <div key={i} className="wp-ticker-item">
-                                <span>{msg}</span>
-                                <button className="wp-btn-icon wp-btn-icon-danger" onClick={() => removeTicker(i)}>✕</button>
-                            </div>
-                        ))}
-                        <div className="wp-ticker-add">
-                            <input value={tickerInput} onChange={e => setTickerInput(e.target.value)} placeholder="Nouveau message..." onKeyDown={e => e.key === 'Enter' && addTicker()} />
-                            <button className="wp-btn wp-btn-primary" onClick={addTicker}>+ Ajouter</button>
-                        </div>
-                    </div>
-                )
-            }
+{
+    activeTab === 'ticker' && (
+        <div className="admin-card">
+            <h3>Bandeau défilant (Ticker)</h3>
+            <p className="form-hint" style={{ marginBottom: 16 }}>Messages affichés dans le bandeau en haut de la page d&apos;accueil</p>
+            {form.tickerMessages.map((msg, i) => (
+                <div key={i} className="wp-ticker-item">
+                    <span>{msg}</span>
+                    <button className="wp-btn-icon wp-btn-icon-danger" onClick={() => removeTicker(i)}>✕</button>
+                </div>
+            ))}
+            <div className="wp-ticker-add">
+                <input value={tickerInput} onChange={e => setTickerInput(e.target.value)} placeholder="Nouveau message..." onKeyDown={e => e.key === 'Enter' && addTicker()} />
+                <button className="wp-btn wp-btn-primary" onClick={addTicker}>+ Ajouter</button>
+            </div>
+        </div>
+    )
+}
 
-            {toast && <Toast message={toast} onClose={() => setToast('')} />}
+{ toast && <Toast message={toast} onClose={() => setToast('')} /> }
         </>
     );
 }
