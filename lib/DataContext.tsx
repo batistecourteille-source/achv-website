@@ -247,6 +247,7 @@ export interface SiteSettings {
             description: string;
             highlights: string[];
             icon: string;
+            imageBg?: string;
         }>;
         inscriptionSteps: Array<{
             title: string;
@@ -500,7 +501,8 @@ const defaultSettings: SiteSettings = {
                 categories: ['Jeunes'],
                 description: "L'école d'athlétisme de l'ACHV accueille vos enfants dès 4 ans. Encadrés par des entraîneurs diplomés FFA, ils découvrent toutes les disciplines de l'athlétisme dans un cadre bienveillant et motivant.",
                 highlights: ['Encadrement diplomé FFA', 'Toutes les disciplines', 'Compétitions adaptées', 'Ambiance conviviale'],
-                icon: '🏃‍♂️'
+                icon: '🏃‍♂️',
+                imageBg: '/images/kid-bg.png'
             },
             {
                 id: 'coureur',
@@ -512,7 +514,8 @@ const defaultSettings: SiteSettings = {
                 categories: ['Adultes Hors-Stade'],
                 description: "Que vous soyez débutant ou confirmé, nos groupes de running et trail vous permettent de progresser à votre rythme. Sorties encadrées plusieurs fois par semaine, sur route et en nature.",
                 highlights: ['Tous niveaux acceptés', 'Groupes par niveau', 'Sorties nature & route', 'Préparation compétitions'],
-                icon: '🏅'
+                icon: '🏅',
+                imageBg: '/images/runner-bg.png'
             },
             {
                 id: 'piste',
@@ -524,7 +527,8 @@ const defaultSettings: SiteSettings = {
                 categories: ['Adultes Piste'],
                 description: "Pour les compétiteurs dans l'âme ! Entraînements structurés sur piste avec VMA, fractionné, technique de course, musculation spécifique.",
                 highlights: ['Entraînements structurés', 'Préparation compétitions', 'Musculation athlétisme', 'Suivi personnalisé'],
-                icon: '🏆'
+                icon: '🏆',
+                imageBg: '/images/stadium-bg.png'
             },
             {
                 id: 'marcheur',
@@ -536,7 +540,8 @@ const defaultSettings: SiteSettings = {
                 categories: ['Marche Nordique'],
                 description: "La marche nordique est bien plus qu'une simple promenade ! C'est un sport complet qui fait travailler 80% des muscles du corps. Nos groupes partent plusieurs fois par semaine dans les chemins autour de Noyal et Nouvoitou.",
                 highlights: ['Sport doux et complet', 'En pleine nature', 'Convivialité garantie', 'Matériel prêté aux débutants'],
-                icon: '🌿'
+                icon: '🌿',
+                imageBg: '/images/nordic-bg.png'
             },
             {
                 id: 'forme',
@@ -548,7 +553,8 @@ const defaultSettings: SiteSettings = {
                 categories: ['Forme & Santé'],
                 description: "Pas besoin de courir pour faire du sport à l'ACHV ! Nos cours de Pilates, renforcement musculaire et circuit training sont accessibles à tous. En salle ou en extérieur.",
                 highlights: ['Accessible à tous', 'Pas de course à pied', 'Cours en salle', 'Renforcement global'],
-                icon: '🧘'
+                icon: '🧘',
+                imageBg: '/images/fitness-bg.png'
             }
         ],
         inscriptionSteps: [

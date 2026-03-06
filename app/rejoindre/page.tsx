@@ -213,12 +213,24 @@ export default function RejoindrePage() {
                                 position: 'relative',
                                 overflow: 'hidden',
                             }}>
-                                <div style={{
-                                    position: 'absolute', top: -40, right: -40,
-                                    fontSize: '12rem', opacity: 0.1, lineHeight: 1,
-                                }}>
-                                    {selectedProfile.emoji}
-                                </div>
+                                {selectedProfile.imageBg ? (
+                                    <div style={{
+                                        position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
+                                        backgroundImage: `url(${selectedProfile.imageBg})`,
+                                        backgroundSize: 'contain',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right center',
+                                        opacity: 0.15,
+                                        mixBlendMode: 'overlay',
+                                    }} />
+                                ) : (
+                                    <div style={{
+                                        position: 'absolute', top: -40, right: -40,
+                                        fontSize: '12rem', opacity: 0.1, lineHeight: 1,
+                                    }}>
+                                        {selectedProfile.emoji}
+                                    </div>
+                                )}
                                 <div style={{ position: 'relative', zIndex: 1 }}>
                                     <div style={{ fontSize: '3rem', marginBottom: 12 }}>{selectedProfile.emoji}</div>
                                     <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', fontWeight: 800, marginBottom: 8 }}>
