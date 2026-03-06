@@ -23,6 +23,8 @@ export interface Article {
     images?: string[];
     published: boolean;
     city?: 'Noyal' | 'Nouvoitou' | 'Les deux';
+    isFeatured?: boolean; // Pour le style journal (A la une)
+    author?: string; // NOUVEAU : nom de l'auteur personnalisé
 }
 
 export interface Event {
@@ -730,7 +732,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 if (data.records) setRecordsState(data.records);
                 if (data.schedules) setSchedulesState(data.schedules);
                 if (data.pricing) setPricingState(data.pricing);
-                if (data.socialPosts) setSocialPostsState(data.socialPosts);
+                if (data.socialPosts) setSocialPostsState([...data.socialPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
                 if (data.settings) setSettingsState(mergeSettings(data.settings, defaultSettings));
             } else {
                 // Initialize Firestore with defaults if empty
@@ -803,7 +805,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const setRecords = (r: ClubRecord[]) => { setRecordsState(r); saveToFirestore('records', r); };
     const setSchedules = (s: ScheduleItem[]) => { setSchedulesState(s); saveToFirestore('schedules', s); };
     const setPricing = (p: PricingItem[]) => { setPricingState(p); saveToFirestore('pricing', p); };
-    const setSocialPosts = (p: SocialPost[]) => { setSocialPostsState(p); saveToFirestore('socialPosts', p); };
+    const setSocialPosts = (p: SocialPost[]) => {
+        const sorted = [...p].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setSocialPostsState(sorted);
+        saveToFirestore('socialPosts', sorted);
+    };
     const setSettings = (s: SiteSettings) => { setSettingsState(s); saveToFirestore('settings', s); };
 
     const addArticle = (a: Article) => setArticles([a, ...articles]);

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
 import { useData, Article, Event as Ev, TeamMember, Activity, Partner, CustomPage, Result, ClubRecord, ScheduleItem, PricingItem } from '@/lib/DataContext';
 import '@/app/admin.css';
+import SocialPostEmbed from '@/components/SocialPostEmbed';
 
 /* =============================================
    IMAGE UPLOAD — drag & drop + click
@@ -395,13 +396,13 @@ function ArticlesView() {
     const { articles, addArticle, updateArticle, deleteArticle } = useData();
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState<Article | null>(null);
-    const [form, setForm] = useState({ title: '', content: '', excerpt: '', date: '', category: '', image: '', images: [] as string[], published: true, city: 'Les deux' });
+    const [form, setForm] = useState({ title: '', content: '', excerpt: '', date: '', category: '', image: '', images: [] as string[], published: true, city: 'Les deux', isFeatured: false, author: '' });
     const [toast, setToast] = useState('');
     const [confirmId, setConfirmId] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
 
-    const openNew = () => { setEditing(null); setForm({ title: '', content: '', excerpt: '', date: new Date().toISOString().split('T')[0], category: 'Vie du club', image: '', images: [], published: true, city: 'Les deux' }); setShowModal(true); };
-    const openEdit = (a: Article) => { setEditing(a); setForm({ title: a.title, content: a.content, excerpt: a.excerpt, date: a.date, category: a.category, image: a.image || '', images: a.images || [], published: a.published, city: a.city || 'Les deux' }); setShowModal(true); };
+    const openNew = () => { setEditing(null); setForm({ title: '', content: '', excerpt: '', date: new Date().toISOString().split('T')[0], category: 'Vie du club', image: '', images: [], published: true, city: 'Les deux', isFeatured: false, author: '' }); setShowModal(true); };
+    const openEdit = (a: Article) => { setEditing(a); setForm({ title: a.title, content: a.content, excerpt: a.excerpt, date: a.date, category: a.category, image: a.image || '', images: a.images || [], published: a.published, city: a.city || 'Les deux', isFeatured: !!a.isFeatured, author: a.author || '' }); setShowModal(true); };
 
     const save = () => {
         if (!form.title.trim()) return;
@@ -439,7 +440,12 @@ function ArticlesView() {
                                 <td><strong className="wp-title-link" onClick={() => openEdit(a)}>{a.title}</strong></td>
                                 <td><span className="wp-category-tag">{a.category}</span></td>
                                 <td>{new Date(a.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                                <td><StatusBadge active={a.published} /></td>
+                                <td>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <StatusBadge active={a.published} />
+                                        {a.isFeatured && <span title="À la une" style={{ fontSize: '1.2rem' }}>⭐️</span>}
+                                    </div>
+                                </td>
                                 <td>
                                     <div className="wp-action-btns">
                                         <button className="wp-btn-icon" title="Modifier" onClick={() => openEdit(a)}>✏️</button>
@@ -458,6 +464,7 @@ function ArticlesView() {
                     <div className="wp-editor-layout">
                         <div className="wp-editor-main">
                             <div className="form-group"><label>Titre</label><input className="wp-input-lg" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Donnez un titre à votre article..." /></div>
+                            <div className="form-group"><label>Auteur</label><p className="form-hint">Laissez vide pour afficher "Par La Rédaction"</p><input value={form.author} onChange={e => setForm({ ...form, author: e.target.value })} placeholder="Ex: Jean Dupont" /></div>
                             <div className="form-group"><label>Contenu</label><RichTextArea value={form.content} onChange={v => setForm({ ...form, content: v })} placeholder="Rédigez le contenu de l'article ici..." /></div>
                             <div className="form-group"><label>Extrait</label><p className="form-hint">Un résumé court affiché dans les aperçus</p><textarea value={form.excerpt} onChange={e => setForm({ ...form, excerpt: e.target.value })} rows={2} placeholder="Résumé de l'article en une ou deux phrases..." /></div>
                         </div>
@@ -465,7 +472,8 @@ function ArticlesView() {
                             <div className="wp-sidebar-box">
                                 <h4>Publication</h4>
                                 <label className="wp-toggle-label"><input type="checkbox" checked={form.published} onChange={e => setForm({ ...form, published: e.target.checked })} /> Publié</label>
-                                <div className="form-group"><label>Date</label><input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
+                                <label className="wp-toggle-label" style={{ marginTop: 8 }}><input type="checkbox" checked={form.isFeatured} onChange={e => setForm({ ...form, isFeatured: e.target.checked })} /> ⭐️ À la une</label>
+                                <div className="form-group" style={{ marginTop: 12 }}><label>Date</label><input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
                             </div>
                             <div className="wp-sidebar-box">
                                 <h4>Catégorie</h4>
@@ -486,8 +494,8 @@ function ArticlesView() {
                                 </select>
                             </div>
                             <div className="wp-sidebar-box">
-                                <h4>Image à la une</h4>
-                                <ImageUpload value={form.image} onChange={v => setForm({ ...form, image: v })} label="" hint="Apparaît en aperçu sur la liste des actualités" />
+                                <h4>Couverture de l'article (A la une)</h4>
+                                <ImageUpload value={form.image} onChange={v => setForm({ ...form, image: v })} label="" hint="L'image principale de votre article" />
                             </div>
                             <div className="wp-sidebar-box">
                                 <h4>📸 Galerie photos</h4>
@@ -1430,7 +1438,7 @@ function SettingsView() {
     const [activeTab, setActiveTab] = useState('general');
 
     // New state for adding social post
-    const [newPost, setNewPost] = useState({ platform: 'facebook', content: '', imageUrl: '', postUrl: '' });
+    const [newPost, setNewPost] = useState({ platform: 'facebook', content: '', imageUrl: '', postUrl: '', date: new Date().toISOString().split('T')[0] });
 
     const handleAddPost = () => {
         if (!newPost.content) return;
@@ -1440,9 +1448,9 @@ function SettingsView() {
             content: newPost.content,
             imageUrl: newPost.imageUrl,
             postUrl: newPost.postUrl,
-            date: new Date().toISOString().split('T')[0]
+            date: newPost.date || new Date().toISOString().split('T')[0]
         });
-        setNewPost({ platform: 'facebook', content: '', imageUrl: '', postUrl: '' });
+        setNewPost({ platform: 'facebook', content: '', imageUrl: '', postUrl: '', date: new Date().toISOString().split('T')[0] });
         setToast('Checking... Post ajouté !');
         setTimeout(() => setToast(''), 3000);
     };
@@ -2045,7 +2053,8 @@ function SettingsView() {
                                                     ...prev,
                                                     platform,
                                                     content: data.description || data.title || prev.content,
-                                                    imageUrl: data.image || prev.imageUrl || ''
+                                                    imageUrl: data.image || prev.imageUrl || '',
+                                                    date: data.date || prev.date
                                                 }));
                                                 setToast('✓ Informations récupérées !');
                                             } catch (e) {
@@ -2076,7 +2085,8 @@ function SettingsView() {
                                                 ...prev,
                                                 platform,
                                                 content: data.description || data.title || '',
-                                                imageUrl: data.image || '/img/placeholder-social.jpg'
+                                                imageUrl: data.image || '/img/placeholder-social.jpg',
+                                                date: data.date || prev.date
                                             }));
                                             setToast('✓ Informations récupérées !');
                                         } catch (e) {
@@ -2090,14 +2100,21 @@ function SettingsView() {
                             </div>
 
                             <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                <div className="form-group">
-                                    <label>Plateforme</label>
-                                    <select value={newPost.platform} onChange={e => setNewPost({ ...newPost, platform: e.target.value as any })}>
-                                        <option value="facebook">Facebook</option>
-                                        <option value="instagram">Instagram</option>
-                                        <option value="linkedin">LinkedIn</option>
-                                        <option value="youtube">YouTube</option>
-                                    </select>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div className="form-group">
+                                        <label>Plateforme</label>
+                                        <select value={newPost.platform} onChange={e => setNewPost({ ...newPost, platform: e.target.value as any })}>
+                                            <option value="facebook">Facebook</option>
+                                            <option value="instagram">Instagram</option>
+                                            <option value="linkedin">LinkedIn</option>
+                                            <option value="youtube">YouTube</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Date de publication <span style={{ color: '#ef4444' }}>*</span></label>
+                                        <input type="date" value={newPost.date} onChange={e => setNewPost({ ...newPost, date: e.target.value })} required />
+                                        <p className="form-hint">Sert à trier les posts du plus récent au plus ancien.</p>
+                                    </div>
                                 </div>
                                 <div className="form-group">
                                     <label>Image du post</label>
@@ -2167,8 +2184,14 @@ function SettingsView() {
                                         </div>
                                     </div>
                                     <p style={{ fontSize: '0.9rem', marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.content}</p>
-                                    {post.imageUrl && <img src={post.imageUrl} alt="preview" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }} />}
-                                    <small style={{ color: '#94a3b8', display: 'block', marginTop: 8 }}>{post.date}</small>
+                                    {post.platform === 'instagram' && post.postUrl ? (
+                                        <div style={{ pointerEvents: 'none', height: 200, overflow: 'hidden' }}>
+                                            <SocialPostEmbed url={post.postUrl} slim={true} />
+                                        </div>
+                                    ) : (
+                                        post.imageUrl && <img src={post.imageUrl} alt="preview" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }} />
+                                    )}
+                                    <input type="date" value={post.date || ''} onChange={e => updateSocialPost(post.id, { date: e.target.value })} style={{ marginTop: 8, padding: '4px', border: '1px solid #e2e8f0', borderRadius: '4px', color: '#64748b', fontSize: '0.8rem', outline: 'none', background: 'transparent' }} title="Modifier la date" />
                                 </div>
                             ))}
                         </div>
