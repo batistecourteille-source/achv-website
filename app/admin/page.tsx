@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
 import { useData, Article, Event as Ev, TeamMember, Activity, Partner, CustomPage, Result, ClubRecord, ScheduleItem, PricingItem } from '@/lib/DataContext';
 import '@/app/admin.css';
+import SocialPostEmbed from '@/components/SocialPostEmbed';
 
 /* =============================================
    IMAGE UPLOAD — drag & drop + click
@@ -395,13 +396,13 @@ function ArticlesView() {
     const { articles, addArticle, updateArticle, deleteArticle } = useData();
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState<Article | null>(null);
-    const [form, setForm] = useState({ title: '', content: '', excerpt: '', date: '', category: '', image: '', images: [] as string[], published: true, city: 'Les deux' });
+    const [form, setForm] = useState({ title: '', content: '', excerpt: '', date: '', category: '', image: '', images: [] as string[], published: true, city: 'Les deux', isFeatured: false, author: '' });
     const [toast, setToast] = useState('');
     const [confirmId, setConfirmId] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
 
-    const openNew = () => { setEditing(null); setForm({ title: '', content: '', excerpt: '', date: new Date().toISOString().split('T')[0], category: 'Vie du club', image: '', images: [], published: true, city: 'Les deux' }); setShowModal(true); };
-    const openEdit = (a: Article) => { setEditing(a); setForm({ title: a.title, content: a.content, excerpt: a.excerpt, date: a.date, category: a.category, image: a.image || '', images: a.images || [], published: a.published, city: a.city || 'Les deux' }); setShowModal(true); };
+    const openNew = () => { setEditing(null); setForm({ title: '', content: '', excerpt: '', date: new Date().toISOString().split('T')[0], category: 'Vie du club', image: '', images: [], published: true, city: 'Les deux', isFeatured: false, author: '' }); setShowModal(true); };
+    const openEdit = (a: Article) => { setEditing(a); setForm({ title: a.title, content: a.content, excerpt: a.excerpt, date: a.date, category: a.category, image: a.image || '', images: a.images || [], published: a.published, city: a.city || 'Les deux', isFeatured: !!a.isFeatured, author: a.author || '' }); setShowModal(true); };
 
     const save = () => {
         if (!form.title.trim()) return;
@@ -439,7 +440,12 @@ function ArticlesView() {
                                 <td><strong className="wp-title-link" onClick={() => openEdit(a)}>{a.title}</strong></td>
                                 <td><span className="wp-category-tag">{a.category}</span></td>
                                 <td>{new Date(a.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                                <td><StatusBadge active={a.published} /></td>
+                                <td>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <StatusBadge active={a.published} />
+                                        {a.isFeatured && <span title="À la une" style={{ fontSize: '1.2rem' }}>⭐️</span>}
+                                    </div>
+                                </td>
                                 <td>
                                     <div className="wp-action-btns">
                                         <button className="wp-btn-icon" title="Modifier" onClick={() => openEdit(a)}>✏️</button>
@@ -458,6 +464,7 @@ function ArticlesView() {
                     <div className="wp-editor-layout">
                         <div className="wp-editor-main">
                             <div className="form-group"><label>Titre</label><input className="wp-input-lg" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Donnez un titre à votre article..." /></div>
+                            <div className="form-group"><label>Auteur</label><p className="form-hint">Laissez vide pour afficher "Par La Rédaction"</p><input value={form.author} onChange={e => setForm({ ...form, author: e.target.value })} placeholder="Ex: Jean Dupont" /></div>
                             <div className="form-group"><label>Contenu</label><RichTextArea value={form.content} onChange={v => setForm({ ...form, content: v })} placeholder="Rédigez le contenu de l'article ici..." /></div>
                             <div className="form-group"><label>Extrait</label><p className="form-hint">Un résumé court affiché dans les aperçus</p><textarea value={form.excerpt} onChange={e => setForm({ ...form, excerpt: e.target.value })} rows={2} placeholder="Résumé de l'article en une ou deux phrases..." /></div>
                         </div>
@@ -465,7 +472,8 @@ function ArticlesView() {
                             <div className="wp-sidebar-box">
                                 <h4>Publication</h4>
                                 <label className="wp-toggle-label"><input type="checkbox" checked={form.published} onChange={e => setForm({ ...form, published: e.target.checked })} /> Publié</label>
-                                <div className="form-group"><label>Date</label><input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
+                                <label className="wp-toggle-label" style={{ marginTop: 8 }}><input type="checkbox" checked={form.isFeatured} onChange={e => setForm({ ...form, isFeatured: e.target.checked })} /> ⭐️ À la une</label>
+                                <div className="form-group" style={{ marginTop: 12 }}><label>Date</label><input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
                             </div>
                             <div className="wp-sidebar-box">
                                 <h4>Catégorie</h4>
@@ -486,8 +494,8 @@ function ArticlesView() {
                                 </select>
                             </div>
                             <div className="wp-sidebar-box">
-                                <h4>Image à la une</h4>
-                                <ImageUpload value={form.image} onChange={v => setForm({ ...form, image: v })} label="" hint="Apparaît en aperçu sur la liste des actualités" />
+                                <h4>Couverture de l'article (A la une)</h4>
+                                <ImageUpload value={form.image} onChange={v => setForm({ ...form, image: v })} label="" hint="L'image principale de votre article" />
                             </div>
                             <div className="wp-sidebar-box">
                                 <h4>📸 Galerie photos</h4>
@@ -2167,7 +2175,13 @@ function SettingsView() {
                                         </div>
                                     </div>
                                     <p style={{ fontSize: '0.9rem', marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.content}</p>
-                                    {post.imageUrl && <img src={post.imageUrl} alt="preview" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }} />}
+                                    {post.platform === 'instagram' && post.postUrl ? (
+                                        <div style={{ pointerEvents: 'none', height: 200, overflow: 'hidden' }}>
+                                            <SocialPostEmbed url={post.postUrl} slim={true} />
+                                        </div>
+                                    ) : (
+                                        post.imageUrl && <img src={post.imageUrl} alt="preview" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }} />
+                                    )}
                                     <small style={{ color: '#94a3b8', display: 'block', marginTop: 8 }}>{post.date}</small>
                                 </div>
                             ))}

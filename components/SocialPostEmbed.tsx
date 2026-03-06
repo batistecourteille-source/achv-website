@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import Script from 'next/script';
 import { useData } from '@/lib/DataContext';
 
-export default function SocialPostEmbed({ url }: { url?: string }) {
+export default function SocialPostEmbed({ url, slim = false }: { url?: string, slim?: boolean }) {
     const { settings } = useData();
     const postUrl = url || settings.instagramPostUrl;
 
@@ -24,7 +24,9 @@ export default function SocialPostEmbed({ url }: { url?: string }) {
         // If the user pasted a full HTML embed code (blockquote...)
         if (postUrl.includes('<blockquote')) {
             // Patch the HTML: convert /reel/ URLs to /p/ URLs to fix the "random reel" redirect issue
-            const safeHtml = postUrl.replace(/\/reel\//g, '/p/');
+            let safeHtml = postUrl.replace(/\/reel\//g, '/p/');
+            // Remove the caption parameter from raw html blocks
+            safeHtml = safeHtml.replace(/data-instgrm-captioned(=".*?")?/g, '');
             return (
                 <div className="instagram-embed-container" style={{ display: 'flex', justifyContent: 'center', margin: '40px 0' }}>
                     <div dangerouslySetInnerHTML={{ __html: safeHtml }} />
@@ -38,10 +40,9 @@ export default function SocialPostEmbed({ url }: { url?: string }) {
         const cleanUrl = postUrl.split('?')[0].replace(/\/reel\//, '/p/');
         const embedUrl = `${cleanUrl}?utm_source=ig_embed&utm_campaign=loading`;
         return (
-            <div className="instagram-embed-container" style={{ display: 'flex', justifyContent: 'center', margin: '40px 0' }}>
+            <div className="instagram-embed-container" style={{ display: 'flex', justifyContent: 'center', margin: slim ? '0' : '40px 0', width: '100%' }}>
                 <blockquote
                     className="instagram-media"
-                    data-instgrm-captioned
                     data-instgrm-permalink={embedUrl}
                     data-instgrm-version="14"
                     style={{

@@ -53,8 +53,13 @@ export async function GET(request: Request) {
                     if (mlRes.ok) {
                         const mkData = await mlRes.json();
                         if (mkData.data && mkData.data.image && mkData.data.image.url) {
-                            // Use proxy to avoid CORS/Referer issues with Instagram CDN
-                            image = `/api/image-proxy?url=${encodeURIComponent(mkData.data.image.url)}`;
+                            // Pour éviter de faire crasher la base de données avec du base64 énorme (qui bloque "Ajouter au flux"),
+                            // On ne garde PAS l'image si elle est en base64 pour Instagram (on utilisera l'intégration Iframe à la place)
+                            if (!mkData.data.image.url.startsWith('data:')) {
+                                image = `/api/image-proxy?url=${encodeURIComponent(mkData.data.image.url)}`;
+                            } else {
+                                image = ''; // Pas d'image base64 énorme
+                            }
                             if (mkData.data.description && !description) description = mkData.data.description;
                             if (mkData.data.title && !title) title = mkData.data.title;
                         }
@@ -64,7 +69,9 @@ export async function GET(request: Request) {
                 }
             } else {
                 // If scraping worked, ensure image is proxied too
-                image = `/api/image-proxy?url=${encodeURIComponent(image)}`;
+                if (!image.startsWith('data:')) {
+                    image = `/api/image-proxy?url=${encodeURIComponent(image)}`;
+                }
             }
         }
 

@@ -23,6 +23,8 @@ export interface Article {
     images?: string[];
     published: boolean;
     city?: 'Noyal' | 'Nouvoitou' | 'Les deux';
+    isFeatured?: boolean; // Pour le style journal (A la une)
+    author?: string; // NOUVEAU : nom de l'auteur personnalisé
 }
 
 export interface Event {
