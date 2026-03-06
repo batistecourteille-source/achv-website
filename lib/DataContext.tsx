@@ -121,6 +121,7 @@ export interface SiteSettings {
     contactEmail: string;
     contactEmailInscription: string;
     contactEmailPresident: string;
+    contactEmailPartenariat: string;
     facebookUrl: string;
     instagramUrl: string;
     linkedinUrl: string;
@@ -304,6 +305,7 @@ const defaultSettings: SiteSettings = {
     contactEmail: 'contact.achv@gmail.com',
     contactEmailInscription: 'inscription.achv@gmail.com',
     contactEmailPresident: 'president.achv@gmail.com',
+    contactEmailPartenariat: 'batiste.courteille@gmail.com',
     facebookUrl: 'https://www.facebook.com/groups/299811563560139/',
     instagramUrl: 'https://www.instagram.com/achv_athle/',
     linkedinUrl: '',
