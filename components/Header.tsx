@@ -99,7 +99,7 @@ export default function Header() {
 
                     <li><Link href="/contact" className={isActive('/contact') ? 'active' : ''} onClick={handleLinkClick}>Contact</Link></li>
                     <li><Link href="/partenaires" className={isActive('/partenaires') ? 'active' : ''} onClick={handleLinkClick}>Partenaires</Link></li>
-                    <li><a href={settings.inscriptionUrl} target="_blank" rel="noopener" className="nav-cta">Inscription</a></li>
+                    <li><Link href="/rejoindre" className="nav-cta" onClick={handleLinkClick}>Rejoindre le club</Link></li>
                 </nav>
                 <button
                     className={`mobile-menu-btn ${mobileOpen ? 'open' : ''}`}

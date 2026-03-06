@@ -1476,6 +1476,7 @@ function SettingsView() {
                     { id: 'agenda', label: '📅 Agenda' },
                     { id: 'results', label: '🏆 Résultats' },
                     { id: 'records', label: '⚡ Records' },
+                    { id: 'rejoindre', label: '🏃 Rejoindre' },
                     { id: 'partners', label: '🤝 Partenaires' },
                     { id: 'contact', label: '📧 Contact' },
                     { id: 'links', label: '🔗 Liens' },
@@ -1724,6 +1725,182 @@ function SettingsView() {
                     <div className="form-group"><label>Lien Boutique (Intersport)</label><input value={form.boutiqueUrl} onChange={e => setForm({ ...form, boutiqueUrl: e.target.value })} /></div>
                 </div>
             )}
+
+            {activeTab === 'rejoindre' && (() => {
+                const rp = form.rejoindrePage || {};
+                const profiles = rp.profiles || [];
+                const inscriptionSteps = rp.inscriptionSteps || [];
+                const reinscriptionSteps = rp.reinscriptionSteps || [];
+
+                const setRp = (patch: any) => setForm({ ...form, rejoindrePage: { ...rp, ...patch } });
+
+                const updateProfile = (i: number, patch: any) => {
+                    const newProfiles = [...profiles];
+                    newProfiles[i] = { ...newProfiles[i], ...patch };
+                    setRp({ profiles: newProfiles });
+                };
+                const deleteProfile = (i: number) => setRp({ profiles: profiles.filter((_: any, idx: number) => idx !== i) });
+                const addProfile = () => setRp({ profiles: [...profiles, { id: `profil${Date.now()}`, emoji: '⭐', title: 'Nouveau profil', subtitle: 'Description courte', age: 'Tous âges', color: '#6366f1', categories: [], description: 'Description du profil...', highlights: ['Point fort 1', 'Point fort 2'], icon: '🏅' }] });
+
+                const updateStep = (kind: 'inscriptionSteps' | 'reinscriptionSteps', i: number, patch: any) => {
+                    const arr = kind === 'inscriptionSteps' ? [...inscriptionSteps] : [...reinscriptionSteps];
+                    arr[i] = { ...arr[i], ...patch };
+                    setRp({ [kind]: arr });
+                };
+                const deleteStep = (kind: 'inscriptionSteps' | 'reinscriptionSteps', i: number) => {
+                    const arr = (kind === 'inscriptionSteps' ? inscriptionSteps : reinscriptionSteps).filter((_: any, idx: number) => idx !== i);
+                    setRp({ [kind]: arr });
+                };
+                const addStep = (kind: 'inscriptionSteps' | 'reinscriptionSteps') => {
+                    const arr = [...(kind === 'inscriptionSteps' ? inscriptionSteps : reinscriptionSteps), { title: 'Nouvelle étape', text: 'Décrivez cette étape...', note: '' }];
+                    setRp({ [kind]: arr });
+                };
+
+                return (
+                    <>
+                        {/* En-tête */}
+                        <div className="admin-card">
+                            <h3>🎯 En-tête de la page</h3>
+                            <div className="form-group"><label>Titre (Héro)</label><input value={rp.heroTitle || ''} onChange={e => setRp({ heroTitle: e.target.value })} placeholder="Rejoindre le club" /></div>
+                            <div className="form-group"><label>Sous-titre (Héro)</label><input value={rp.heroSubtitle || ''} onChange={e => setRp({ heroSubtitle: e.target.value })} placeholder="Trouvez l'activité qui vous correspond en quelques clics" /></div>
+                            <div className="wp-form-row">
+                                <div className="form-group"><label>Titre section profils</label><input value={rp.stepIntroTitle || ''} onChange={e => setRp({ stepIntroTitle: e.target.value })} placeholder="Quel sportif êtes-vous ?" /></div>
+                                <div className="form-group"><label>Sous-texte section profils</label><input value={rp.stepIntroText || ''} onChange={e => setRp({ stepIntroText: e.target.value })} placeholder="Sélectionnez votre profil..." /></div>
+                            </div>
+                            <div className="wp-form-row">
+                                <div className="form-group"><label>Titre CTA (après sélection profil)</label><input value={rp.ctaTitle || ''} onChange={e => setRp({ ctaTitle: e.target.value })} placeholder="Prêt à rejoindre l'aventure ?" /></div>
+                                <div className="form-group"><label>Texte CTA</label><input value={rp.ctaText || ''} onChange={e => setRp({ ctaText: e.target.value })} placeholder="Inscrivez-vous en ligne..." /></div>
+                            </div>
+                        </div>
+
+                        {/* PROFILS */}
+                        <div className="admin-card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                                <h3 style={{ margin: 0 }}>👤 Profils (cartes de sélection)</h3>
+                                <button className="wp-btn wp-btn-primary wp-btn-sm" onClick={addProfile}>+ Ajouter un profil</button>
+                            </div>
+                            <p className="form-hint" style={{ marginBottom: 20 }}>Le champ <strong>Catégories</strong> doit correspondre exactement aux catégories du planning (séparées par des virgules) pour afficher les horaires.</p>
+
+                            {profiles.map((p: any, i: number) => (
+                                <div key={i} style={{ border: '2px solid #e2e8f0', borderRadius: 12, padding: 20, marginBottom: 20, position: 'relative', background: '#fafafa' }}>
+                                    <button className="wp-btn-icon wp-btn-icon-danger" style={{ position: 'absolute', top: 12, right: 12 }} onClick={() => deleteProfile(i)}>🗑️</button>
+                                    <div className="wp-form-row">
+                                        <div className="form-group" style={{ flex: '0 0 80px' }}>
+                                            <label>Emoji</label>
+                                            <input value={p.emoji || ''} onChange={e => updateProfile(i, { emoji: e.target.value })} style={{ fontSize: '1.5rem', textAlign: 'center' }} />
+                                        </div>
+                                        <div className="form-group" style={{ flex: '0 0 80px' }}>
+                                            <label>Icône R.</label>
+                                            <input value={p.icon || ''} onChange={e => updateProfile(i, { icon: e.target.value })} style={{ fontSize: '1.2rem', textAlign: 'center' }} placeholder="🏅" />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Titre</label>
+                                            <input value={p.title || ''} onChange={e => updateProfile(i, { title: e.target.value })} placeholder="Ex: Coureur Adulte" />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Sous-titre</label>
+                                            <input value={p.subtitle || ''} onChange={e => updateProfile(i, { subtitle: e.target.value })} placeholder="Running, trail & route..." />
+                                        </div>
+                                    </div>
+                                    <div className="wp-form-row">
+                                        <div className="form-group">
+                                            <label>Tranche d&apos;âge</label>
+                                            <input value={p.age || ''} onChange={e => updateProfile(i, { age: e.target.value })} placeholder="16 ans et +" />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Couleur (hex)</label>
+                                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                <input type="color" value={p.color || '#3b82f6'} onChange={e => updateProfile(i, { color: e.target.value })} style={{ width: 44, height: 38, borderRadius: 6, border: '1px solid #cbd5e1', cursor: 'pointer', padding: 0 }} />
+                                                <input value={p.color || ''} onChange={e => updateProfile(i, { color: e.target.value })} placeholder="#3b82f6" style={{ flex: 1 }} />
+                                            </div>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Catégories planning</label>
+                                            <input value={(p.categories || []).join(', ')} onChange={e => updateProfile(i, { categories: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })} placeholder="Ex: Adultes Hors-Stade, Jeunes" />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Description (affichée après sélection du profil)</label>
+                                        <textarea value={p.description || ''} onChange={e => updateProfile(i, { description: e.target.value })} rows={3} placeholder="Décrivez ce profil..." />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Points forts — un par ligne</label>
+                                        <textarea value={(p.highlights || []).join('\n')} onChange={e => updateProfile(i, { highlights: e.target.value.split('\n').filter(Boolean) })} rows={4} placeholder={"Encadrement diplômé FFA\nToutes les disciplines\nAmbiance conviviale"} />
+                                    </div>
+                                </div>
+                            ))}
+                            {profiles.length === 0 && <p className="wp-empty">Aucun profil. Ajoutez-en un avec le bouton ci-dessus.</p>}
+                        </div>
+
+                        {/* GUIDE — TITRES GLOBAUX */}
+                        <div className="admin-card">
+                            <h3>📋 Guide d&apos;inscription — Textes généraux</h3>
+                            <div className="wp-form-row">
+                                <div className="form-group"><label>Titre du guide</label><input value={rp.guideTitle || ''} onChange={e => setRp({ guideTitle: e.target.value })} placeholder="Comment s'inscrire ?" /></div>
+                                <div className="form-group"><label>Sous-titre du guide</label><input value={rp.guideSubtitle || ''} onChange={e => setRp({ guideSubtitle: e.target.value })} placeholder="Suivez les étapes..." /></div>
+                            </div>
+                            <div className="form-group">
+                                <label>Texte encadré « Essai gratuit »</label>
+                                <textarea value={rp.trialText || ''} onChange={e => setRp({ trialText: e.target.value })} rows={3} placeholder="Bonne nouvelle ! Vous pouvez faire 2 séances d'essai gratuites..." />
+                            </div>
+                        </div>
+
+                        {/* ÉTAPES — PREMIÈRE INSCRIPTION */}
+                        <div className="admin-card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                                <h3 style={{ margin: 0 }}>🎉 Étapes — Première inscription</h3>
+                                <button className="wp-btn wp-btn-primary wp-btn-sm" onClick={() => addStep('inscriptionSteps')}>+ Ajouter une étape</button>
+                            </div>
+                            {inscriptionSteps.map((step: any, i: number) => (
+                                <div key={i} style={{ border: '2px solid #dbeafe', borderRadius: 12, padding: 20, marginBottom: 16, background: '#f8fafc', position: 'relative' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#3b82f6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
+                                        <strong style={{ color: '#1e40af' }}>Étape {i + 1}</strong>
+                                        <button className="wp-btn-icon wp-btn-icon-danger" style={{ marginLeft: 'auto' }} onClick={() => deleteStep('inscriptionSteps', i)}>🗑️</button>
+                                    </div>
+                                    <div className="form-group"><label>Titre</label><input value={step.title || ''} onChange={e => updateStep('inscriptionSteps', i, { title: e.target.value })} placeholder="Titre de l'étape..." /></div>
+                                    <div className="form-group"><label>Texte</label><textarea value={step.text || ''} onChange={e => updateStep('inscriptionSteps', i, { text: e.target.value })} rows={4} placeholder="Décrivez cette étape..." /></div>
+                                    <div className="form-group"><label>Note (optionnel — encadré jaune)</label><textarea value={step.note || ''} onChange={e => updateStep('inscriptionSteps', i, { note: e.target.value })} rows={2} placeholder="Info complémentaire..." /></div>
+                                </div>
+                            ))}
+                            {inscriptionSteps.length === 0 && <p className="wp-empty">Aucune étape. Ajoutez-en une.</p>}
+                        </div>
+
+                        {/* ÉTAPES — RÉINSCRIPTION */}
+                        <div className="admin-card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                                <h3 style={{ margin: 0 }}>🔄 Étapes — Réinscription</h3>
+                                <button className="wp-btn wp-btn-primary wp-btn-sm" onClick={() => addStep('reinscriptionSteps')}>+ Ajouter une étape</button>
+                            </div>
+                            {reinscriptionSteps.map((step: any, i: number) => (
+                                <div key={i} style={{ border: '2px solid #d1fae5', borderRadius: 12, padding: 20, marginBottom: 16, background: '#f8fafc', position: 'relative' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#10b981', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
+                                        <strong style={{ color: '#065f46' }}>Étape {i + 1}</strong>
+                                        <button className="wp-btn-icon wp-btn-icon-danger" style={{ marginLeft: 'auto' }} onClick={() => deleteStep('reinscriptionSteps', i)}>🗑️</button>
+                                    </div>
+                                    <div className="form-group"><label>Titre</label><input value={step.title || ''} onChange={e => updateStep('reinscriptionSteps', i, { title: e.target.value })} placeholder="Titre de l'étape..." /></div>
+                                    <div className="form-group"><label>Texte</label><textarea value={step.text || ''} onChange={e => updateStep('reinscriptionSteps', i, { text: e.target.value })} rows={4} placeholder="Décrivez cette étape..." /></div>
+                                    <div className="form-group"><label>Note (optionnel — encadré jaune)</label><textarea value={step.note || ''} onChange={e => updateStep('reinscriptionSteps', i, { note: e.target.value })} rows={2} placeholder="Info complémentaire..." /></div>
+                                </div>
+                            ))}
+                            {reinscriptionSteps.length === 0 && <p className="wp-empty">Aucune étape. Ajoutez-en une.</p>}
+                        </div>
+
+                        {/* Liens rapides */}
+                        <div className="admin-card" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                            <h3 style={{ color: '#166534' }}>💡 Liens utilisés automatiquement sur la page</h3>
+                            <p className="form-hint">Ces liens sont configurés dans l&apos;onglet <strong>🔗 Liens</strong>.</p>
+                            <ul style={{ margin: 0, paddingLeft: 20, color: '#374151', lineHeight: 1.8 }}>
+                                <li><strong>Inscription</strong> → Bouton &quot;✅ M&apos;inscrire en ligne&quot; (visible si renseigné)</li>
+                                <li><strong>Réinscription</strong> → Bouton &quot;🏅 Accéder à MonClub&quot; (visible si renseigné)</li>
+                                <li><strong>Plaquette</strong> → Bouton &quot;📄 Plaquette du club&quot; (étape 1 du guide)</li>
+                            </ul>
+                            <button className="wp-btn wp-btn-sm" style={{ marginTop: 12 }} onClick={() => setActiveTab('links')}>→ Configurer les liens</button>
+                        </div>
+                    </>
+                );
+            })()}
 
             {activeTab === 'social' && (
                 <>
