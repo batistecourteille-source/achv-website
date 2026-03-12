@@ -57,15 +57,19 @@ function HeroSection() {
             <div className="hero-content">
                 <div className="hero-badge">{settings.heroBadge}</div>
                 <h1>
-                    Bienvenue à l&apos;<span className="highlight">ACHV</span>
+                    {settings.heroTitle.includes('ACHV') ? (
+                        <>
+                            {settings.heroTitle.split('ACHV')[0]}<span className="highlight">ACHV</span>{settings.heroTitle.split('ACHV')[1]}
+                        </>
+                    ) : settings.heroTitle}
                 </h1>
                 <p className="hero-subtitle">{settings.heroSubtitle}</p>
                 <div className="hero-buttons">
                     <a href={settings.inscriptionUrl} target="_blank" rel="noopener" className="btn btn-primary">
-                        🚀 Rejoignez-nous
+                        {settings.heroCta1Text}
                     </a>
                     <Link href="/activites" className="btn btn-outline">
-                        Découvrir nos activités
+                        {settings.heroCta2Text}
                     </Link>
                 </div>
                 <div className="hero-stats">
@@ -74,11 +78,11 @@ function HeroSection() {
                         <div className="hero-stat-label">Licenciés</div>
                     </div>
                     <div className="hero-stat">
-                        <div className="hero-stat-number">5</div>
+                        <div className="hero-stat-number">{settings.disciplinesCount}</div>
                         <div className="hero-stat-label">Disciplines</div>
                     </div>
                     <div className="hero-stat">
-                        <div className="hero-stat-number">2</div>
+                        <div className="hero-stat-number">{settings.communesCount}</div>
                         <div className="hero-stat-label">Communes</div>
                     </div>
                 </div>
@@ -105,10 +109,14 @@ function AboutSection() {
                         <img src={settings.aboutImage || '/achv-team.jpg'} alt="Équipe ACHV" />
                     </div>
                     <div className="about-text">
-                        <div className="section-label">Qui sommes-nous</div>
-                        <h2>L&apos;<span className="highlight">ACHV</span>, votre club</h2>
+                        <div className="section-label">{settings.aboutLabel}</div>
+                        <h2>{settings.aboutTitle.includes('ACHV') ? (
+                            <>
+                                {settings.aboutTitle.split('ACHV')[0]}<span className="highlight">ACHV</span>{settings.aboutTitle.split('ACHV')[1]}
+                            </>
+                        ) : settings.aboutTitle}</h2>
                         <p>{settings.aboutText}</p>
-                        <Link href="/club" className="btn btn-primary">Découvrir le club</Link>
+                        <Link href="/club" className="btn btn-primary">{settings.aboutCtaText}</Link>
                     </div>
                 </div>
             </div>
@@ -125,9 +133,9 @@ function ValuesSection() {
         <section className="section section-alt" id="values">
             <div className="container">
                 <div className="section-header">
-                    <div className="section-label">Nos valeurs</div>
-                    <h2 className="section-title">Ce qui nous anime</h2>
-                    <p className="section-subtitle">Sport, partage et progression — les piliers de l&apos;ACHV</p>
+                    <div className="section-label">{settings.valuesLabel}</div>
+                    <h2 className="section-title">{settings.valuesTitle}</h2>
+                    <p className="section-subtitle">{settings.valuesSubtitle}</p>
                 </div>
                 <div className="values-grid">
                     {settings.clubValues.map((v, i) => (
@@ -147,14 +155,14 @@ function ValuesSection() {
    ACTIVITIES PREVIEW
    ============================================= */
 function ActivitiesPreview() {
-    const { activities } = useData();
+    const { activities, settings } = useData();
     return (
         <section className="section" id="activities-preview">
             <div className="container">
                 <div className="section-header">
-                    <div className="section-label">Nos activités</div>
-                    <h2 className="section-title">Trouve ta discipline</h2>
-                    <p className="section-subtitle">Piste, trail, route, cross et marche nordique — il y en a pour tout le monde</p>
+                    <div className="section-label">{settings.activitiesLabel}</div>
+                    <h2 className="section-title">{settings.activitiesTitle}</h2>
+                    <p className="section-subtitle">{settings.activitiesSubtitle}</p>
                 </div>
                 <div className="activities-grid">
                     {activities.slice(0, 4).map(a => (
@@ -179,14 +187,15 @@ function ActivitiesPreview() {
    NEWS PREVIEW
    ============================================= */
 function NewsPreview() {
-    const { articles } = useData();
+    const { articles, settings } = useData();
     const published = articles.filter(a => a.published).slice(0, 3);
     return (
         <section className="section section-alt" id="news-preview">
             <div className="container">
                 <div className="section-header">
-                    <div className="section-label">Actualités</div>
-                    <h2 className="section-title">Les dernières news</h2>
+                    <div className="section-label">{settings.newsLabel}</div>
+                    <h2 className="section-title">{settings.newsTitle}</h2>
+                    <p className="section-subtitle">{settings.newsSubtitle}</p>
                 </div>
                 <div className="news-grid">
                     {published.map(article => (
@@ -200,13 +209,13 @@ function NewsPreview() {
                                 <div className="news-card-date">{new Date(article.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
                                 <h3>{article.title}</h3>
                                 <p>{article.excerpt}</p>
-                                <span className="news-card-link">Lire la suite →</span>
+                                <span className="news-card-link">{settings.newsReadMoreText}</span>
                             </div>
                         </Link>
                     ))}
                 </div>
                 <div style={{ textAlign: 'center', marginTop: 48 }}>
-                    <Link href="/actualites" className="btn btn-primary">Toutes les actualités</Link>
+                    <Link href="/actualites" className="btn btn-primary">{settings.newsCtaText}</Link>
                 </div>
             </div>
         </section>
@@ -217,7 +226,7 @@ function NewsPreview() {
    EVENTS PREVIEW
    ============================================= */
 function EventsPreview() {
-    const { events } = useData();
+    const { events, settings } = useData();
     const months = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN', 'JUL', 'AOÛ', 'SEP', 'OCT', 'NOV', 'DÉC'];
 
     // Sort chronological: Nearest first
@@ -239,8 +248,8 @@ function EventsPreview() {
         <section className="section" id="events-preview">
             <div className="container">
                 <div className="section-header">
-                    <div className="section-label">Agenda</div>
-                    <h2 className="section-title">Prochains événements</h2>
+                    <div className="section-label">{settings.eventsLabel}</div>
+                    <h2 className="section-title">{settings.eventsTitle}</h2>
                 </div>
                 <div className="events-list">
                     {sorted.slice(0, 4).map(ev => {
@@ -324,7 +333,7 @@ function EventsPreview() {
                 </div>
                 <div style={{ textAlign: 'center', marginTop: 48 }}>
                     <Link href="/agenda" className="btn btn-outline" style={{ color: 'var(--dark)', borderColor: 'var(--primary)' }}>
-                        Voir tout l&apos;agenda
+                        {settings.eventsCtaText}
                     </Link>
                 </div>
             </div>
@@ -336,7 +345,7 @@ function EventsPreview() {
    SPONSORS Section — Premium showcase
    ============================================= */
 function SponsorsSection() {
-    const { partners } = useData();
+    const { partners, settings } = useData();
     if (partners.length === 0) return null;
     const gold = partners.filter(p => p.tier === 'gold');
     const silver = partners.filter(p => p.tier === 'silver');
@@ -346,9 +355,9 @@ function SponsorsSection() {
         <section className="section" id="sponsors" style={{ background: '#FAFAFA' }}>
             <div className="container">
                 <div className="section-header">
-                    <div className="section-label" style={{ background: 'rgba(230, 57, 70, 0.1)', color: '#E63946', border: 'none' }}>Nos partenaires</div>
-                    <h2 className="section-title">Ils nous soutiennent</h2>
-                    <p className="section-subtitle">Merci à nos partenaires qui rendent nos événements possibles</p>
+                    <div className="section-label" style={{ background: 'rgba(230, 57, 70, 0.1)', color: '#E63946', border: 'none' }}>{settings.partnersLabel}</div>
+                    <h2 className="section-title">{settings.partnersTitle}</h2>
+                    <p className="section-subtitle">{settings.partnersSubtitle}</p>
                 </div>
 
                 {gold.length > 0 && (
@@ -464,9 +473,9 @@ function SocialFeed() {
         <section className="section" id="social-feed">
             <div className="container">
                 <div className="section-header">
-                    <div className="section-label">Réseaux Sociaux</div>
-                    <h2 className="section-title">Suivez l&apos;actualité en direct</h2>
-                    <p className="section-subtitle">Retrouvez nos derniers posts Facebook, Instagram, LinkedIn et YouTube</p>
+                    <div className="section-label">{settings.socialLabel}</div>
+                    <h2 className="section-title">{settings.socialTitle}</h2>
+                    <p className="section-subtitle">{settings.socialSubtitle}</p>
                 </div>
 
                 <div style={{ marginBottom: 40, minHeight: 'clamp(300px, 50vw, 600px)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -495,7 +504,7 @@ function SocialFeed() {
 
                 <div style={{ textAlign: 'center', marginTop: 32 }}>
                     <Link href="/actualites?tab=social" className="btn btn-primary">
-                        Voir tous nos réseaux sociaux
+                        {settings.socialCtaText}
                     </Link>
                 </div>
             </div>

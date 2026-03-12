@@ -41,10 +41,10 @@ export default function Header() {
         <header className={`header ${scrolled || pathname !== '/' ? 'scrolled' : ''}`} id="main-header">
             <div className="nav-container">
                 <Link href="/" className="nav-logo" onClick={handleLinkClick}>
-                    <img src="/logo.png" alt="ACHV Logo" />
+                    <img src={settings.logo || '/logo.png'} alt="Logo" style={{ height: '48px', width: 'auto', display: 'block' }} />
                     <div className="nav-logo-text">
-                        {settings.clubName}
-                        <span>{settings.subtitle}</span>
+                        <span style={{ display: 'block', fontWeight: 700, fontSize: '1.2rem', color: 'white' }}>{settings.clubName}</span>
+                        <span style={{ display: 'block', fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>{settings.subtitle}</span>
                     </div>
                 </Link>
                 <nav className={`nav-links ${mobileOpen ? 'mobile-open' : ''}`} id="main-nav">
@@ -99,7 +99,7 @@ export default function Header() {
 
                     <li><Link href="/contact" className={isActive('/contact') ? 'active' : ''} onClick={handleLinkClick}>Contact</Link></li>
                     <li><Link href="/partenaires" className={isActive('/partenaires') ? 'active' : ''} onClick={handleLinkClick}>Partenaires</Link></li>
-                    <li><Link href="/rejoindre" className="nav-cta" onClick={handleLinkClick}>Rejoindre le club</Link></li>
+                    <li><Link href="/rejoindre" className="nav-cta" onClick={handleLinkClick}>{settings.headerCtaText}</Link></li>
                 </nav>
                 <button
                     className={`mobile-menu-btn ${mobileOpen ? 'open' : ''}`}
