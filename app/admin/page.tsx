@@ -1492,9 +1492,14 @@ function SettingsView() {
                     <h3>Informations du club</h3>
                     <div className="wp-form-row">
                         <div className="form-group"><label>Nom du club</label><input value={form.clubName} onChange={e => setForm({ ...form, clubName: e.target.value })} /></div>
-                        <div className="form-group"><label>Sous-titre</label><input value={form.subtitle} onChange={e => setForm({ ...form, subtitle: e.target.value })} /></div>
+                        <div className="form-group"><label>Sous-titre (Header/Footer)</label><input value={form.subtitle} onChange={e => setForm({ ...form, subtitle: e.target.value })} /></div>
                     </div>
+                    <div className="form-group"><label>Texte Bouton Header (CTA)</label><input value={form.headerCtaText} onChange={e => setForm({ ...form, headerCtaText: e.target.value })} /></div>
                     <div className="form-group"><label>Adresse</label><input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
+                    <div className="wp-form-row">
+                        <ImageUpload value={form.logo || ''} onChange={v => setForm({ ...form, logo: v })} label="Logo du club (ACHV)" hint="Apparaît dans le header et le footer" />
+                        <ImageUpload value={form.hbaLogo || ''} onChange={v => setForm({ ...form, hbaLogo: v })} label="Logo du club parent (HBA)" hint="Apparaît à côté du logo ACHV" />
+                    </div>
                 </div>
             )}
 
@@ -1504,12 +1509,20 @@ function SettingsView() {
                         <h3>Section Hero (bannière d&apos;accueil)</h3>
                         <div className="form-group"><label>Badge (haut de page)</label><input value={form.heroBadge} onChange={e => setForm({ ...form, heroBadge: e.target.value })} /></div>
                         <div className="form-group"><label>Sous-titre du Hero</label><textarea value={form.heroSubtitle} onChange={e => setForm({ ...form, heroSubtitle: e.target.value })} rows={3} /></div>
-                        <div className="form-group"><label>Nombre de licenciés affiché</label><input type="number" value={form.licencies} onChange={e => setForm({ ...form, licencies: parseInt(e.target.value) || 0 })} /></div>
+                        <div className="wp-form-row">
+                            <div className="form-group"><label>Bouton 1</label><input value={form.heroCta1Text} onChange={e => setForm({ ...form, heroCta1Text: e.target.value })} /></div>
+                            <div className="form-group"><label>Bouton 2</label><input value={form.heroCta2Text} onChange={e => setForm({ ...form, heroCta2Text: e.target.value })} /></div>
+                        </div>
+                        
+                        <div className="wp-form-row">
+                            <div className="form-group"><label>Nombre de licenciés (+)</label><input type="number" value={form.licencies} onChange={e => setForm({ ...form, licencies: parseInt(e.target.value) || 0 })} /></div>
+                        </div>
                         <ImageUpload value={form.heroImage || ''} onChange={v => setForm({ ...form, heroImage: v })} label="Image de fond du Hero" hint="Si vide, la photo d'équipe par défaut sera utilisée" />
                     </div>
                     <div className="admin-card">
                         <h3>Section « Qui sommes-nous »</h3>
                         <div className="form-group"><label>Texte de présentation</label><textarea value={form.aboutText} onChange={e => setForm({ ...form, aboutText: e.target.value })} rows={5} /></div>
+                        <div className="form-group"><label>Texte Bouton</label><input value={form.aboutCtaText} onChange={e => setForm({ ...form, aboutCtaText: e.target.value })} /></div>
                         <ImageUpload value={form.aboutImage || ''} onChange={v => setForm({ ...form, aboutImage: v })} label="Photo de la section" hint="Si vide, la photo d'équipe par défaut sera utilisée" />
                     </div>
                     <div className="admin-card">
@@ -1611,6 +1624,16 @@ function SettingsView() {
                     <h3>Page Actualités</h3>
                     <div className="form-group"><label>Titre de la page</label><input value={form.actualitesPage.heroTitle} onChange={e => setForm({ ...form, actualitesPage: { ...form.actualitesPage, heroTitle: e.target.value } })} /></div>
                     <div className="form-group"><label>Sous-titre de la page</label><input value={form.actualitesPage.heroSubtitle} onChange={e => setForm({ ...form, actualitesPage: { ...form.actualitesPage, heroSubtitle: e.target.value } })} /></div>
+                    
+                    <h3 style={{ marginTop: 24 }}>Homepage - Section Actualités</h3>
+                    <div className="wp-form-row">
+                        <div className="form-group"><label>Étiquette (Sur-titre)</label><input value={form.newsLabel} onChange={e => setForm({ ...form, newsLabel: e.target.value })} /></div>
+                        <div className="form-group"><label>Titre de la section</label><input value={form.newsTitle} onChange={e => setForm({ ...form, newsTitle: e.target.value })} /></div>
+                    </div>
+                    <div className="wp-form-row">
+                        <div className="form-group"><label>Texte Bouton</label><input value={form.newsCtaText} onChange={e => setForm({ ...form, newsCtaText: e.target.value })} /></div>
+                        <div className="form-group"><label>Lien 'Lire la suite'</label><input value={form.newsReadMoreText} onChange={e => setForm({ ...form, newsReadMoreText: e.target.value })} /></div>
+                    </div>
                 </div>
             )}
 
@@ -1619,6 +1642,13 @@ function SettingsView() {
                     <h3>Page Agenda</h3>
                     <div className="form-group"><label>Titre de la page</label><input value={form.agendaPage.heroTitle} onChange={e => setForm({ ...form, agendaPage: { ...form.agendaPage, heroTitle: e.target.value } })} /></div>
                     <div className="form-group"><label>Sous-titre de la page</label><input value={form.agendaPage.heroSubtitle} onChange={e => setForm({ ...form, agendaPage: { ...form.agendaPage, heroSubtitle: e.target.value } })} /></div>
+                    
+                    <h3 style={{ marginTop: 24 }}>Homepage - Section Agenda</h3>
+                    <div className="wp-form-row">
+                        <div className="form-group"><label>Étiquette (Sur-titre)</label><input value={form.eventsLabel} onChange={e => setForm({ ...form, eventsLabel: e.target.value })} /></div>
+                        <div className="form-group"><label>Titre de la section</label><input value={form.eventsTitle} onChange={e => setForm({ ...form, eventsTitle: e.target.value })} /></div>
+                    </div>
+                    <div className="form-group"><label>Texte Bouton</label><input value={form.eventsCtaText} onChange={e => setForm({ ...form, eventsCtaText: e.target.value })} /></div>
                 </div>
             )}
 
@@ -1645,6 +1675,13 @@ function SettingsView() {
                         <h3>En-tête de page</h3>
                         <div className="form-group"><label>Titre de la page</label><input value={form.partnersPage.heroTitle} onChange={e => setForm({ ...form, partnersPage: { ...form.partnersPage, heroTitle: e.target.value } })} /></div>
                         <div className="form-group"><label>Sous-titre</label><textarea value={form.partnersPage.heroSubtitle} onChange={e => setForm({ ...form, partnersPage: { ...form.partnersPage, heroSubtitle: e.target.value } })} rows={3} /></div>
+
+                        <h3 style={{ marginTop: 24 }}>Homepage - Section Partenaires</h3>
+                        <div className="wp-form-row">
+                            <div className="form-group"><label>Étiquette (Sur-titre)</label><input value={form.partnersLabel} onChange={e => setForm({ ...form, partnersLabel: e.target.value })} /></div>
+                            <div className="form-group"><label>Titre de la section</label><input value={form.partnersTitle} onChange={e => setForm({ ...form, partnersTitle: e.target.value })} /></div>
+                        </div>
+                        <div className="form-group"><label>Sous-titre</label><textarea value={form.partnersSubtitle} onChange={e => setForm({ ...form, partnersSubtitle: e.target.value })} rows={2} /></div>
                     </div>
                     <div className="admin-card">
                         <h3>Chiffres clés</h3>
@@ -1914,6 +1951,16 @@ function SettingsView() {
             {
                 activeTab === 'social' && (
                     <>
+                        <div className="admin-card">
+                            <h3>Titres de la section</h3>
+                            <div className="wp-form-row">
+                                <div className="form-group"><label>Étiquette (Sur-titre)</label><input value={form.socialLabel} onChange={e => setForm({ ...form, socialLabel: e.target.value })} /></div>
+                                <div className="form-group"><label>Titre de la section</label><input value={form.socialTitle} onChange={e => setForm({ ...form, socialTitle: e.target.value })} /></div>
+                            </div>
+                            <div className="form-group"><label>Sous-titre</label><textarea value={form.socialSubtitle} onChange={e => setForm({ ...form, socialSubtitle: e.target.value })} rows={2} /></div>
+                            <div className="form-group"><label>Texte Bouton</label><input value={form.socialCtaText} onChange={e => setForm({ ...form, socialCtaText: e.target.value })} /></div>
+                        </div>
+
                         <div className="admin-card">
                             <h3>Publications mises en avant (Page d&apos;accueil)</h3>
                             <p className="form-hint" style={{ marginBottom: 16 }}>

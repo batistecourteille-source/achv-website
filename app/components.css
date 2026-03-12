@@ -30,17 +30,20 @@
     height: 72px;
 }
 
+
 .nav-logo {
     display: flex;
     align-items: center;
     gap: 14px;
     text-decoration: none;
-    z-index: 1001;
 }
 
 .nav-logo img {
     height: 48px;
+    max-height: 48px;
     width: auto;
+    max-width: 200px;
+    object-fit: contain;
     filter: brightness(1.1);
     transition: var(--transition-normal);
 }

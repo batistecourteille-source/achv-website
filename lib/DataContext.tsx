@@ -113,6 +113,7 @@ export interface PricingItem {
 export interface SiteSettings {
     clubName: string;
     subtitle: string;
+    logo?: string;
     heroTitle: string;
     heroSubtitle: string;
     aboutText: string;
@@ -141,6 +142,7 @@ export interface SiteSettings {
     reinscriptionUrl: string;
     plaquetteUrl: string;
     hbaUrl: string;
+    hbaLogo?: string;
     boutiqueUrl: string;
     heroBadge: string;
     ctaTitle: string;
@@ -153,6 +155,35 @@ export interface SiteSettings {
     youtubeApiKey?: string;
     youtubeChannelId?: string;
     clubValues: { icon: string; title: string; desc: string }[];
+    disciplinesCount: number;
+    communesCount: number;
+    headerCtaText: string;
+    aboutLabel: string;
+    aboutTitle: string;
+    valuesLabel: string;
+    valuesTitle: string;
+    valuesSubtitle: string;
+    activitiesLabel: string;
+    activitiesTitle: string;
+    activitiesSubtitle: string;
+    newsLabel: string;
+    newsTitle: string;
+    newsSubtitle: string;
+    eventsLabel: string;
+    eventsTitle: string;
+    socialLabel: string;
+    socialTitle: string;
+    socialSubtitle: string;
+    partnersLabel: string;
+    partnersTitle: string;
+    partnersSubtitle: string;
+    heroCta1Text: string;
+    heroCta2Text: string;
+    aboutCtaText: string;
+    newsCtaText: string;
+    newsReadMoreText: string;
+    eventsCtaText: string;
+    socialCtaText: string;
     partnersPage: {
         heroTitle: string;
         heroSubtitle: string;
@@ -333,6 +364,7 @@ export interface ScheduleItem {
 const defaultSettings: SiteSettings = {
     clubName: 'ACHV',
     subtitle: 'Athletic Club Haute Vilaine',
+    logo: '/logo.png',
     heroTitle: 'Athletic Club Haute Vilaine',
     heroSubtitle: 'La communauté running de Noyal-sur-Vilaine & Nouvoitou. Piste, cross, route, trail et marche nordique — pour tous les niveaux.',
     aboutText: "L'Athletic Club Haute Vilaine (ACHV) est une section du Haute Bretagne Athlétisme (HBA). Notre club réunit des passionnés d'athlétisme de tous niveaux et tous âges. Basé sur les communes de Noyal-sur-Vilaine et Nouvoitou, nous proposons un encadrement de qualité avec des entraîneurs diplômés FFA pour accompagner chacun dans ses objectifs sportifs, du loisir à la compétition.",
@@ -360,10 +392,40 @@ const defaultSettings: SiteSettings = {
         '💪 NOUVEAUX CRÉNEAUX TRAIL LE SAMEDI MATIN',
     ],
     licencies: 250,
+    disciplinesCount: 5,
+    communesCount: 2,
+    headerCtaText: 'Rejoindre le club',
+    aboutLabel: 'Qui sommes-nous',
+    aboutTitle: "L'ACHV, votre club",
+    valuesLabel: 'Nos valeurs',
+    valuesTitle: 'Ce qui nous anime',
+    valuesSubtitle: 'Sport, partage et progression — les piliers de l\'ACHV',
+    activitiesLabel: 'Nos activités',
+    activitiesTitle: 'Trouve ta discipline',
+    activitiesSubtitle: 'Piste, trail, route, cross et marche nordique — il y en a pour tout le monde',
+    newsLabel: 'Actualités',
+    newsTitle: 'Les dernières news',
+    newsSubtitle: 'Gérez l\'actualité de votre club',
+    eventsLabel: 'Agenda',
+    eventsTitle: 'Prochains événements',
+    socialLabel: 'Réseaux Sociaux',
+    socialTitle: 'Suivez l\'actualité en direct',
+    socialSubtitle: 'Retrouvez nos derniers posts Facebook, Instagram, LinkedIn et YouTube',
+    partnersLabel: 'Nos partenaires',
+    partnersTitle: 'Ils nous soutiennent',
+    partnersSubtitle: 'Merci à nos partenaires qui rendent nos événements possibles',
+    heroCta1Text: '🚀 Rejoignez-nous',
+    heroCta2Text: 'Découvrir nos activités',
+    aboutCtaText: 'Découvrir le club',
+    newsCtaText: 'Toutes les actualités',
+    newsReadMoreText: 'Lire la suite →',
+    eventsCtaText: 'Voir tout l\'agenda',
+    socialCtaText: 'Voir tous nos réseaux sociaux',
     inscriptionUrl: 'https://achv35.monclub.app/app',
     reinscriptionUrl: 'https://achv35.monclub.app/app',
     plaquetteUrl: 'https://achv35.monclub.app/app',
     hbaUrl: 'https://hautebretagneathletisme.fr',
+    hbaLogo: '/partners/hba.png',
     boutiqueUrl: 'https://b1.intersport-boutique-club.fr/336-hba-athletisme',
     heroBadge: '🏃 Section HBA • Noyal & Nouvoitou',
     ctaTitle: "💙 Rejoignez l'aventure ACHV",
