@@ -1531,6 +1531,23 @@ function SettingsView() {
     const [toast, setToast] = useState('');
     const [tickerInput, setTickerInput] = useState('');
     const [activeTab, setActiveTab] = useState('general');
+    const [instaSync, setInstaSync] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
+    const [instaSyncMsg, setInstaSyncMsg] = useState('');
+
+    const handleInstagramSync = async () => {
+        setInstaSync('loading');
+        setInstaSyncMsg('');
+        try {
+            const res = await fetch('/api/instagram/sync', { method: 'POST' });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || 'Erreur inconnue');
+            setInstaSync('ok');
+            setInstaSyncMsg(`✓ ${json.count} posts importés`);
+        } catch (e: any) {
+            setInstaSync('error');
+            setInstaSyncMsg(e.message);
+        }
+    };
 
     // New state for adding social post
     const [newPost, setNewPost] = useState({ platform: 'facebook', content: '', imageUrl: '', postUrl: '', date: new Date().toISOString().split('T')[0] });
@@ -2106,54 +2123,49 @@ function SettingsView() {
                                     Ils nécessitent des clés API techniques. Contactez votre webmaster si vous avez besoin d&apos;aide.
                                 </p>
 
-                                {/* Auto Import Section Instagram */}
+                                {/* Auto Sync Section Instagram */}
                                 <div style={{ background: '#f0f9ff', padding: 16, borderRadius: 8, marginBottom: 20, border: '1px solid #bae6fd' }}>
-                                    <h4 style={{ margin: '0 0 12px 0', color: '#0284c7', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <span style={{ fontSize: '1.2em' }}>⚡</span> Import Automatique Instagram
+                                    <h4 style={{ margin: '0 0 4px 0', color: '#0284c7', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <span style={{ fontSize: '1.2em' }}>📸</span> Synchronisation automatique Instagram
                                     </h4>
+                                    <p style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: 12 }}>
+                                        Les posts s&apos;actualisent toutes les 2h automatiquement. Le token est renouvelé chaque 1er du mois.
+                                    </p>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.9rem' }}>Token d&apos;accès Instagram</label>
+                                        <label style={{ fontSize: '0.9rem' }}>Token d&apos;accès Instagram (long-lived)</label>
                                         <input
                                             value={form.instagramAccessToken || ''}
                                             onChange={e => setForm({ ...form, instagramAccessToken: e.target.value })}
-                                            placeholder="Collez le token ici..."
+                                            placeholder="IGAAB... (collez votre token ici)"
                                             style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
                                         />
+                                        <span className="form-hint">
+                                            Obtenez-le depuis <a href="https://developers.facebook.com" target="_blank" rel="noopener" style={{ color: '#0284c7' }}>Meta for Developers</a> → votre app Instagram → Token d&apos;accès utilisateur.
+                                        </span>
                                     </div>
-                                    <button
-                                        className="wp-btn"
-                                        style={{ background: '#0ea5e9', color: 'white', width: '100%' }}
-                                        disabled={!form.instagramAccessToken}
-                                        onClick={async () => {
-                                            if (!form.instagramAccessToken) return;
-                                            const btn = document.getElementById('btn-insta-sync');
-                                            if (btn) btn.textContent = 'Chargement...';
-
-                                            try {
-                                                const res = await fetch(`https://graph.instagram.com/me/media?fields=id,permalink,media_url,media_type&access_token=${form.instagramAccessToken}&limit=5`);
-                                                const data = await res.json();
-
-                                                if (data.error) throw new Error(data.error.message);
-
-                                                if (data.data && Array.isArray(data.data)) {
-                                                    const newUrls = data.data.map((post: any) => post.permalink);
-                                                    if (confirm(`Trouvé ${newUrls.length} posts. Voulez-vous remplacer la liste actuelle ?`)) {
-                                                        setForm({ ...form, featuredPostUrls: newUrls });
-                                                        setToast(`✓ ${newUrls.length} posts importés !`);
-                                                    }
-                                                } else {
-                                                    alert("Aucun post trouvé ou format inattendu.");
-                                                }
-                                            } catch (e: any) {
-                                                console.error(e);
-                                                alert(`Erreur : ${e.message}`);
-                                            } finally {
-                                                if (btn) btn.textContent = '🔄 Importer les 5 derniers posts';
-                                            }
-                                        }}
-                                    >
-                                        <span id="btn-insta-sync">🔄 Importer les 5 derniers posts</span>
-                                    </button>
+                                    {form.instagramLastSync && (
+                                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: 8 }}>
+                                            Dernier sync : {new Date(form.instagramLastSync).toLocaleString('fr-FR')}
+                                        </p>
+                                    )}
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                        <button
+                                            className="wp-btn"
+                                            style={{ background: '#0ea5e9', color: 'white', flex: 1, opacity: instaSync === 'loading' ? 0.6 : 1 }}
+                                            disabled={instaSync === 'loading' || !form.instagramAccessToken}
+                                            onClick={async () => {
+                                                await new Promise<void>(r => { setSettings({ ...settings, instagramAccessToken: form.instagramAccessToken }); setTimeout(r, 500); });
+                                                handleInstagramSync();
+                                            }}
+                                        >
+                                            {instaSync === 'loading' ? '⏳ Synchronisation...' : '🔄 Sync maintenant'}
+                                        </button>
+                                    </div>
+                                    {instaSyncMsg && (
+                                        <p style={{ marginTop: 8, fontSize: '0.85rem', color: instaSync === 'ok' ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
+                                            {instaSyncMsg}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Auto Import Section Facebook */}

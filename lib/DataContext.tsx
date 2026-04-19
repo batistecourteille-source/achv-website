@@ -195,6 +195,7 @@ export interface SiteSettings {
     instagramPostUrl?: string; // Legacy
     featuredPostUrls: string[];
     instagramAccessToken?: string;
+    instagramLastSync?: string;
     facebookAccessToken?: string;
     facebookPageId?: string;
     youtubeApiKey?: string;
