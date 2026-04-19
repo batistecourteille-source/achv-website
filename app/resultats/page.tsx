@@ -109,7 +109,7 @@ export default function ResultatsPage() {
                                     </div>
                                     <h3 className="result-card-title">{r.competition}</h3>
                                     <div className="result-card-location">📍 {r.location}</div>
-                                    <div className="result-card-athletes">
+                                    <div className="result-card-athletes" style={{ overflowX: 'auto' }}>
                                         <table className="result-table">
                                             <thead>
                                                 <tr>

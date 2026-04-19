@@ -150,11 +150,11 @@ function ActualitesContent() {
             <section className="section">
                 <div className="container">
                     {/* MAIN TABS */}
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 48 }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 48, flexWrap: 'wrap' }}>
                         <button
                             className={`tab ${activeTab === 'blog' ? 'active' : ''}`}
                             onClick={() => setActiveTab('blog')}
-                            style={{ fontSize: '1.1rem', padding: '12px 32px' }}
+                            style={{ fontSize: '1rem', padding: '10px 24px' }}
                         >
                             📝 Blog / Articles
                         </button>
@@ -162,9 +162,9 @@ function ActualitesContent() {
                             <button
                                 className={`tab ${activeTab === 'social' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('social')}
-                                style={{ fontSize: '1.1rem', padding: '12px 32px' }}
+                                style={{ fontSize: '1rem', padding: '10px 24px' }}
                             >
-                                📱 Réseaux Sociaux (Direct)
+                                📱 Réseaux Sociaux
                             </button>
                         )}
                     </div>
