@@ -47,8 +47,9 @@ export default function AgendaPage() {
                             const fullDateEnd = dEnd ? dEnd.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : null;
                             const rangeString = dEnd ? `Du ${fullDate} au ${fullDateEnd}` : `Le ${fullDate}`;
 
+                            const audienceClass = ev.audience === 'licensed' ? 'event-item--licensed' : ev.audience === 'public' ? 'event-item--public' : '';
                             return (
-                                <div key={ev.id} className="event-item">
+                                <div key={ev.id} className={`event-item ${audienceClass}`}>
                                     <div className="event-date-box">
                                         <div className="event-date-day" style={dayDisplay.length > 2 ? { fontSize: '1.2rem' } : {}}>{dayDisplay}</div>
                                         {monthDisplay && <div className="event-date-month">{monthDisplay}</div>}
