@@ -83,15 +83,7 @@ export default function Header() {
                         </div>
                     </li>
 
-                    <li className={`nav-dropdown ${activeDropdown === 'performances' ? 'mobile-active' : ''}`}>
-                        <a href="#performances" className={(isActive('/resultats') || isActive('/records')) ? 'active' : ''} onClick={(e) => toggleDropdown(e, 'performances')}>
-                            Performances ▾
-                        </a>
-                        <div className="nav-dropdown-content">
-                            <Link href="/resultats" onClick={handleLinkClick}>Résultats</Link>
-                            <Link href="/records" onClick={handleLinkClick}>Records</Link>
-                        </div>
-                    </li>
+                    <li><Link href="/resultats" className={isActive('/resultats') ? 'active' : ''} onClick={handleLinkClick}>Résultats</Link></li>
 
                     {visiblePages.map(p => (
                         <li key={p.id}><Link href={`/p/${p.slug}`} className={isActive(`/p/${p.slug}`) ? 'active' : ''} onClick={handleLinkClick}>{p.title}</Link></li>

@@ -278,7 +278,6 @@ function AdminSidebar({ active, onNav }: { active: string; onNav: (s: string) =>
         { id: 'activities', icon: '🏃', label: 'Activités' },
         { id: 'partners', icon: '🤝', label: 'Partenaires' },
         { id: 'results', icon: '🏆', label: 'Résultats' },
-        { id: 'records', icon: '📈', label: 'Records' },
         { id: 'pages', icon: '📄', label: 'Pages' },
         { id: 'planning', icon: '🗓️', label: 'Planning' },
         { id: 'pricing', icon: '💰', label: 'Tarifs' },
@@ -1587,7 +1586,6 @@ function SettingsView() {
                     { id: 'articles', label: '📰 Actualités' },
                     { id: 'agenda', label: '📅 Agenda' },
                     { id: 'results', label: '🏆 Résultats' },
-                    { id: 'records', label: '⚡ Records' },
                     { id: 'rejoindre', label: '🏃 Rejoindre' },
                     { id: 'partners', label: '🤝 Partenaires' },
                     { id: 'contact', label: '📧 Contact' },
@@ -2576,7 +2574,6 @@ const ALL_PERMISSIONS: { key: keyof AdminUser['permissions']; label: string }[] 
     { key: 'activities', label: 'Activités' },
     { key: 'partners', label: 'Partenaires' },
     { key: 'results', label: 'Résultats' },
-    { key: 'records', label: 'Records' },
     { key: 'pages', label: 'Pages' },
     { key: 'planning', label: 'Planning' },
     { key: 'pricing', label: 'Tarifs' },
@@ -2586,7 +2583,7 @@ const ALL_PERMISSIONS: { key: keyof AdminUser['permissions']; label: string }[] 
 
 const DEFAULT_PERMISSIONS: AdminUser['permissions'] = {
     articles: true, events: true, team: true, activities: true,
-    partners: false, results: true, records: true, pages: false,
+    partners: false, results: true, pages: false,
     planning: false, pricing: false, settings: false, admins: false,
 };
 
@@ -2841,7 +2838,6 @@ export default function AdminDashboard() {
             case 'activities': return <ActivitiesView />;
             case 'partners': return <PartnersView />;
             case 'results': return <ResultsView />;
-            case 'records': return <RecordsView />;
             case 'pages': return <PagesView />;
             case 'planning': return <PlanningView />;
             case 'pricing': return <PricingView />;

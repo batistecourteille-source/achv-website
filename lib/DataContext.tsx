@@ -121,7 +121,6 @@ export interface AdminUser {
         activities: boolean;
         partners: boolean;
         results: boolean;
-        records: boolean;
         pages: boolean;
         planning: boolean;
         pricing: boolean;
