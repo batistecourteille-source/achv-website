@@ -20,15 +20,21 @@ function ActualitesContent() {
 
     // BLOG LOGIC
     const published = articles.filter(a => a.published);
-    const categories = ['Toutes', ...Array.from(new Set(published.map(a => a.category).filter(Boolean).map(c => c || 'Uncategorized')))]; // Safety check
+    const categories = ['Toutes', ...Array.from(new Set(published.map(a => a.category).filter(Boolean).map(c => c || 'Uncategorized')))];
+    const allTags = Array.from(new Set(published.flatMap(a => a.tags || []))).sort();
     const [activeCategory, setActiveCategory] = useState('Toutes');
     const [activeCity, setActiveCity] = useState('Toutes');
+    const [activeTag, setActiveTag] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const filteredArticles = published.filter(a => {
         const catMatch = activeCategory === 'Toutes' || a.category === activeCategory;
         const articleCity = a.city || 'Les deux';
         const cityMatch = activeCity === 'Toutes' || articleCity === 'Les deux' || (activeCity === 'Noyal' && articleCity === 'Noyal') || (activeCity === 'Nouvoitou' && articleCity === 'Nouvoitou');
-        return catMatch && cityMatch;
+        const tagMatch = !activeTag || (a.tags || []).includes(activeTag);
+        const q = searchQuery.toLowerCase();
+        const searchMatch = !q || a.title.toLowerCase().includes(q) || a.excerpt.toLowerCase().includes(q) || (a.tags || []).some(t => t.includes(q));
+        return catMatch && cityMatch && tagMatch && searchMatch;
     });
 
     // SOCIAL LOGIC
@@ -165,7 +171,30 @@ function ActualitesContent() {
 
                     {activeTab === 'blog' && (
                         <>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '24px' }}>
+                            {/* Barre de recherche */}
+                            <div style={{ maxWidth: 520, margin: '0 auto 28px' }}>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem', pointerEvents: 'none' }}>🔍</span>
+                                    <input
+                                        type="search"
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                        placeholder="Rechercher un article, un tag..."
+                                        style={{
+                                            width: '100%', padding: '12px 16px 12px 44px',
+                                            borderRadius: 50, border: '1.5px solid #e5e7eb',
+                                            fontSize: '1rem', outline: 'none', background: 'white',
+                                            boxSizing: 'border-box', transition: 'border-color 0.2s',
+                                        }}
+                                    />
+                                    {searchQuery && (
+                                        <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: '1.1rem' }}>✕</button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Filtre villes */}
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
                                 {[
                                     { id: 'Toutes', label: 'Toutes les villes' },
                                     { id: 'Noyal', label: 'Noyal-sur-Vilaine' },
@@ -175,30 +204,60 @@ function ActualitesContent() {
                                         key={city.id}
                                         onClick={() => setActiveCity(city.id)}
                                         style={{
-                                            padding: '8px 16px',
-                                            borderRadius: '20px',
-                                            border: 'none',
+                                            padding: '8px 16px', borderRadius: '20px', border: 'none',
                                             background: activeCity === city.id ? 'var(--primary)' : '#e5e7eb',
                                             color: activeCity === city.id ? 'white' : '#374151',
-                                            fontWeight: 500,
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                            fontSize: '0.9rem'
+                                            fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem'
                                         }}
                                     >
                                         {city.label}
                                     </button>
                                 ))}
                             </div>
-                            <div className="tabs">
+
+                            {/* Filtre catégories */}
+                            <div className="tabs" style={{ marginBottom: 16 }}>
                                 {categories.map(cat => (
                                     <button key={cat} className={`tab ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>{cat}</button>
                                 ))}
                             </div>
-                            {/* NOUVEAU LAYOUT TYPE JOURNAL : Editorial Style */}
+
+                            {/* Filtre hashtags */}
+                            {allTags.length > 0 && (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 32 }}>
+                                    <button
+                                        onClick={() => setActiveTag('')}
+                                        style={{
+                                            padding: '4px 14px', borderRadius: 20, border: '1.5px solid #e5e7eb',
+                                            background: !activeTag ? '#1a1a2e' : 'white',
+                                            color: !activeTag ? 'white' : '#374151',
+                                            fontSize: '0.85rem', cursor: 'pointer', fontWeight: 500,
+                                        }}
+                                    >
+                                        Tous les tags
+                                    </button>
+                                    {allTags.map(tag => (
+                                        <button
+                                            key={tag}
+                                            onClick={() => setActiveTag(activeTag === tag ? '' : tag)}
+                                            style={{
+                                                padding: '4px 14px', borderRadius: 20,
+                                                border: `1.5px solid ${activeTag === tag ? '#0369a1' : '#bfdbfe'}`,
+                                                background: activeTag === tag ? '#0369a1' : '#eff6ff',
+                                                color: activeTag === tag ? 'white' : '#1d4ed8',
+                                                fontSize: '0.85rem', cursor: 'pointer', fontWeight: 500,
+                                            }}
+                                        >
+                                            #{tag}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Layout éditorial */}
                             <div className="editorial-layout" style={{ display: 'grid', gap: '48px', marginBottom: '60px' }}>
 
-                                {/* 1. SECTION À LA UNE */}
+                                {/* À la une */}
                                 {filteredArticles.filter(a => a.isFeatured).length > 0 && (
                                     <div className="editorial-featured-section">
                                         <h2 style={{ fontSize: '1.5rem', borderBottom: '4px solid var(--dark)', paddingBottom: '8px', marginBottom: '24px', fontFamily: '"Georgia", serif', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -206,16 +265,21 @@ function ActualitesContent() {
                                         </h2>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
                                             {filteredArticles.filter(a => a.isFeatured).map(article => (
-                                                <Link key={article.id} href={`/actualites/${article.id}`} style={{ textDecoration: 'none', display: 'block', group: 'hover' }}>
+                                                <Link key={article.id} href={`/actualites/${article.id}`} style={{ textDecoration: 'none', display: 'block' }}>
                                                     {article.image && (
                                                         <div style={{ overflow: 'hidden', borderRadius: '2px', marginBottom: '16px' }}>
-                                                            <img src={article.image} alt={article.title} style={{ width: '100%', height: '350px', objectFit: 'cover', transition: 'transform 0.5s ease', transform: 'scale(1)' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.03)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
+                                                            <img src={article.image} alt={article.title} style={{ width: '100%', height: '350px', objectFit: 'cover', transition: 'transform 0.5s ease' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.03)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
                                                         </div>
                                                     )}
                                                     <div>
                                                         <div style={{ color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.8rem', marginBottom: '8px', letterSpacing: '0.5px' }}>{article.city || 'Club'} <span style={{ color: '#ccc' }}>•</span> {article.category}</div>
                                                         <h3 style={{ fontSize: '2.2rem', fontFamily: '"Georgia", serif', lineHeight: '1.2', marginBottom: '12px', color: 'var(--dark)' }}>{article.title}</h3>
-                                                        <p style={{ fontSize: '1.1rem', color: '#4b5563', lineHeight: '1.6', marginBottom: '16px', fontFamily: '"Georgia", serif' }}>{article.excerpt}</p>
+                                                        <p style={{ fontSize: '1.1rem', color: '#4b5563', lineHeight: '1.6', marginBottom: '12px', fontFamily: '"Georgia", serif' }}>{article.excerpt}</p>
+                                                        {article.tags && article.tags.length > 0 && (
+                                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                                                                {article.tags.map(tag => <span key={tag} style={{ background: '#eff6ff', color: '#1d4ed8', borderRadius: 20, padding: '2px 10px', fontSize: '0.75rem', fontWeight: 500 }}>#{tag}</span>)}
+                                                            </div>
+                                                        )}
                                                         <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600 }}>Par {article.author || 'La Rédaction'} — {new Date(article.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                                     </div>
                                                 </Link>
@@ -257,7 +321,12 @@ function ActualitesContent() {
                             </div>
                             {filteredArticles.length === 0 && (
                                 <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--medium-gray)' }}>
-                                    <p style={{ fontSize: '1.1rem' }}>Aucun article dans cette catégorie pour le moment.</p>
+                                    <p style={{ fontSize: '1.1rem' }}>Aucun article trouvé pour cette recherche.</p>
+                                    {(searchQuery || activeTag) && (
+                                        <button onClick={() => { setSearchQuery(''); setActiveTag(''); }} style={{ marginTop: 12, padding: '8px 20px', borderRadius: 20, border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer' }}>
+                                            Effacer les filtres
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </>

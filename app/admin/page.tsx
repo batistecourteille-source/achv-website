@@ -1,8 +1,8 @@
 'use client';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useData, Article, Event as Ev, TeamMember, Activity, Partner, CustomPage, Result, ResultAthlete, ClubRecord, ScheduleItem, PricingItem, AdminUser } from '@/lib/DataContext';
 import { useAuth } from '@/lib/AuthContext';
-import { useData, Article, Event as Ev, TeamMember, Activity, Partner, CustomPage, Result, ClubRecord, ScheduleItem, PricingItem } from '@/lib/DataContext';
 import '@/app/admin.css';
 import SocialPostEmbed from '@/components/SocialPostEmbed';
 
@@ -283,6 +283,7 @@ function AdminSidebar({ active, onNav }: { active: string; onNav: (s: string) =>
         { id: 'planning', icon: '🗓️', label: 'Planning' },
         { id: 'pricing', icon: '💰', label: 'Tarifs' },
         { id: 'settings', icon: '⚙️', label: 'Réglages' },
+        { id: 'admins', icon: '👤', label: 'Administrateurs' },
     ];
 
     return (
@@ -396,17 +397,27 @@ function ArticlesView() {
     const { articles, addArticle, updateArticle, deleteArticle } = useData();
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState<Article | null>(null);
-    const [form, setForm] = useState({ title: '', content: '', excerpt: '', date: '', category: '', image: '', images: [] as string[], published: true, city: 'Les deux', isFeatured: false, author: '' });
+    const [form, setForm] = useState({ title: '', content: '', excerpt: '', date: '', category: '', image: '', images: [] as string[], published: true, city: 'Les deux', isFeatured: false, author: '', tags: [] as string[] });
+    const [tagInput, setTagInput] = useState('');
     const [toast, setToast] = useState('');
     const [confirmId, setConfirmId] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
 
-    const openNew = () => { setEditing(null); setForm({ title: '', content: '', excerpt: '', date: new Date().toISOString().split('T')[0], category: 'Vie du club', image: '', images: [], published: true, city: 'Les deux', isFeatured: false, author: '' }); setShowModal(true); };
-    const openEdit = (a: Article) => { setEditing(a); setForm({ title: a.title, content: a.content, excerpt: a.excerpt, date: a.date, category: a.category, image: a.image || '', images: a.images || [], published: a.published, city: a.city || 'Les deux', isFeatured: !!a.isFeatured, author: a.author || '' }); setShowModal(true); };
+    const openNew = () => { setEditing(null); setForm({ title: '', content: '', excerpt: '', date: new Date().toISOString().split('T')[0], category: 'Vie du club', image: '', images: [], published: true, city: 'Les deux', isFeatured: false, author: '', tags: [] }); setTagInput(''); setShowModal(true); };
+    const openEdit = (a: Article) => { setEditing(a); setForm({ title: a.title, content: a.content, excerpt: a.excerpt, date: a.date, category: a.category, image: a.image || '', images: a.images || [], published: a.published, city: a.city || 'Les deux', isFeatured: !!a.isFeatured, author: a.author || '', tags: a.tags || [] }); setTagInput(''); setShowModal(true); };
+
+    const addTag = () => {
+        const tag = tagInput.trim().toLowerCase().replace(/\s+/g, '-');
+        if (tag && !form.tags.includes(tag)) {
+            setForm({ ...form, tags: [...form.tags, tag] });
+        }
+        setTagInput('');
+    };
+
+    const removeTag = (tag: string) => setForm({ ...form, tags: form.tags.filter(t => t !== tag) });
 
     const save = () => {
         if (!form.title.trim()) return;
-        // Cast city to satisfy TS since form.city is inferred as string
         const data = { ...form, city: form.city as 'Noyal' | 'Nouvoitou' | 'Les deux' };
         if (editing) { updateArticle(editing.id, data); setToast('✓ Article modifié avec succès'); }
         else { addArticle({ ...data, id: Date.now().toString() }); setToast('✓ Article créé avec succès'); }
@@ -494,8 +505,30 @@ function ArticlesView() {
                                 </select>
                             </div>
                             <div className="wp-sidebar-box">
-                                <h4>Couverture de l'article (A la une)</h4>
-                                <ImageUpload value={form.image} onChange={v => setForm({ ...form, image: v })} label="" hint="L'image principale de votre article" />
+                                <h4>🏷️ Hashtags</h4>
+                                <p className="form-hint">Ajoutez des tags pour classer l&apos;article</p>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                                    {form.tags.map(tag => (
+                                        <span key={tag} style={{ background: '#e0f2fe', color: '#0369a1', borderRadius: 20, padding: '3px 10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                            #{tag}
+                                            <button type="button" onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0369a1', fontWeight: 700, lineHeight: 1, padding: 0 }}>×</button>
+                                        </span>
+                                    ))}
+                                </div>
+                                <div style={{ display: 'flex', gap: 6 }}>
+                                    <input
+                                        value={tagInput}
+                                        onChange={e => setTagInput(e.target.value)}
+                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
+                                        placeholder="Nouveau tag..."
+                                        style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: '0.85rem' }}
+                                    />
+                                    <button type="button" onClick={addTag} className="wp-btn" style={{ padding: '6px 12px', fontSize: '0.85rem' }}>+</button>
+                                </div>
+                            </div>
+                            <div className="wp-sidebar-box">
+                                <h4>Image à la une</h4>
+                                <ImageUpload value={form.image} onChange={v => setForm({ ...form, image: v })} label="" hint="Apparaît en aperçu sur la liste des actualités" />
                             </div>
                             <div className="wp-sidebar-box">
                                 <h4>📸 Galerie photos</h4>
@@ -551,29 +584,25 @@ function EventsView() {
     const { events, addEvent, updateEvent, deleteEvent } = useData();
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState<Ev | null>(null);
-    const [form, setForm] = useState({ title: '', date: '', dateEnd: '', location: '', description: '', registrationUrl: '', presentationUrl: '' });
+    const [form, setForm] = useState({ title: '', date: '', dateEnd: '', location: '', description: '', registrationUrl: '', presentationUrl: '', audience: 'both' as 'licensed' | 'public' | 'both' });
     const [toast, setToast] = useState('');
     const [confirmId, setConfirmId] = useState<string | null>(null);
 
-    const openNew = () => { setEditing(null); setForm({ title: '', date: new Date().toISOString().split('T')[0], dateEnd: '', location: '', description: '', registrationUrl: '', presentationUrl: '' }); setShowModal(true); };
-    const openEdit = (e: Ev) => { setEditing(e); setForm({ title: e.title, date: e.date, dateEnd: e.dateEnd || '', location: e.location, description: e.description, registrationUrl: e.registrationUrl || '', presentationUrl: e.presentationUrl || '' }); setShowModal(true); };
+    const openNew = () => { setEditing(null); setForm({ title: '', date: new Date().toISOString().split('T')[0], dateEnd: '', location: '', description: '', registrationUrl: '', presentationUrl: '', audience: 'both' }); setShowModal(true); };
+    const openEdit = (e: Ev) => { setEditing(e); setForm({ title: e.title, date: e.date, dateEnd: e.dateEnd || '', location: e.location, description: e.description, registrationUrl: e.registrationUrl || '', presentationUrl: e.presentationUrl || '', audience: e.audience || 'both' }); setShowModal(true); };
 
     const save = () => {
         if (!form.title.trim()) return;
-
-        // Create a copy of the form data
         const eventData: any = { ...form };
-
-        // Remove empty strings for optional fields to keep the database clean
-        // and avoid sending 'undefined' which Firestore rejects
         if (!eventData.dateEnd) delete eventData.dateEnd;
         if (!eventData.registrationUrl) delete eventData.registrationUrl;
         if (!eventData.presentationUrl) delete eventData.presentationUrl;
-
         if (editing) { updateEvent(editing.id, eventData); setToast('✓ Événement modifié'); }
         else { addEvent({ ...eventData, id: Date.now().toString() }); setToast('✓ Événement créé'); }
         setShowModal(false);
     };
+
+    const audienceLabel = (a?: string) => a === 'licensed' ? '🔒 Licenciés' : a === 'public' ? '🌍 Ouvert à tous' : '👥 Tous';
 
     const sortedEvents = [...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -585,7 +614,7 @@ function EventsView() {
             </div>
             <div className="admin-card">
                 <table className="admin-table">
-                    <thead><tr><th>Titre</th><th>Date</th><th>Lieu</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Titre</th><th>Date</th><th>Lieu</th><th>Public</th><th>Actions</th></tr></thead>
                     <tbody>
                         {sortedEvents.map(e => (
                             <tr key={e.id}>
@@ -595,6 +624,7 @@ function EventsView() {
                                     {e.dateEnd && ` — ${new Date(e.dateEnd).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}`}
                                 </td>
                                 <td>📍 {e.location}</td>
+                                <td><span className="wp-badge" style={{ background: e.audience === 'licensed' ? '#fef3c7' : e.audience === 'public' ? '#dcfce7' : '#f3f4f6', color: e.audience === 'licensed' ? '#92400e' : e.audience === 'public' ? '#166534' : '#374151' }}>{audienceLabel(e.audience)}</span></td>
                                 <td><div className="wp-action-btns"><button className="wp-btn-icon" onClick={() => openEdit(e)}>✏️</button><button className="wp-btn-icon wp-btn-icon-danger" onClick={() => setConfirmId(e.id)}>🗑️</button></div></td>
                             </tr>
                         ))}
@@ -622,6 +652,14 @@ function EventsView() {
                         </div>
                     </div>
 
+                    <div className="form-group">
+                        <label>Public concerné</label>
+                        <select value={form.audience} onChange={e => setForm({ ...form, audience: e.target.value as typeof form.audience })} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: '0.9rem' }}>
+                            <option value="both">👥 Tous (licenciés + public)</option>
+                            <option value="licensed">🔒 Licenciés uniquement</option>
+                            <option value="public">🌍 Ouvert à tous (course publique...)</option>
+                        </select>
+                    </div>
                     <div className="form-group"><label>Description</label><textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Détails de l'événement..." /></div>
                     <div className="modal-actions"><button className="wp-btn wp-btn-cancel" onClick={() => setShowModal(false)}>Annuler</button><button className="wp-btn wp-btn-primary" onClick={save}>💾 Enregistrer</button></div>
                 </Modal>
@@ -913,18 +951,39 @@ function PagesView() {
 /* =============================================
    RESULTS VIEW
    ============================================= */
+const EMPTY_ATHLETE: ResultAthlete = { name: '', performance: '', category: '', rank: '', timeCourse: '', timePuce: '', classementScratch: '', classementCategorie: '', classementFeminine: '' };
+const EMPTY_SHOW_FIELDS = { timeCourse: false, timePuce: false, classementScratch: true, classementCategorie: true, classementFeminine: false };
+
 function ResultsView() {
     const { results, addResult, updateResult, deleteResult } = useData();
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState<Result | null>(null);
-    const [form, setForm] = useState({ competition: '', date: '', discipline: 'piste' as Result['discipline'], location: '', url: '', athletes: [{ name: '', performance: '', category: '', rank: '' }] });
+    const [form, setForm] = useState({
+        competition: '', date: '', discipline: 'piste' as Result['discipline'],
+        location: '', url: '',
+        athletes: [{ ...EMPTY_ATHLETE }],
+        showFields: { ...EMPTY_SHOW_FIELDS },
+    });
     const [confirmId, setConfirmId] = useState('');
     const [toast, setToast] = useState('');
 
-    const openNew = () => { setEditing(null); setForm({ competition: '', date: new Date().toISOString().split('T')[0], discipline: 'piste', location: '', url: '', athletes: [{ name: '', performance: '', category: '', rank: '' }] }); setShowModal(true); };
-    const openEdit = (r: Result) => { setEditing(r); setForm({ competition: r.competition, date: r.date, discipline: r.discipline, location: r.location, url: r.url || '', athletes: r.athletes.map(a => ({ ...a, rank: a.rank || '' })) }); setShowModal(true); };
+    const openNew = () => {
+        setEditing(null);
+        setForm({ competition: '', date: new Date().toISOString().split('T')[0], discipline: 'piste', location: '', url: '', athletes: [{ ...EMPTY_ATHLETE }], showFields: { ...EMPTY_SHOW_FIELDS } });
+        setShowModal(true);
+    };
+    const openEdit = (r: Result) => {
+        setEditing(r);
+        setForm({
+            competition: r.competition, date: r.date, discipline: r.discipline,
+            location: r.location, url: r.url || '',
+            athletes: r.athletes.map(a => ({ ...EMPTY_ATHLETE, ...a })),
+            showFields: { ...EMPTY_SHOW_FIELDS, ...(r.showFields || {}) },
+        });
+        setShowModal(true);
+    };
 
-    const addAthlete = () => setForm({ ...form, athletes: [...form.athletes, { name: '', performance: '', category: '', rank: '' }] });
+    const addAthlete = () => setForm({ ...form, athletes: [...form.athletes, { ...EMPTY_ATHLETE }] });
     const removeAthlete = (i: number) => setForm({ ...form, athletes: form.athletes.filter((_, idx) => idx !== i) });
     const updateAthlete = (i: number, field: string, val: string) => {
         const updated = [...form.athletes];
@@ -934,7 +993,7 @@ function ResultsView() {
 
     const save = () => {
         if (!form.competition || !form.date) return;
-        const validAthletes = form.athletes.filter(a => a.name && a.performance);
+        const validAthletes = form.athletes.filter(a => a.name);
         if (validAthletes.length === 0) return;
         const data = { ...form, athletes: validAthletes, url: form.url || undefined };
         if (editing) { updateResult(editing.id, data); setToast('✓ Résultat mis à jour'); }
@@ -993,14 +1052,50 @@ function ResultsView() {
                     </div>
                     <div className="form-group"><label>Lien résultats (optionnel)</label><input value={form.url} onChange={e => setForm({ ...form, url: e.target.value })} placeholder="https://..." /></div>
 
-                    <h4 style={{ margin: '20px 0 12px', fontSize: '0.95rem' }}>Athlètes</h4>
+                    <div style={{ margin: '20px 0 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h4 style={{ fontSize: '0.95rem', margin: 0 }}>Athlètes</h4>
+                    </div>
+
+                    <div style={{ background: '#f8fafc', borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                        <p style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 8, color: '#374151' }}>Colonnes à afficher :</p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                            {([
+                                { key: 'timeCourse', label: 'Temps course' },
+                                { key: 'timePuce', label: 'Temps puce' },
+                                { key: 'classementScratch', label: 'Cl. scratch' },
+                                { key: 'classementCategorie', label: 'Cl. catégorie' },
+                                { key: 'classementFeminine', label: 'Cl. féminin' },
+                            ] as { key: keyof typeof form.showFields; label: string }[]).map(({ key, label }) => (
+                                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={!!form.showFields[key]}
+                                        onChange={e => setForm({ ...form, showFields: { ...form.showFields, [key]: e.target.checked } })}
+                                    />
+                                    {label}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
                     {form.athletes.map((a, i) => (
-                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 0.7fr 0.5fr auto', gap: 8, marginBottom: 8, alignItems: 'end' }}>
-                            <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.7rem' }}>Nom</label><input value={a.name} onChange={e => updateAthlete(i, 'name', e.target.value)} placeholder="Nom" /></div>
-                            <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.7rem' }}>Performance</label><input value={a.performance} onChange={e => updateAthlete(i, 'performance', e.target.value)} placeholder="Chrono" /></div>
-                            <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.7rem' }}>Catégorie</label><input value={a.category} onChange={e => updateAthlete(i, 'category', e.target.value)} placeholder="Senior" /></div>
-                            <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.7rem' }}>Classement</label><input value={a.rank} onChange={e => updateAthlete(i, 'rank', e.target.value)} placeholder="3e" /></div>
-                            <button className="wp-btn-icon wp-btn-icon-danger" onClick={() => removeAthlete(i)} style={{ marginBottom: 2 }}>✕</button>
+                        <div key={i} style={{ background: '#f9fafb', borderRadius: 8, padding: 12, marginBottom: 8, border: '1px solid #e5e7eb' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                <strong style={{ fontSize: '0.85rem', color: '#374151' }}>Athlète {i + 1}</strong>
+                                <button className="wp-btn-icon wp-btn-icon-danger" onClick={() => removeAthlete(i)}>✕</button>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 0.8fr', gap: 8, marginBottom: 8 }}>
+                                <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Nom *</label><input value={a.name} onChange={e => updateAthlete(i, 'name', e.target.value)} placeholder="Prénom Nom" /></div>
+                                <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Catégorie</label><input value={a.category} onChange={e => updateAthlete(i, 'category', e.target.value)} placeholder="Senior, V1..." /></div>
+                                <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Performance</label><input value={a.performance} onChange={e => updateAthlete(i, 'performance', e.target.value)} placeholder="1h23'45" /></div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
+                                {form.showFields.timeCourse && <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Temps course</label><input value={a.timeCourse || ''} onChange={e => updateAthlete(i, 'timeCourse', e.target.value)} placeholder="1h23'45" /></div>}
+                                {form.showFields.timePuce && <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Temps puce</label><input value={a.timePuce || ''} onChange={e => updateAthlete(i, 'timePuce', e.target.value)} placeholder="1h23'45" /></div>}
+                                {form.showFields.classementScratch && <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Cl. scratch</label><input value={a.classementScratch || ''} onChange={e => updateAthlete(i, 'classementScratch', e.target.value)} placeholder="12e/150" /></div>}
+                                {form.showFields.classementCategorie && <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Cl. catégorie</label><input value={a.classementCategorie || ''} onChange={e => updateAthlete(i, 'classementCategorie', e.target.value)} placeholder="2e/18" /></div>}
+                                {form.showFields.classementFeminine && <div className="form-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Cl. féminin</label><input value={a.classementFeminine || ''} onChange={e => updateAthlete(i, 'classementFeminine', e.target.value)} placeholder="3e/42" /></div>}
+                            </div>
                         </div>
                     ))}
                     <button className="wp-btn" onClick={addAthlete} style={{ marginTop: 8 }}>+ Ajouter un athlète</button>
@@ -2460,6 +2555,258 @@ function SettingsView() {
 }
 
 /* =============================================
+   ADMINS VIEW — Super admin panel
+   ============================================= */
+const ALL_PERMISSIONS: { key: keyof AdminUser['permissions']; label: string }[] = [
+    { key: 'articles', label: 'Articles' },
+    { key: 'events', label: 'Événements' },
+    { key: 'team', label: 'Équipe' },
+    { key: 'activities', label: 'Activités' },
+    { key: 'partners', label: 'Partenaires' },
+    { key: 'results', label: 'Résultats' },
+    { key: 'records', label: 'Records' },
+    { key: 'pages', label: 'Pages' },
+    { key: 'planning', label: 'Planning' },
+    { key: 'pricing', label: 'Tarifs' },
+    { key: 'settings', label: 'Réglages' },
+    { key: 'admins', label: 'Admins' },
+];
+
+const DEFAULT_PERMISSIONS: AdminUser['permissions'] = {
+    articles: true, events: true, team: true, activities: true,
+    partners: false, results: true, records: true, pages: false,
+    planning: false, pricing: false, settings: false, admins: false,
+};
+
+function AdminsView() {
+    const { adminUsers, addAdminUser, updateAdminUser, deleteAdminUser, settings } = useData();
+    const { user, isSuperAdmin } = useAuth();
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [inviteLoading, setInviteLoading] = useState(false);
+    const [inviteResult, setInviteResult] = useState<{ link?: string; error?: string } | null>(null);
+    const [editingPerms, setEditingPerms] = useState<string | null>(null);
+    const [tempPerms, setTempPerms] = useState<AdminUser['permissions']>({ ...DEFAULT_PERMISSIONS });
+    const [toast, setToast] = useState('');
+    const [confirmId, setConfirmId] = useState<string | null>(null);
+
+    const handleInvite = async () => {
+        if (!inviteEmail.trim()) return;
+        setInviteLoading(true);
+        setInviteResult(null);
+
+        const token = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const baseUrl = window.location.origin;
+        const inviteUrl = `${baseUrl}/admin/accept-invite?token=${token}&email=${encodeURIComponent(inviteEmail)}`;
+
+        const newAdmin: AdminUser = {
+            id: token,
+            email: inviteEmail.trim().toLowerCase(),
+            isSuperAdmin: false,
+            status: 'invited',
+            invitedAt: new Date().toISOString(),
+            invitedBy: user?.email || 'super-admin',
+            permissions: { ...DEFAULT_PERMISSIONS },
+        };
+        addAdminUser(newAdmin);
+
+        try {
+            const res = await fetch('/api/send-invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: inviteEmail, inviteUrl, clubName: settings.clubName }),
+            });
+            const data = await res.json();
+
+            if (data.noSmtp) {
+                setInviteResult({ link: inviteUrl });
+            } else if (data.success) {
+                setToast(`✓ Invitation envoyée à ${inviteEmail}`);
+                setInviteEmail('');
+            } else {
+                setInviteResult({ link: inviteUrl, error: "Email non envoyé (configurez SMTP)" });
+            }
+        } catch {
+            setInviteResult({ link: inviteUrl, error: "Email non envoyé — copiez ce lien" });
+        } finally {
+            setInviteLoading(false);
+        }
+    };
+
+    const openPerms = (admin: AdminUser) => {
+        setEditingPerms(admin.id);
+        setTempPerms({ ...DEFAULT_PERMISSIONS, ...admin.permissions });
+    };
+
+    const savePerms = () => {
+        if (!editingPerms) return;
+        updateAdminUser(editingPerms, { permissions: tempPerms });
+        setEditingPerms(null);
+        setToast('✓ Permissions mises à jour');
+    };
+
+    if (!isSuperAdmin) {
+        return (
+            <div className="admin-header">
+                <div>
+                    <h1>Administrateurs</h1>
+                    <p className="admin-subtitle" style={{ color: '#e63946' }}>⚠️ Accès réservé au super administrateur</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <div className="admin-header">
+                <div>
+                    <h1>Administrateurs</h1>
+                    <p className="admin-subtitle">Gérez les accès et permissions des administrateurs</p>
+                </div>
+            </div>
+
+            {/* Invite */}
+            <div className="admin-card" style={{ marginBottom: 24 }}>
+                <h3>📧 Inviter un nouvel administrateur</h3>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', marginTop: 16 }}>
+                    <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                        <label>Adresse email</label>
+                        <input
+                            type="email"
+                            value={inviteEmail}
+                            onChange={e => setInviteEmail(e.target.value)}
+                            placeholder="prenom.nom@example.com"
+                            onKeyDown={e => e.key === 'Enter' && handleInvite()}
+                        />
+                    </div>
+                    <button
+                        className="wp-btn wp-btn-primary"
+                        onClick={handleInvite}
+                        disabled={inviteLoading || !inviteEmail.trim()}
+                        style={{ marginBottom: 0 }}
+                    >
+                        {inviteLoading ? '⏳ Envoi...' : '✉️ Inviter'}
+                    </button>
+                </div>
+
+                {inviteResult && (
+                    <div style={{ marginTop: 16, background: inviteResult.error ? '#fffbeb' : '#f0fdf4', border: `1px solid ${inviteResult.error ? '#fcd34d' : '#86efac'}`, borderRadius: 8, padding: 16 }}>
+                        {inviteResult.error && <p style={{ color: '#92400e', marginBottom: 8, fontSize: '0.9rem' }}>⚠️ {inviteResult.error}</p>}
+                        <p style={{ fontSize: '0.85rem', color: '#374151', marginBottom: 8 }}>Partagez ce lien avec la personne invitée :</p>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <input
+                                value={inviteResult.link}
+                                readOnly
+                                style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: '0.8rem', fontFamily: 'monospace', background: '#f9fafb' }}
+                            />
+                            <button
+                                className="wp-btn"
+                                onClick={() => { navigator.clipboard.writeText(inviteResult.link!); setToast('✓ Lien copié !'); }}
+                            >
+                                📋 Copier
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* List */}
+            <div className="admin-card">
+                <h3>👥 Administrateurs ({adminUsers.length})</h3>
+                <table className="admin-table" style={{ marginTop: 16 }}>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Statut</th>
+                            <th>Invité le</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {adminUsers.map(admin => (
+                            <tr key={admin.id}>
+                                <td><strong>{admin.email}</strong></td>
+                                <td>
+                                    {admin.isSuperAdmin
+                                        ? <span className="wp-badge" style={{ background: '#fef3c7', color: '#92400e' }}>⭐ Super admin</span>
+                                        : <span className="wp-badge" style={{ background: '#e0f2fe', color: '#0369a1' }}>👤 Admin</span>}
+                                </td>
+                                <td>
+                                    <span className={`wp-badge ${admin.status === 'active' ? 'wp-badge-success' : 'wp-badge-draft'}`}>
+                                        {admin.status === 'active' ? '✓ Actif' : '⏳ Invité'}
+                                    </span>
+                                </td>
+                                <td style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                                    {new Date(admin.invitedAt).toLocaleDateString('fr-FR')}
+                                </td>
+                                <td>
+                                    <div className="wp-action-btns">
+                                        <button className="wp-btn-icon" title="Gérer les permissions" onClick={() => openPerms(admin)}>🔑</button>
+                                        {!admin.isSuperAdmin && (
+                                            <button
+                                                className="wp-btn-icon"
+                                                title="Promouvoir super admin"
+                                                onClick={() => { if (confirm(`Promouvoir ${admin.email} en super administrateur ?`)) { updateAdminUser(admin.id, { isSuperAdmin: true }); setToast('✓ Promu super admin'); } }}
+                                            >⭐</button>
+                                        )}
+                                        <button className="wp-btn-icon wp-btn-icon-danger" title="Révoquer l'accès" onClick={() => setConfirmId(admin.id)}>🗑️</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                        {adminUsers.length === 0 && (
+                            <tr><td colSpan={5} className="wp-empty-row">Aucun administrateur. Invitez quelqu&apos;un ci-dessus.</td></tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Permissions modal */}
+            {editingPerms && (
+                <Modal title="Gérer les permissions" onClose={() => setEditingPerms(null)}>
+                    <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: 20 }}>
+                        Sélectionnez les sections auxquelles cet administrateur a accès.
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        {ALL_PERMISSIONS.map(({ key, label }) => (
+                            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb', cursor: 'pointer', background: tempPerms[key] ? '#f0fdf4' : 'white' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={!!tempPerms[key]}
+                                    onChange={e => setTempPerms({ ...tempPerms, [key]: e.target.checked })}
+                                />
+                                <span style={{ fontWeight: tempPerms[key] ? 600 : 400 }}>{label}</span>
+                            </label>
+                        ))}
+                    </div>
+                    <div style={{ marginTop: 16, padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                            <input
+                                type="checkbox"
+                                checked={Object.values(tempPerms).every(Boolean)}
+                                onChange={e => {
+                                    const all = {} as AdminUser['permissions'];
+                                    ALL_PERMISSIONS.forEach(({ key }) => (all[key] = e.target.checked));
+                                    setTempPerms(all);
+                                }}
+                            />
+                            <strong>Tout sélectionner / désélectionner</strong>
+                        </label>
+                    </div>
+                    <div className="modal-actions">
+                        <button className="wp-btn wp-btn-cancel" onClick={() => setEditingPerms(null)}>Annuler</button>
+                        <button className="wp-btn wp-btn-primary" onClick={savePerms}>💾 Sauvegarder</button>
+                    </div>
+                </Modal>
+            )}
+
+            {confirmId && <ConfirmDialog message="Révoquer l'accès de cet administrateur ?" onConfirm={() => { deleteAdminUser(confirmId); setConfirmId(null); setToast('Accès révoqué'); }} onCancel={() => setConfirmId(null)} />}
+            {toast && <Toast message={toast} onClose={() => setToast('')} />}
+        </>
+    );
+}
+
+/* =============================================
    MAIN ADMIN
    ============================================= */
 export default function AdminDashboard() {
@@ -2487,6 +2834,7 @@ export default function AdminDashboard() {
             case 'planning': return <PlanningView />;
             case 'pricing': return <PricingView />;
             case 'settings': return <SettingsView />;
+            case 'admins': return <AdminsView />;
             default: return <DashboardView onNav={setActiveSection} />;
         }
     };

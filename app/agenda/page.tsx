@@ -57,7 +57,15 @@ export default function AgendaPage() {
                                         <div style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>
                                             {rangeString}
                                         </div>
-                                        <h3>{ev.title}</h3>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                                            <h3 style={{ margin: 0 }}>{ev.title}</h3>
+                                            {ev.audience === 'licensed' && (
+                                                <span style={{ background: '#fef3c7', color: '#92400e', borderRadius: 20, padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>🔒 Licenciés</span>
+                                            )}
+                                            {ev.audience === 'public' && (
+                                                <span style={{ background: '#dcfce7', color: '#166534', borderRadius: 20, padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>🌍 Ouvert à tous</span>
+                                            )}
+                                        </div>
                                         <p>{ev.description}</p>
                                         <div className="event-location">📍 {ev.location}</div>
 

@@ -117,6 +117,11 @@ export default function ResultatsPage() {
                                                     <th>Athlète</th>
                                                     <th>Catégorie</th>
                                                     <th>Performance</th>
+                                                    {r.showFields?.timeCourse && <th>Tps Course</th>}
+                                                    {r.showFields?.timePuce && <th>Tps Puce</th>}
+                                                    {r.showFields?.classementScratch && <th>Cl. Scratch</th>}
+                                                    {r.showFields?.classementCategorie && <th>Cl. Catégorie</th>}
+                                                    {r.showFields?.classementFeminine && <th>Cl. Féminine</th>}
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -126,6 +131,11 @@ export default function ResultatsPage() {
                                                         <td><strong>{a.name}</strong></td>
                                                         <td>{a.category}</td>
                                                         <td className="result-perf">{a.performance}</td>
+                                                        {r.showFields?.timeCourse && <td className="result-perf">{a.timeCourse || '—'}</td>}
+                                                        {r.showFields?.timePuce && <td className="result-perf">{a.timePuce || '—'}</td>}
+                                                        {r.showFields?.classementScratch && <td><span className="result-rank">{a.classementScratch || '—'}</span></td>}
+                                                        {r.showFields?.classementCategorie && <td><span className="result-rank">{a.classementCategorie || '—'}</span></td>}
+                                                        {r.showFields?.classementFeminine && <td><span className="result-rank">{a.classementFeminine || '—'}</span></td>}
                                                     </tr>
                                                 ))}
                                             </tbody>
