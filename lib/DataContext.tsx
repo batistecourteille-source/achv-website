@@ -23,8 +23,9 @@ export interface Article {
     images?: string[];
     published: boolean;
     city?: 'Noyal' | 'Nouvoitou' | 'Les deux';
-    isFeatured?: boolean; // Pour le style journal (A la une)
-    author?: string; // NOUVEAU : nom de l'auteur personnalisé
+    isFeatured?: boolean;
+    author?: string;
+    tags?: string[];
 }
 
 export interface Event {
@@ -36,6 +37,7 @@ export interface Event {
     description: string;
     registrationUrl?: string;
     presentationUrl?: string;
+    audience?: 'licensed' | 'public' | 'both';
 }
 
 export interface TeamMember {
@@ -75,14 +77,56 @@ export interface CustomPage {
     order: number;
 }
 
+export interface ResultAthlete {
+    name: string;
+    performance: string;
+    category: string;
+    rank?: string;
+    timeCourse?: string;
+    timePuce?: string;
+    classementScratch?: string;
+    classementCategorie?: string;
+    classementFeminine?: string;
+}
+
 export interface Result {
     id: string;
     date: string;
     competition: string;
     discipline: 'piste' | 'cross' | 'route' | 'trail' | 'marche-nordique';
-    athletes: { name: string; performance: string; category: string; rank?: string }[];
+    athletes: ResultAthlete[];
     location: string;
     url?: string;
+    showFields?: {
+        timeCourse?: boolean;
+        timePuce?: boolean;
+        classementScratch?: boolean;
+        classementCategorie?: boolean;
+        classementFeminine?: boolean;
+    };
+}
+
+export interface AdminUser {
+    id: string;
+    email: string;
+    displayName?: string;
+    isSuperAdmin: boolean;
+    status: 'invited' | 'active';
+    invitedAt: string;
+    invitedBy: string;
+    permissions: {
+        articles: boolean;
+        events: boolean;
+        team: boolean;
+        activities: boolean;
+        partners: boolean;
+        results: boolean;
+        pages: boolean;
+        planning: boolean;
+        pricing: boolean;
+        settings: boolean;
+        admins: boolean;
+    };
 }
 
 export interface ClubRecord {
@@ -150,6 +194,7 @@ export interface SiteSettings {
     instagramPostUrl?: string; // Legacy
     featuredPostUrls: string[];
     instagramAccessToken?: string;
+    instagramLastSync?: string;
     facebookAccessToken?: string;
     facebookPageId?: string;
     youtubeApiKey?: string;
@@ -348,6 +393,11 @@ interface DataContextType {
     addSocialPost: (p: SocialPost) => void;
     updateSocialPost: (id: string, p: Partial<SocialPost>) => void;
     deleteSocialPost: (id: string) => void;
+    adminUsers: AdminUser[];
+    setAdminUsers: (a: AdminUser[]) => void;
+    addAdminUser: (a: AdminUser) => void;
+    updateAdminUser: (id: string, a: Partial<AdminUser>) => void;
+    deleteAdminUser: (id: string) => void;
 }
 
 export interface ScheduleItem {
@@ -902,6 +952,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const [schedules, setSchedulesState] = useState<ScheduleItem[]>([]);
     const [pricing, setPricingState] = useState<PricingItem[]>([]);
     const [socialPosts, setSocialPostsState] = useState<SocialPost[]>([]);
+    const [adminUsers, setAdminUsersState] = useState<AdminUser[]>([]);
     const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
     const [loaded, setLoaded] = useState(false);
 
@@ -950,6 +1001,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 if (data.schedules) setSchedulesState(data.schedules);
                 if (data.pricing) setPricingState(data.pricing);
                 if (data.socialPosts) setSocialPostsState([...data.socialPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+                if (data.adminUsers) setAdminUsersState(data.adminUsers);
                 if (data.settings) setSettingsState(mergeSettings(data.settings, defaultSettings));
             } else {
                 // Initialize Firestore with defaults if empty
@@ -1027,6 +1079,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setSocialPostsState(sorted);
         saveToFirestore('socialPosts', sorted);
     };
+    const setAdminUsers = (a: AdminUser[]) => { setAdminUsersState(a); saveToFirestore('adminUsers', a); };
     const setSettings = (s: SiteSettings) => { setSettingsState(s); saveToFirestore('settings', s); };
 
     const addArticle = (a: Article) => setArticles([a, ...articles]);
@@ -1069,6 +1122,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const updateSocialPost = (id: string, data: Partial<SocialPost>) => setSocialPosts(socialPosts.map(p => p.id === id ? { ...p, ...data } : p));
     const deleteSocialPost = (id: string) => setSocialPosts(socialPosts.filter(p => p.id !== id));
 
+    const addAdminUser = (a: AdminUser) => setAdminUsers([...adminUsers, a]);
+    const updateAdminUser = (id: string, data: Partial<AdminUser>) => setAdminUsers(adminUsers.map(a => a.id === id ? { ...a, ...data } : a));
+    const deleteAdminUser = (id: string) => setAdminUsers(adminUsers.filter(a => a.id !== id));
+
     // We always render children to avoid hydration mismatches and allow SSR
     // The data will be default values until Firestore loads on the client
 
@@ -1087,6 +1144,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
             schedules, setSchedules, addSchedule, updateSchedule, deleteSchedule,
             pricing, setPricing, addPricing, updatePricing, deletePricing,
             socialPosts, setSocialPosts, addSocialPost, updateSocialPost, deleteSocialPost,
+            adminUsers, setAdminUsers, addAdminUser, updateAdminUser, deleteAdminUser,
         }}>
             {children}
         </DataContext.Provider>

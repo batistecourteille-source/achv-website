@@ -1,25 +1,46 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { auth } from './firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
+import { auth, db } from './firebase';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, User } from 'firebase/auth';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { AdminUser } from './DataContext';
 
 interface AuthContextType {
     isAuthenticated: boolean;
     user: User | null;
+    isSuperAdmin: boolean;
+    adminProfile: AdminUser | null;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     sendPasswordReset: (email: string) => Promise<void>;
+    createAdminAccount: (email: string, password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
+    const [adminProfile, setAdminProfile] = useState<AdminUser | null>(null);
     const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
+            if (currentUser?.email) {
+                // Load admin profile from Firestore
+                const siteRef = doc(db, 'site', 'achv');
+                const snap = await getDoc(siteRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    const admins: AdminUser[] = data.adminUsers || [];
+                    const profile = admins.find(a => a.email === currentUser.email) || null;
+                    setAdminProfile(profile);
+                } else {
+                    setAdminProfile(null);
+                }
+            } else {
+                setAdminProfile(null);
+            }
             setLoaded(true);
         });
         return () => unsubscribe();
@@ -31,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const logout = async () => {
         await signOut(auth);
+        setAdminProfile(null);
     };
 
     const sendPasswordReset = async (email: string) => {
@@ -38,17 +60,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await sendPasswordResetEmail(auth, email);
     };
 
-    // We always render children to avoid hydration mismatches and allow SSR
-    // The auth state will be initially null until Firebase loads on the client
+    const createAdminAccount = async (email: string, password: string) => {
+        await createUserWithEmailAndPassword(auth, email, password);
+    };
 
+    const isSuperAdmin = !!adminProfile?.isSuperAdmin;
 
     return (
         <AuthContext.Provider value={{
             isAuthenticated: !!user,
             user,
+            isSuperAdmin,
+            adminProfile,
             login,
             logout,
-            sendPasswordReset
+            sendPasswordReset,
+            createAdminAccount,
         }}>
             {children}
         </AuthContext.Provider>
