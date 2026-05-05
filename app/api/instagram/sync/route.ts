@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 const FIELDS = 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp';
 
 async function runSync() {
     // Lazy import to avoid firebase-admin init crash if env var missing
-    const { adminDb } = await import('@/lib/firebase-admin');
+    const { getAdminDb } = await import('@/lib/firebase-admin');
+    const adminDb = getAdminDb();
 
     const docRef = adminDb.doc('site/achv');
     const doc = await docRef.get();

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET — called by Vercel Cron monthly to keep the token alive (valid 60 days)
 export async function GET(req: NextRequest) {
     const cronSecret = process.env.CRON_SECRET;
@@ -10,7 +12,8 @@ export async function GET(req: NextRequest) {
         }
     }
 
-    const { adminDb } = await import('@/lib/firebase-admin');
+    const { getAdminDb } = await import('@/lib/firebase-admin');
+    const adminDb = getAdminDb();
     const docRef = adminDb.doc('site/achv');
     const doc = await docRef.get();
     const token: string | undefined = doc.data()?.settings?.instagramAccessToken;

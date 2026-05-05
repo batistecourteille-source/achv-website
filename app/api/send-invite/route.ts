@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
     const { email, inviteUrl, clubName } = await req.json();
 
