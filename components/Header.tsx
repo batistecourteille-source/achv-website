@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useData } from '@/lib/DataContext';
+import GlobalSearch from './GlobalSearch';
 
 export default function Header() {
     const [scrolled, setScrolled] = useState(false);
@@ -93,6 +94,9 @@ export default function Header() {
                     <li><Link href="/partenaires" className={isActive('/partenaires') ? 'active' : ''} onClick={handleLinkClick}>Partenaires</Link></li>
                     <li><Link href="/rejoindre" className="nav-cta" onClick={handleLinkClick}>{settings.headerCtaText}</Link></li>
                 </nav>
+                <div className="nav-actions">
+                    <GlobalSearch />
+                </div>
                 <button
                     className={`mobile-menu-btn ${mobileOpen ? 'open' : ''}`}
                     onClick={() => {

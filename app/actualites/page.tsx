@@ -11,6 +11,7 @@ function ActualitesContent() {
     const { articles, socialPosts, settings } = useData();
     const searchParams = useSearchParams();
     const tabParam = searchParams.get('tab');
+    const tagParam = searchParams.get('tag');
     const [activeTab, setActiveTab] = useState<'blog' | 'social'>(tabParam === 'social' ? 'social' : 'blog');
 
     useEffect(() => {
@@ -19,13 +20,25 @@ function ActualitesContent() {
     }, [tabParam]);
 
     // BLOG LOGIC
-    const published = articles.filter(a => a.published);
+    const published = articles
+        .filter(a => a.published)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const categories = ['Toutes', ...Array.from(new Set(published.map(a => a.category).filter(Boolean).map(c => c || 'Uncategorized')))];
     const allTags = Array.from(new Set(published.flatMap(a => a.tags || []))).sort();
     const [activeCategory, setActiveCategory] = useState('Toutes');
     const [activeCity, setActiveCity] = useState('Toutes');
-    const [activeTag, setActiveTag] = useState('');
+    const [activeTag, setActiveTag] = useState(tagParam || '');
     const [searchQuery, setSearchQuery] = useState('');
+    const [visibleCount, setVisibleCount] = useState(9);
+
+    useEffect(() => {
+        if (tagParam) setActiveTag(tagParam);
+    }, [tagParam]);
+
+    // Reset visible count when filters change
+    useEffect(() => {
+        setVisibleCount(9);
+    }, [activeCategory, activeCity, activeTag, searchQuery]);
 
     const filteredArticles = published.filter(a => {
         const catMatch = activeCategory === 'Toutes' || a.category === activeCategory;
@@ -33,7 +46,7 @@ function ActualitesContent() {
         const cityMatch = activeCity === 'Toutes' || articleCity === 'Les deux' || (activeCity === 'Noyal' && articleCity === 'Noyal') || (activeCity === 'Nouvoitou' && articleCity === 'Nouvoitou');
         const tagMatch = !activeTag || (a.tags || []).includes(activeTag);
         const q = searchQuery.toLowerCase();
-        const searchMatch = !q || a.title.toLowerCase().includes(q) || a.excerpt.toLowerCase().includes(q) || (a.tags || []).some(t => t.includes(q));
+        const searchMatch = !q || a.title.toLowerCase().includes(q) || (a.excerpt || '').toLowerCase().includes(q) || (a.tags || []).some(t => t.toLowerCase().includes(q));
         return catMatch && cityMatch && tagMatch && searchMatch;
     });
 
@@ -289,35 +302,60 @@ function ActualitesContent() {
                                 )}
 
                                 {/* 2. FIL D'ACTUALITÉS */}
-                                <div className="editorial-feed-section">
-                                    <h2 style={{ fontSize: '1.5rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '8px', marginBottom: '24px', fontFamily: '"Georgia", serif', textTransform: 'uppercase', letterSpacing: '1px', color: '#374151' }}>
-                                        Dernières publications
-                                    </h2>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px', borderTop: filteredArticles.filter(a => a.isFeatured).length > 0 ? 'none' : '4px solid var(--dark)', paddingTop: filteredArticles.filter(a => a.isFeatured).length > 0 ? '0' : '8px' }}>
-                                        {filteredArticles.filter(a => !a.isFeatured).map(article => (
-                                            <Link key={article.id} href={`/actualites/${article.id}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                                {article.image ? (
-                                                    <div style={{ overflow: 'hidden', borderRadius: '2px', marginBottom: '12px' }}>
-                                                        <img src={article.image} alt={article.title} style={{ width: '100%', height: '180px', objectFit: 'cover', transition: 'transform 0.3s ease' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
-                                                    </div>
-                                                ) : (
-                                                    <div className="image-placeholder" style={{ height: '180px', borderRadius: '2px', marginBottom: '12px', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>🏃</div>
-                                                )}
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>{article.category}</div>
-                                                    <h3 style={{ fontSize: '1.25rem', fontFamily: '"Georgia", serif', lineHeight: '1.3', color: 'var(--dark)', marginBottom: '8px' }}>{article.title}</h3>
-                                                    <p style={{ fontSize: '0.95rem', color: '#6b7280', lineHeight: '1.5', fontFamily: '"Georgia", serif' }}>
-                                                        {article.excerpt.length > 100 ? article.excerpt.substring(0, 100) + '...' : article.excerpt}
-                                                    </p>
+                                {(() => {
+                                    const nonFeatured = filteredArticles.filter(a => !a.isFeatured);
+                                    const visible = nonFeatured.slice(0, visibleCount);
+                                    return (
+                                        <div className="editorial-feed-section">
+                                            <h2 style={{ fontSize: '1.5rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '8px', marginBottom: '24px', fontFamily: '"Georgia", serif', textTransform: 'uppercase', letterSpacing: '1px', color: '#374151' }}>
+                                                Dernières publications
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#9ca3af', marginLeft: 12, textTransform: 'none', letterSpacing: 0 }}>
+                                                    ({nonFeatured.length} {nonFeatured.length > 1 ? 'articles' : 'article'})
+                                                </span>
+                                            </h2>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: '24px', borderTop: filteredArticles.filter(a => a.isFeatured).length > 0 ? 'none' : '4px solid var(--dark)', paddingTop: filteredArticles.filter(a => a.isFeatured).length > 0 ? '0' : '8px' }}>
+                                                {visible.map(article => (
+                                                    <Link key={article.id} href={`/actualites/${article.id}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                                        {article.image ? (
+                                                            <div style={{ overflow: 'hidden', borderRadius: '2px', marginBottom: '12px' }}>
+                                                                <img src={article.image} alt={article.title} style={{ width: '100%', height: '180px', objectFit: 'cover', transition: 'transform 0.3s ease' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="image-placeholder" style={{ height: '180px', borderRadius: '2px', marginBottom: '12px', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>🏃</div>
+                                                        )}
+                                                        <div style={{ flex: 1 }}>
+                                                            <div style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>{article.category}</div>
+                                                            <h3 style={{ fontSize: '1.25rem', fontFamily: '"Georgia", serif', lineHeight: '1.3', color: 'var(--dark)', marginBottom: '8px' }}>{article.title}</h3>
+                                                            <p style={{ fontSize: '0.95rem', color: '#6b7280', lineHeight: '1.5', fontFamily: '"Georgia", serif' }}>
+                                                                {(article.excerpt || '').length > 100 ? (article.excerpt || '').substring(0, 100) + '...' : (article.excerpt || '')}
+                                                            </p>
+                                                        </div>
+                                                        <div style={{ marginTop: '16px', color: '#9ca3af', fontSize: '0.8rem', borderTop: '1px solid #f3f4f6', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
+                                                            <span>{new Date(article.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                                                            <span style={{ fontStyle: 'italic' }}>Par {article.author || 'La Rédaction'}</span>
+                                                        </div>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                            {nonFeatured.length > visibleCount && (
+                                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
+                                                    <button
+                                                        onClick={() => setVisibleCount(c => c + 9)}
+                                                        style={{
+                                                            padding: '12px 32px', borderRadius: 50, border: '1.5px solid var(--dark)',
+                                                            background: 'white', color: 'var(--dark)', fontSize: '0.95rem',
+                                                            fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
+                                                        }}
+                                                        onMouseOver={e => { e.currentTarget.style.background = 'var(--dark)'; e.currentTarget.style.color = 'white'; }}
+                                                        onMouseOut={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = 'var(--dark)'; }}
+                                                    >
+                                                        Voir plus d&apos;articles ({nonFeatured.length - visibleCount} restants)
+                                                    </button>
                                                 </div>
-                                                <div style={{ marginTop: '16px', color: '#9ca3af', fontSize: '0.8rem', borderTop: '1px solid #f3f4f6', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                                                    <span>{new Date(article.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-                                                    <span style={{ fontStyle: 'italic' }}>Par {article.author || 'La Rédaction'}</span>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                             </div>
                             {filteredArticles.length === 0 && (
                                 <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--medium-gray)' }}>
