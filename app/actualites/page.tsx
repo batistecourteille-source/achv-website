@@ -7,6 +7,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Suspense } from 'react';
 import SocialPostEmbed from '@/components/SocialPostEmbed';
+import BookmarkButton from '@/components/BookmarkButton';
+import { useBookmarks } from '@/lib/useBookmarks';
 function ActualitesContent() {
     const { articles, socialPosts, settings } = useData();
     const searchParams = useSearchParams();
@@ -30,6 +32,9 @@ function ActualitesContent() {
     const [activeTag, setActiveTag] = useState(tagParam || '');
     const [searchQuery, setSearchQuery] = useState('');
     const [visibleCount, setVisibleCount] = useState(9);
+    const [sortMode, setSortMode] = useState<'newest' | 'oldest' | 'alpha'>('newest');
+    const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
+    const bookmarks = useBookmarks();
 
     useEffect(() => {
         if (tagParam) setActiveTag(tagParam);
@@ -40,15 +45,22 @@ function ActualitesContent() {
         setVisibleCount(9);
     }, [activeCategory, activeCity, activeTag, searchQuery]);
 
-    const filteredArticles = published.filter(a => {
-        const catMatch = activeCategory === 'Toutes' || a.category === activeCategory;
-        const articleCity = a.city || 'Les deux';
-        const cityMatch = activeCity === 'Toutes' || articleCity === 'Les deux' || (activeCity === 'Noyal' && articleCity === 'Noyal') || (activeCity === 'Nouvoitou' && articleCity === 'Nouvoitou');
-        const tagMatch = !activeTag || (a.tags || []).includes(activeTag);
-        const q = searchQuery.toLowerCase();
-        const searchMatch = !q || a.title.toLowerCase().includes(q) || (a.excerpt || '').toLowerCase().includes(q) || (a.tags || []).some(t => t.toLowerCase().includes(q));
-        return catMatch && cityMatch && tagMatch && searchMatch;
-    });
+    const filteredArticles = published
+        .filter(a => {
+            const catMatch = activeCategory === 'Toutes' || a.category === activeCategory;
+            const articleCity = a.city || 'Les deux';
+            const cityMatch = activeCity === 'Toutes' || articleCity === 'Les deux' || (activeCity === 'Noyal' && articleCity === 'Noyal') || (activeCity === 'Nouvoitou' && articleCity === 'Nouvoitou');
+            const tagMatch = !activeTag || (a.tags || []).includes(activeTag);
+            const q = searchQuery.toLowerCase();
+            const searchMatch = !q || a.title.toLowerCase().includes(q) || (a.excerpt || '').toLowerCase().includes(q) || (a.tags || []).some(t => t.toLowerCase().includes(q));
+            const bookmarkMatch = !showBookmarksOnly || bookmarks.has(a.id);
+            return catMatch && cityMatch && tagMatch && searchMatch && bookmarkMatch;
+        })
+        .sort((a, b) => {
+            if (sortMode === 'oldest') return new Date(a.date).getTime() - new Date(b.date).getTime();
+            if (sortMode === 'alpha') return a.title.localeCompare(b.title, 'fr');
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
 
     // SOCIAL LOGIC
     const sortedSocialPosts = [...socialPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -267,6 +279,45 @@ function ActualitesContent() {
                                 </div>
                             )}
 
+                            {/* Tri + favoris */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 24, padding: '12px 16px', background: '#f8fafc', borderRadius: 12 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                    <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 500 }}>Trier :</span>
+                                    {([
+                                        { id: 'newest', label: 'Plus récent', icon: '📅' },
+                                        { id: 'oldest', label: 'Plus ancien', icon: '⌛' },
+                                        { id: 'alpha', label: 'A-Z', icon: '🔤' },
+                                    ] as const).map(s => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => setSortMode(s.id)}
+                                            style={{
+                                                padding: '5px 12px', borderRadius: 20, border: 'none',
+                                                background: sortMode === s.id ? 'var(--dark)' : 'white',
+                                                color: sortMode === s.id ? 'white' : '#475569',
+                                                fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer',
+                                                transition: 'all 0.15s',
+                                            }}
+                                        >
+                                            {s.icon} {s.label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
+                                    style={{
+                                        padding: '5px 14px', borderRadius: 20,
+                                        border: showBookmarksOnly ? '1.5px solid #f59e0b' : '1.5px solid #e5e7eb',
+                                        background: showBookmarksOnly ? '#fef3c7' : 'white',
+                                        color: showBookmarksOnly ? '#92400e' : '#475569',
+                                        fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer',
+                                    }}
+                                    title={`${bookmarks.count} article${bookmarks.count > 1 ? 's' : ''} enregistré${bookmarks.count > 1 ? 's' : ''}`}
+                                >
+                                    🔖 Mes favoris {bookmarks.count > 0 && `(${bookmarks.count})`}
+                                </button>
+                            </div>
+
                             {/* Layout éditorial */}
                             <div className="editorial-layout" style={{ display: 'grid', gap: '48px', marginBottom: '60px' }}>
 
@@ -278,7 +329,10 @@ function ActualitesContent() {
                                         </h2>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
                                             {filteredArticles.filter(a => a.isFeatured).map(article => (
-                                                <Link key={article.id} href={`/actualites/${article.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                                                <Link key={article.id} href={`/actualites/${article.id}`} style={{ textDecoration: 'none', display: 'block', position: 'relative' }}>
+                                                    <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }}>
+                                                        <BookmarkButton articleId={article.id} />
+                                                    </div>
                                                     {article.image && (
                                                         <div style={{ overflow: 'hidden', borderRadius: '2px', marginBottom: '16px' }}>
                                                             <img src={article.image} alt={article.title} style={{ width: '100%', height: '350px', objectFit: 'cover', transition: 'transform 0.5s ease' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.03)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
@@ -315,7 +369,10 @@ function ActualitesContent() {
                                             </h2>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: '24px', borderTop: filteredArticles.filter(a => a.isFeatured).length > 0 ? 'none' : '4px solid var(--dark)', paddingTop: filteredArticles.filter(a => a.isFeatured).length > 0 ? '0' : '8px' }}>
                                                 {visible.map(article => (
-                                                    <Link key={article.id} href={`/actualites/${article.id}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                                    <Link key={article.id} href={`/actualites/${article.id}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+                                                        <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>
+                                                            <BookmarkButton articleId={article.id} />
+                                                        </div>
                                                         {article.image ? (
                                                             <div style={{ overflow: 'hidden', borderRadius: '2px', marginBottom: '12px' }}>
                                                                 <img src={article.image} alt={article.title} style={{ width: '100%', height: '180px', objectFit: 'cover', transition: 'transform 0.3s ease' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />

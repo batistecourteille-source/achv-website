@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useData, Article, Event as Ev, TeamMember, Activity, Partner, CustomPage, Result, ResultAthlete, ClubRecord, ScheduleItem, PricingItem, AdminUser } from '@/lib/DataContext';
 import { useAuth } from '@/lib/AuthContext';
@@ -174,6 +174,11 @@ function RichTextArea({ value, onChange, rows = 8, placeholder }: { value: strin
         if (url) exec('createLink', url);
     };
 
+    const handleImage = () => {
+        const url = prompt('URL de l\'image :');
+        if (url) exec('insertImage', url);
+    };
+
     return (
         <div className="wp-richtext">
             <div className="wp-toolbar">
@@ -181,11 +186,22 @@ function RichTextArea({ value, onChange, rows = 8, placeholder }: { value: strin
                 <button type="button" title="Italique" onClick={() => exec('italic')} style={{ fontStyle: 'italic' }}>I</button>
                 <button type="button" title="Souligné" onClick={() => exec('underline')} style={{ textDecoration: 'underline' }}>S</button>
                 <span className="wp-toolbar-sep" />
-                <button type="button" title="Titre" onClick={() => exec('formatBlock', 'h3')}>Titre</button>
-                <button type="button" title="Paragraphe" onClick={() => exec('formatBlock', 'p')}>Paragraphe</button>
+                <button type="button" title="Titre principal" onClick={() => exec('formatBlock', 'h2')}>H2</button>
+                <button type="button" title="Sous-titre" onClick={() => exec('formatBlock', 'h3')}>H3</button>
+                <button type="button" title="Paragraphe" onClick={() => exec('formatBlock', 'p')}>¶</button>
+                <button type="button" title="Citation" onClick={() => exec('formatBlock', 'blockquote')}>❝</button>
+                <span className="wp-toolbar-sep" />
                 <button type="button" title="Liste à puces" onClick={() => exec('insertUnorderedList')}>• Liste</button>
+                <button type="button" title="Liste numérotée" onClick={() => exec('insertOrderedList')}>1. Liste</button>
+                <span className="wp-toolbar-sep" />
+                <button type="button" title="Aligner à gauche" onClick={() => exec('justifyLeft')}>⬅</button>
+                <button type="button" title="Centrer" onClick={() => exec('justifyCenter')}>↔</button>
+                <button type="button" title="Aligner à droite" onClick={() => exec('justifyRight')}>➡</button>
                 <span className="wp-toolbar-sep" />
                 <button type="button" title="Insérer un lien" onClick={handleLink}>🔗 Lien</button>
+                <button type="button" title="Insérer une image" onClick={handleImage}>🖼️ Image</button>
+                <span className="wp-toolbar-sep" />
+                <button type="button" title="Effacer le formatage" onClick={() => exec('removeFormat')}>✕ Format</button>
             </div>
             <div
                 ref={editorRef}
@@ -401,6 +417,43 @@ function ArticlesView() {
     const [toast, setToast] = useState('');
     const [confirmId, setConfirmId] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showPreview, setShowPreview] = useState(false);
+
+    // All existing tags for autocomplete
+    const allExistingTags = useMemo(() => {
+        const set = new Set<string>();
+        articles.forEach(a => (a.tags || []).forEach(t => set.add(t)));
+        return Array.from(set).sort();
+    }, [articles]);
+
+    // Word count + reading time for current edit
+    const stats = useMemo(() => {
+        const text = (form.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        const words = text ? text.split(' ').length : 0;
+        const minutes = Math.max(1, Math.round(words / 200));
+        const chars = text.length;
+        return { words, minutes, chars };
+    }, [form.content]);
+
+    // Auto-save draft to localStorage
+    useEffect(() => {
+        if (!showModal) return;
+        const key = editing ? `draft_article_${editing.id}` : 'draft_article_new';
+        const t = setTimeout(() => {
+            try { localStorage.setItem(key, JSON.stringify(form)); } catch {}
+        }, 1000);
+        return () => clearTimeout(t);
+    }, [form, showModal, editing]);
+
+    // Tag suggestions while typing
+    const tagSuggestions = useMemo(() => {
+        const q = tagInput.trim().toLowerCase();
+        if (!q) return [];
+        return allExistingTags
+            .filter(t => t.toLowerCase().includes(q) && !form.tags.includes(t))
+            .slice(0, 6);
+    }, [tagInput, allExistingTags, form.tags]);
 
     const openNew = () => { setEditing(null); setForm({ title: '', content: '', excerpt: '', date: new Date().toISOString().split('T')[0], category: 'Vie du club', image: '', images: [], published: true, city: 'Les deux', isFeatured: false, author: '', tags: [] }); setTagInput(''); setShowModal(true); };
     const openEdit = (a: Article) => { setEditing(a); setForm({ title: a.title, content: a.content, excerpt: a.excerpt, date: a.date, category: a.category, image: a.image || '', images: a.images || [], published: a.published, city: a.city || 'Les deux', isFeatured: !!a.isFeatured, author: a.author || '', tags: a.tags || [] }); setTagInput(''); setShowModal(true); };
@@ -423,7 +476,18 @@ function ArticlesView() {
         setShowModal(false);
     };
 
-    const filtered = filter === 'all' ? articles : articles.filter(a => filter === 'published' ? a.published : !a.published);
+    const filtered = articles
+        .filter(a => filter === 'all' || (filter === 'published' ? a.published : !a.published))
+        .filter(a => {
+            const q = searchQuery.trim().toLowerCase();
+            if (!q) return true;
+            return a.title.toLowerCase().includes(q)
+                || (a.excerpt || '').toLowerCase().includes(q)
+                || (a.author || '').toLowerCase().includes(q)
+                || (a.category || '').toLowerCase().includes(q)
+                || (a.tags || []).some(t => t.toLowerCase().includes(q));
+        })
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return (
         <>
@@ -435,10 +499,25 @@ function ArticlesView() {
                 <button className="wp-btn wp-btn-primary" onClick={openNew}>+ Nouvel article</button>
             </div>
 
-            <div className="wp-filters">
-                <button className={`wp-filter ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>Tous ({articles.length})</button>
-                <button className={`wp-filter ${filter === 'published' ? 'active' : ''}`} onClick={() => setFilter('published')}>Publiés ({articles.filter(a => a.published).length})</button>
-                <button className={`wp-filter ${filter === 'draft' ? 'active' : ''}`} onClick={() => setFilter('draft')}>Brouillons ({articles.filter(a => !a.published).length})</button>
+            <div className="wp-filters" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button className={`wp-filter ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>Tous ({articles.length})</button>
+                    <button className={`wp-filter ${filter === 'published' ? 'active' : ''}`} onClick={() => setFilter('published')}>Publiés ({articles.filter(a => a.published).length})</button>
+                    <button className={`wp-filter ${filter === 'draft' ? 'active' : ''}`} onClick={() => setFilter('draft')}>Brouillons ({articles.filter(a => !a.published).length})</button>
+                </div>
+                <div style={{ position: 'relative', minWidth: 240, flex: '1 1 220px', maxWidth: 400 }}>
+                    <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: '0.95rem', pointerEvents: 'none' }}>🔍</span>
+                    <input
+                        type="search"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        placeholder="Rechercher (titre, auteur, tag, catégorie)…"
+                        style={{ width: '100%', padding: '8px 12px 8px 36px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: '0.9rem', boxSizing: 'border-box' }}
+                    />
+                    {searchQuery && (
+                        <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 4 }}>✕</button>
+                    )}
+                </div>
             </div>
 
             <div className="admin-card">
@@ -475,7 +554,14 @@ function ArticlesView() {
                         <div className="wp-editor-main">
                             <div className="form-group"><label>Titre</label><input className="wp-input-lg" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Donnez un titre à votre article..." /></div>
                             <div className="form-group"><label>Auteur</label><p className="form-hint">Laissez vide pour afficher "Par La Rédaction"</p><input value={form.author} onChange={e => setForm({ ...form, author: e.target.value })} placeholder="Ex: Jean Dupont" /></div>
-                            <div className="form-group"><label>Contenu</label><RichTextArea value={form.content} onChange={v => setForm({ ...form, content: v })} placeholder="Rédigez le contenu de l'article ici..." /></div>
+                            <div className="form-group">
+                                <label>Contenu</label>
+                                <RichTextArea value={form.content} onChange={v => setForm({ ...form, content: v })} placeholder="Rédigez le contenu de l'article ici..." />
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.8rem', color: '#64748b' }}>
+                                    <span>📝 <strong>{stats.words}</strong> mots · <strong>{stats.chars}</strong> caractères</span>
+                                    <span>⏱️ ~{stats.minutes} min de lecture</span>
+                                </div>
+                            </div>
                             <div className="form-group"><label>Extrait</label><p className="form-hint">Un résumé court affiché dans les aperçus</p><textarea value={form.excerpt} onChange={e => setForm({ ...form, excerpt: e.target.value })} rows={2} placeholder="Résumé de l'article en une ou deux phrases..." /></div>
                         </div>
                         <div className="wp-editor-sidebar">
@@ -514,7 +600,7 @@ function ArticlesView() {
                                         </span>
                                     ))}
                                 </div>
-                                <div style={{ display: 'flex', gap: 6 }}>
+                                <div style={{ display: 'flex', gap: 6, position: 'relative' }}>
                                     <input
                                         value={tagInput}
                                         onChange={e => setTagInput(e.target.value)}
@@ -524,6 +610,20 @@ function ArticlesView() {
                                     />
                                     <button type="button" onClick={addTag} className="wp-btn" style={{ padding: '6px 12px', fontSize: '0.85rem' }}>+</button>
                                 </div>
+                                {tagSuggestions.length > 0 && (
+                                    <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                                        {tagSuggestions.map(t => (
+                                            <button
+                                                key={t}
+                                                type="button"
+                                                onClick={() => { setForm({ ...form, tags: [...form.tags, t] }); setTagInput(''); }}
+                                                style={{ background: '#f3f4f6', border: '1px solid #e5e7eb', color: '#475569', borderRadius: 14, padding: '2px 10px', fontSize: '0.75rem', cursor: 'pointer' }}
+                                            >
+                                                + #{t}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <div className="wp-sidebar-box">
                                 <h4>Image à la une</h4>
@@ -566,7 +666,43 @@ function ArticlesView() {
                     </div>
                     <div className="modal-actions">
                         <button className="wp-btn wp-btn-cancel" onClick={() => setShowModal(false)}>Annuler</button>
+                        <button className="wp-btn" onClick={() => setShowPreview(true)}>👁️ Aperçu</button>
+                        <button className="wp-btn" onClick={() => { setForm({ ...form, published: false }); setTimeout(save, 10); }} title="Enregistrer comme brouillon">📋 Brouillon</button>
                         <button className="wp-btn wp-btn-primary" onClick={save}>💾 {editing ? 'Mettre à jour' : 'Publier'}</button>
+                    </div>
+                </Modal>
+            )}
+            {showPreview && (
+                <Modal title="Aperçu de l'article" onClose={() => setShowPreview(false)} wide>
+                    <div style={{ padding: '8px 0 24px', maxWidth: 760, margin: '0 auto' }}>
+                        {form.image && (
+                            <img src={form.image} alt={form.title} style={{ width: '100%', maxHeight: 400, objectFit: 'cover', borderRadius: 12, marginBottom: 24 }} />
+                        )}
+                        <div style={{ color: 'var(--primary, #e63946)', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>
+                            {form.category || 'Catégorie'} {form.city && form.city !== 'Les deux' && `• ${form.city}`}
+                        </div>
+                        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(1.8rem, 4vw, 2.4rem)', lineHeight: 1.2, marginBottom: 12 }}>
+                            {form.title || '(sans titre)'}
+                        </h1>
+                        <div style={{ display: 'flex', gap: 14, fontSize: '0.85rem', color: '#64748b', marginBottom: 18, flexWrap: 'wrap' }}>
+                            <span>✍️ {form.author || 'La Rédaction'}</span>
+                            <span>📅 {form.date && new Date(form.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                            <span>⏱️ {stats.minutes} min</span>
+                        </div>
+                        {form.excerpt && (
+                            <p style={{ fontStyle: 'italic', color: '#475569', borderLeft: '3px solid #e63946', paddingLeft: 14, fontSize: '1.05rem', marginBottom: 24 }}>
+                                {form.excerpt}
+                            </p>
+                        )}
+                        <div style={{ fontSize: '1rem', lineHeight: 1.8, color: '#374151' }} dangerouslySetInnerHTML={{ __html: form.content || '<em style="color:#94a3b8">(aucun contenu)</em>' }} />
+                        {form.tags.length > 0 && (
+                            <div style={{ marginTop: 28, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                {form.tags.map(tag => <span key={tag} style={{ background: '#eff6ff', color: '#1d4ed8', borderRadius: 20, padding: '4px 12px', fontSize: '0.85rem' }}>#{tag}</span>)}
+                            </div>
+                        )}
+                    </div>
+                    <div className="modal-actions">
+                        <button className="wp-btn wp-btn-cancel" onClick={() => setShowPreview(false)}>Fermer</button>
                     </div>
                 </Modal>
             )}

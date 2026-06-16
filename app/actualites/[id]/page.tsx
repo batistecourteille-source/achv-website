@@ -5,6 +5,9 @@ import { useData } from '@/lib/DataContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ArticleShare from '@/components/ArticleShare';
+import ReadingProgress from '@/components/ReadingProgress';
+import TableOfContents from '@/components/TableOfContents';
+import BookmarkButton from '@/components/BookmarkButton';
 import { useParams, useRouter } from 'next/navigation';
 
 function readingTime(html: string) {
@@ -74,6 +77,7 @@ export default function ArticleDetail() {
     return (
         <>
             <Header />
+            <ReadingProgress />
             <div className="page-hero">
                 <div className="page-hero-content">
                     <div className="article-meta-hero">
@@ -114,6 +118,15 @@ export default function ArticleDetail() {
                         {article.excerpt && (
                             <p className="article-excerpt">{article.excerpt}</p>
                         )}
+
+                        <div className="article-actions-row">
+                            <BookmarkButton articleId={article.id} variant="text" />
+                            <button onClick={() => window.print()} className="article-print-btn" title="Imprimer">
+                                🖨️ Imprimer
+                            </button>
+                        </div>
+
+                        <TableOfContents contentSelector=".article-body" />
 
                         <div
                             className="article-body"
@@ -488,10 +501,54 @@ export default function ArticleDetail() {
                 }
                 .related-date { font-size: 0.78rem; color: #6b7280; }
 
+                .article-actions-row {
+                    display: flex;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                    margin: 0 0 24px;
+                }
+                .article-print-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 8px 16px;
+                    border-radius: 50px;
+                    border: 1.5px solid #e2e8f0;
+                    background: white;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    color: #475569;
+                    transition: all 0.15s;
+                    font-family: inherit;
+                }
+                .article-print-btn:hover { border-color: var(--primary); color: var(--primary); }
+
                 @media (max-width: 600px) {
                     .article-nav { grid-template-columns: 1fr; }
                     .article-nav-card.next { text-align: left; }
                     .article-meta-hero { gap: 10px; font-size: 0.85rem; }
+                }
+
+                /* Print-friendly */
+                @media print {
+                    .header,
+                    .footer,
+                    .article-share,
+                    .article-actions-row,
+                    .article-nav,
+                    .article-related,
+                    .toc-wrap,
+                    .nav-actions,
+                    .mobile-menu-btn { display: none !important; }
+                    .page-hero { background: white !important; color: black !important; padding: 0 !important; min-height: auto !important; }
+                    .page-hero-content { padding: 0 !important; }
+                    .page-hero h1, .article-meta-hero, .article-tags-hero { color: black !important; }
+                    .article-hero-tag { background: #eee !important; color: black !important; }
+                    .article-body { font-size: 11pt !important; }
+                    .article-hero-img { max-height: 4in !important; }
+                    .container { max-width: 100% !important; }
+                    a { color: black !important; text-decoration: underline; }
                 }
             `}</style>
         </>
