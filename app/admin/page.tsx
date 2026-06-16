@@ -339,6 +339,7 @@ function AdminSidebar({ active, onNav }: { active: string; onNav: (s: string) =>
         { id: 'planning', icon: '🗓️', label: 'Planning' },
         { id: 'pricing', icon: '💰', label: 'Tarifs' },
         { id: 'settings', icon: '⚙️', label: 'Réglages' },
+        { id: 'maintenance', icon: '🛠️', label: 'Maintenance' },
         { id: 'admins', icon: '👤', label: 'Administrateurs' },
     ];
 
@@ -2764,6 +2765,289 @@ const DEFAULT_PERMISSIONS: AdminUser['permissions'] = {
     planning: false, pricing: false, settings: false, admins: false,
 };
 
+/* =============================================
+   MAINTENANCE VIEW — Compression d'images bulk
+   ============================================= */
+function MaintenanceView() {
+    const { articles, partners, team, activities, customPages, socialPosts, settings, setSettings,
+        setArticles, setPartners, setTeam, setActivities, setCustomPages, setSocialPosts } = useData();
+    const [scanning, setScanning] = useState(false);
+    const [processing, setProcessing] = useState(false);
+    const [imageUrls, setImageUrls] = useState<Array<{ url: string; field: string; size?: number }>>([]);
+    const [progress, setProgress] = useState<{ current: number; total: number; savedKb: number; errors: string[] }>({ current: 0, total: 0, savedKb: 0, errors: [] });
+    const [toast, setToast] = useState('');
+
+    const isFirebaseStorageUrl = (u: any): u is string => {
+        return typeof u === 'string' && u.includes('firebasestorage.googleapis.com');
+    };
+
+    const scanImages = () => {
+        setScanning(true);
+        const found: Array<{ url: string; field: string }> = [];
+        // Settings logo
+        if (isFirebaseStorageUrl(settings.logo)) found.push({ url: settings.logo!, field: 'settings.logo' });
+        // Articles
+        articles.forEach(a => {
+            if (isFirebaseStorageUrl(a.image)) found.push({ url: a.image!, field: `articles[${a.id}].image` });
+            (a.images || []).forEach((img, i) => {
+                if (isFirebaseStorageUrl(img)) found.push({ url: img, field: `articles[${a.id}].images[${i}]` });
+            });
+        });
+        // Partners
+        partners.forEach(p => {
+            if (isFirebaseStorageUrl(p.logo)) found.push({ url: p.logo!, field: `partners[${p.id}].logo` });
+        });
+        // Team
+        team.forEach(m => {
+            if (isFirebaseStorageUrl(m.photo)) found.push({ url: m.photo!, field: `team[${m.id}].photo` });
+        });
+        // Activities
+        activities.forEach(act => {
+            if (isFirebaseStorageUrl((act as any).image)) found.push({ url: (act as any).image, field: `activities[${act.id}].image` });
+        });
+        // Social posts
+        socialPosts.forEach(sp => {
+            if (isFirebaseStorageUrl(sp.imageUrl)) found.push({ url: sp.imageUrl!, field: `socialPosts[${sp.id}].imageUrl` });
+        });
+        // Custom pages (embedded images in HTML content)
+        customPages.forEach(p => {
+            const matches = (p.content || '').matchAll(/<img[^>]+src=["']([^"']+)["']/g);
+            for (const m of matches) {
+                if (isFirebaseStorageUrl(m[1])) found.push({ url: m[1], field: `customPages[${p.id}].content` });
+            }
+        });
+
+        // Dedupe by URL (same image may be referenced twice)
+        const unique = Array.from(new Map(found.map(f => [f.url, f])).values());
+        setImageUrls(unique);
+        setScanning(false);
+        setToast(`✓ ${unique.length} image${unique.length > 1 ? 's' : ''} Firebase Storage trouvée${unique.length > 1 ? 's' : ''}`);
+    };
+
+    const compressBlob = (blob: Blob, fileName: string): Promise<{ blob: Blob; type: string }> => {
+        if (blob.type === 'image/gif' || blob.type === 'image/svg+xml') return Promise.resolve({ blob, type: blob.type });
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(blob);
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const MAX_W = 1920, MAX_H = 1920;
+                let { width, height } = img;
+                if (width > MAX_W || height > MAX_H) {
+                    const ratio = Math.min(MAX_W / width, MAX_H / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) { resolve({ blob, type: blob.type }); return; }
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob(out => {
+                    if (!out || out.size >= blob.size) resolve({ blob, type: blob.type });
+                    else resolve({ blob: out, type: 'image/jpeg' });
+                }, 'image/jpeg', 0.85);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Erreur lecture image')); };
+            img.src = url;
+        });
+    };
+
+    const uploadCompressed = async (blob: Blob, type: string, originalName: string) => {
+        const ext = type === 'image/jpeg' ? '.jpg' : (originalName.match(/\.[^.]+$/)?.[0] || '.bin');
+        const baseName = originalName.replace(/\.[^.]+$/, '');
+        const newName = `${baseName}_compressed_${Date.now()}${ext}`;
+        const storageRef = ref(storage!, `uploads/${newName}`);
+        await uploadBytes(storageRef, blob, { contentType: type });
+        return await getDownloadURL(storageRef);
+    };
+
+    const runCompression = async () => {
+        if (!confirm(`Compresser ${imageUrls.length} images ? L'opération peut prendre quelques minutes. Les anciennes images resteront sur Storage pour sécurité (à supprimer manuellement après vérification).`)) return;
+        setProcessing(true);
+        setProgress({ current: 0, total: imageUrls.length, savedKb: 0, errors: [] });
+
+        // Local mutable copies — we'll write back at the end
+        let _settings = { ...settings };
+        let _articles = articles.map(a => ({ ...a, images: a.images ? [...a.images] : undefined }));
+        let _partners = partners.map(p => ({ ...p }));
+        let _team = team.map(m => ({ ...m }));
+        let _activities = activities.map(a => ({ ...a }));
+        let _socialPosts = socialPosts.map(s => ({ ...s }));
+        let _customPages = customPages.map(p => ({ ...p }));
+
+        let savedTotalKb = 0;
+        const errors: string[] = [];
+
+        for (let i = 0; i < imageUrls.length; i++) {
+            const item = imageUrls[i];
+            try {
+                const res = await fetch(item.url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const original = await res.blob();
+                const originalKb = original.size / 1024;
+
+                const { blob: compressed, type } = await compressBlob(original, 'image');
+                const compressedKb = compressed.size / 1024;
+
+                if (compressed.size >= original.size * 0.95) {
+                    // No significant saving — skip
+                    setProgress(p => ({ ...p, current: i + 1 }));
+                    continue;
+                }
+
+                const fileName = item.url.split('/').pop()?.split('?')[0]?.split('%2F').pop() || 'image';
+                const newUrl = await uploadCompressed(compressed, type, decodeURIComponent(fileName));
+                savedTotalKb += (originalKb - compressedKb);
+
+                // Apply to local mutable copy
+                if (item.field === 'settings.logo') _settings.logo = newUrl;
+                else if (item.field.startsWith('articles[')) {
+                    const m = item.field.match(/articles\[([^\]]+)\]\.(image|images\[(\d+)\])/);
+                    if (m) {
+                        const aId = m[1];
+                        const idx = _articles.findIndex(a => a.id === aId);
+                        if (idx >= 0) {
+                            if (m[2] === 'image') _articles[idx].image = newUrl;
+                            else {
+                                const imgIdx = parseInt(m[3]);
+                                if (_articles[idx].images) _articles[idx].images![imgIdx] = newUrl;
+                            }
+                        }
+                    }
+                } else if (item.field.startsWith('partners[')) {
+                    const pId = item.field.match(/partners\[([^\]]+)\]/)?.[1];
+                    const idx = _partners.findIndex(p => p.id === pId);
+                    if (idx >= 0) _partners[idx].logo = newUrl;
+                } else if (item.field.startsWith('team[')) {
+                    const tId = item.field.match(/team\[([^\]]+)\]/)?.[1];
+                    const idx = _team.findIndex(t => t.id === tId);
+                    if (idx >= 0) _team[idx].photo = newUrl;
+                } else if (item.field.startsWith('activities[')) {
+                    const aId = item.field.match(/activities\[([^\]]+)\]/)?.[1];
+                    const idx = _activities.findIndex(a => a.id === aId);
+                    if (idx >= 0) (_activities[idx] as any).image = newUrl;
+                } else if (item.field.startsWith('socialPosts[')) {
+                    const sId = item.field.match(/socialPosts\[([^\]]+)\]/)?.[1];
+                    const idx = _socialPosts.findIndex(s => s.id === sId);
+                    if (idx >= 0) _socialPosts[idx].imageUrl = newUrl;
+                } else if (item.field.startsWith('customPages[')) {
+                    const pId = item.field.match(/customPages\[([^\]]+)\]/)?.[1];
+                    const idx = _customPages.findIndex(p => p.id === pId);
+                    if (idx >= 0) _customPages[idx].content = (_customPages[idx].content || '').split(item.url).join(newUrl);
+                }
+            } catch (e: any) {
+                errors.push(`${item.field} : ${e?.message || 'erreur'}`);
+            }
+            setProgress(p => ({ ...p, current: i + 1, savedKb: savedTotalKb, errors: [...errors] }));
+        }
+
+        // Write back to Firestore
+        setSettings(_settings);
+        setArticles(_articles);
+        setPartners(_partners);
+        setTeam(_team);
+        setActivities(_activities);
+        setSocialPosts(_socialPosts);
+        setCustomPages(_customPages);
+
+        setProcessing(false);
+        setToast(`✓ Compression terminée. Économie : ${(savedTotalKb / 1024).toFixed(1)} Mo`);
+    };
+
+    const pct = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
+
+    return (
+        <>
+            <div className="admin-header">
+                <div>
+                    <h1>🛠️ Maintenance</h1>
+                    <p className="admin-subtitle">Outils pour optimiser le site et gérer le stockage</p>
+                </div>
+            </div>
+
+            <div className="admin-card" style={{ marginBottom: 24 }}>
+                <h3>📸 Compression d&apos;images existantes</h3>
+                <p style={{ color: '#475569', marginBottom: 16, lineHeight: 1.6 }}>
+                    Analyse toutes les images stockées sur Firebase Storage du site (articles, partenaires, équipe, etc.) et les compresse pour libérer de l&apos;espace.
+                    Réduction typique : <strong>60-90%</strong> sans perte visible. Les images sont redimensionnées max 1920px et passées en JPEG qualité 85%.
+                </p>
+                <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 8, padding: 14, marginBottom: 16, fontSize: '0.9rem', color: '#92400e' }}>
+                    ⚠️ Les <strong>anciennes images</strong> restent sur Storage par sécurité. Vérifiez le site après l&apos;opération puis supprimez-les manuellement via Firebase Console (Storage → uploads).
+                </div>
+
+                {imageUrls.length === 0 && !scanning && (
+                    <button className="wp-btn wp-btn-primary" onClick={scanImages} disabled={scanning}>
+                        🔍 Analyser les images du site
+                    </button>
+                )}
+                {scanning && <p>Analyse en cours…</p>}
+
+                {imageUrls.length > 0 && !processing && progress.total === 0 && (
+                    <div>
+                        <p style={{ marginBottom: 12 }}>
+                            <strong>{imageUrls.length}</strong> images Firebase Storage détectées
+                        </p>
+                        <div style={{ maxHeight: 200, overflowY: 'auto', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: 12, marginBottom: 16, fontSize: '0.82rem', fontFamily: 'monospace' }}>
+                            {imageUrls.slice(0, 50).map((item, i) => (
+                                <div key={i} style={{ padding: '4px 0', borderBottom: '1px solid #f3f4f6', color: '#475569' }}>
+                                    <span style={{ color: '#0369a1' }}>{item.field}</span>
+                                </div>
+                            ))}
+                            {imageUrls.length > 50 && <div style={{ padding: '4px 0', color: '#9ca3af' }}>… et {imageUrls.length - 50} autres</div>}
+                        </div>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            <button className="wp-btn wp-btn-primary" onClick={runCompression}>
+                                🚀 Lancer la compression ({imageUrls.length})
+                            </button>
+                            <button className="wp-btn wp-btn-cancel" onClick={() => { setImageUrls([]); setProgress({ current: 0, total: 0, savedKb: 0, errors: [] }); }}>
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {(processing || (progress.total > 0 && !processing)) && (
+                    <div>
+                        <p style={{ marginBottom: 8 }}>
+                            {processing ? '⏳ Compression en cours…' : '✅ Terminé'} — {progress.current} / {progress.total}
+                        </p>
+                        <div style={{ background: '#e5e7eb', borderRadius: 8, overflow: 'hidden', height: 12, marginBottom: 12 }}>
+                            <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #10b981, #34d399)', transition: 'width 0.3s' }} />
+                        </div>
+                        <p style={{ fontSize: '0.95rem', color: '#475569' }}>
+                            💾 Économie : <strong>{(progress.savedKb / 1024).toFixed(1)} Mo</strong>
+                        </p>
+                        {progress.errors.length > 0 && (
+                            <div style={{ marginTop: 12, padding: 10, background: '#fef2f2', borderRadius: 6, fontSize: '0.85rem' }}>
+                                <p style={{ fontWeight: 600, color: '#991b1b', marginBottom: 4 }}>⚠️ {progress.errors.length} erreur(s) :</p>
+                                {progress.errors.slice(0, 5).map((err, i) => <div key={i} style={{ color: '#7f1d1d', fontFamily: 'monospace', fontSize: '0.8rem' }}>{err}</div>)}
+                            </div>
+                        )}
+                        {!processing && (
+                            <button className="wp-btn" style={{ marginTop: 16 }} onClick={() => { setImageUrls([]); setProgress({ current: 0, total: 0, savedKb: 0, errors: [] }); }}>
+                                Fermer
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            <div className="admin-card">
+                <h3>ℹ️ À propos du quota Firebase Storage</h3>
+                <p style={{ color: '#475569', lineHeight: 1.6 }}>
+                    Plan gratuit (Spark) : <strong>5 Go de stockage</strong> et <strong>1 Go/jour de téléchargement</strong>.
+                    Une fois dépassé, les uploads sont bloqués. Solutions : compresser les images existantes, passer en plan Blaze (pay-as-you-go, ~0,026 $/Go au-delà de la franchise gratuite), ou nettoyer le bucket via Firebase Console.
+                </p>
+            </div>
+
+            {toast && <Toast message={toast} onClose={() => setToast('')} />}
+        </>
+    );
+}
+
 function AdminsView() {
     const { adminUsers, addAdminUser, updateAdminUser, deleteAdminUser, settings } = useData();
     const { user, isSuperAdmin } = useAuth();
@@ -3019,6 +3303,7 @@ export default function AdminDashboard() {
             case 'planning': return <PlanningView />;
             case 'pricing': return <PricingView />;
             case 'settings': return <SettingsView />;
+            case 'maintenance': return <MaintenanceView />;
             case 'admins': return <AdminsView />;
             default: return <DashboardView onNav={setActiveSection} />;
         }
