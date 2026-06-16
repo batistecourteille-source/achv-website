@@ -69,6 +69,42 @@ function ImageUpload({ value, onChange, label, hint, folder = 'images' }: { valu
     const [uploading, setUploading] = useState(false);
     const [dragging, setDragging] = useState(false);
 
+    const compressImage = async (file: File): Promise<File> => {
+        // Skip compression for GIFs and SVGs (animations / vector)
+        if (file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
+
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const MAX_W = 1920;
+                const MAX_H = 1920;
+                let { width, height } = img;
+                if (width > MAX_W || height > MAX_H) {
+                    const ratio = Math.min(MAX_W / width, MAX_H / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) { resolve(file); return; }
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob(blob => {
+                    if (!blob) { resolve(file); return; }
+                    // Keep original if compression made it bigger
+                    if (blob.size >= file.size) { resolve(file); return; }
+                    const compressed = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+                    resolve(compressed);
+                }, 'image/jpeg', 0.85);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Erreur de lecture image')); };
+            img.src = url;
+        });
+    };
+
     const handleFile = async (file: File) => {
         if (!file) return;
 
@@ -77,15 +113,20 @@ function ImageUpload({ value, onChange, label, hint, folder = 'images' }: { valu
             return;
         }
 
-        // Limit file size to 5MB client-side check
-        if (file.size > 5 * 1024 * 1024) {
-            alert("L'image est trop volumineuse (Max 5 Mo).");
+        // Limit file size to 10MB client-side check (avant compression)
+        if (file.size > 10 * 1024 * 1024) {
+            alert("L'image est trop volumineuse (Max 10 Mo).");
             return;
         }
 
         setUploading(true);
         try {
-            const url = await upload(file, folder);
+            const originalSize = file.size;
+            const compressed = await compressImage(file).catch(() => file);
+            if (compressed.size < originalSize) {
+                console.log(`Image compressée : ${(originalSize/1024).toFixed(0)} Ko → ${(compressed.size/1024).toFixed(0)} Ko (-${Math.round((1 - compressed.size/originalSize) * 100)}%)`);
+            }
+            const url = await upload(compressed, folder);
             onChange(url);
         } catch (error) {
             // Error is already alerted in upload function
