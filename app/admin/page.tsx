@@ -2768,9 +2768,64 @@ const DEFAULT_PERMISSIONS: AdminUser['permissions'] = {
 /* =============================================
    MAINTENANCE VIEW — Compression d'images bulk
    ============================================= */
+const defaultPricing2026: any[] = [
+    { id: '1', category: 'Competition', activity: 'Éveil Athlé (2)', licenseType: 'Découverte', birthYears: '2018 à 2020', price: '130,00 €', monClubCode: '0101', order: 1 },
+    { id: '2', category: 'Competition', activity: 'Poussin', licenseType: 'Découverte', birthYears: '2016 – 2017', price: '130,00 €', monClubCode: '0102', order: 2 },
+    { id: '3', category: 'Competition', activity: 'Benjamin', licenseType: 'Compétition', birthYears: '2014 – 2015', price: '140,00 €', monClubCode: '0103', order: 3 },
+    { id: '4', category: 'Competition', activity: 'Minime', licenseType: 'Compétition', birthYears: '2012 – 2013', price: '150,00 €', monClubCode: '0104', order: 4 },
+    { id: '5', category: 'Competition', activity: 'Cadet', licenseType: 'Compétition', birthYears: '2010 – 2011', price: '160,00 €', monClubCode: '0105', order: 5 },
+    { id: '6', category: 'Competition', activity: 'Junior', licenseType: 'Compétition', birthYears: '2008 – 2009', price: '160,00 €', monClubCode: '0106', order: 6 },
+    { id: '7', category: 'Competition', activity: 'Espoir', licenseType: 'Compétition', birthYears: '2005 à 2007', price: '160,00 €', monClubCode: '0107', order: 7 },
+    { id: '8', category: 'Competition', activity: 'Senior', licenseType: 'Compétition', birthYears: '1993 à 2004', price: '170,00 €', monClubCode: '0108', order: 8 },
+    { id: '9', category: 'Competition', activity: 'Master', licenseType: 'Compétition', birthYears: '1992 et avant', price: '170,00 €', monClubCode: '0109', order: 9 },
+    { id: '10', category: 'Autre', activity: 'Maillot Compétition (obligatoire)', licenseType: '-', birthYears: '-', price: '35,00 €', monClubCode: '1001', comment: 'Sauf Eveil, Poussin et Benjamin', order: 10 },
+    { id: '11', category: 'RunningSante', activity: 'Running', licenseType: 'Running ou Santé', birthYears: '2010 et avant', price: '140,00 €', monClubCode: '0001', order: 11 },
+    { id: '12', category: 'RunningSante', activity: 'Marche Nordique', licenseType: 'Running ou Santé', birthYears: '2010 et avant', price: '140,00 €', monClubCode: '0003', order: 12 },
+    { id: '13', category: 'RunningSante', activity: 'Trail', licenseType: 'Running ou Santé', birthYears: '2010 et avant', price: '140,00 €', monClubCode: '0002', order: 13 },
+    { id: '14', category: 'RunningSante', activity: 'Fitness : circuit, renfo, pilates', licenseType: 'Sans licence', birthYears: '2010 et avant', price: '150,00 €', monClubCode: '0501', order: 14 },
+    { id: '15', category: 'Autre', activity: 'Réduction famille', licenseType: '-', birthYears: '-', price: '30,00 €', monClubCode: '-', comment: 'Applicable 1 fois dès 3 adhésions à taux plein', order: 15 },
+];
+
+const defaultSchedule2026: any[] = [
+    // Noyal - Stade Paul Ricard
+    { id: '1', category: 'Adultes Piste', discipline: 'Athlétisme', ageGroup: 'Cadets et +', dayTime: 'Lundi 18h00 - 20h00', location: 'Stade Paul Ricard', city: 'Noyal' },
+    { id: '2', category: 'Jeunes', discipline: 'Lancer, cross ou sauts', ageGroup: 'Benjamins et +', dayTime: 'Mardi 18h00 - 19h15', location: 'Stade Paul Ricard', city: 'Noyal' },
+    { id: '3', category: 'Adultes Piste', discipline: 'Musculation Athlétisme', ageGroup: 'Cadets et +', dayTime: 'Mercredi 17h30 - 19h15', location: 'Stade Paul Ricard', city: 'Noyal' },
+    { id: '4', category: 'Jeunes', discipline: 'Athlétisme', ageGroup: 'Minimes et +', dayTime: 'Jeudi 18h30 - 20h00', location: 'Stade Paul Ricard', city: 'Noyal' },
+    { id: '5', category: 'Jeunes', discipline: 'Athlétisme Eveils', ageGroup: 'Eveils', dayTime: 'Samedi 10h00 - 11h30', location: 'Stade Paul Ricard', city: 'Noyal' },
+    { id: '6', category: 'Jeunes', discipline: 'Athlétisme', ageGroup: 'Poussins à Masters', dayTime: 'Samedi 10h00 - 12h00', location: 'Stade Paul Ricard', city: 'Noyal' },
+    // Noyal - Marche Nordique
+    { id: '7', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Mardi 09h00 - 11h00', location: 'Noyal', city: 'Noyal' },
+    { id: '8', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Mardi 18h30 - 20h45', location: 'Noyal', city: 'Noyal', notes: 'Début de la séance ¼ heure plus tard' },
+    { id: '9', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 09h00 - 11h00', location: 'Noyal', city: 'Noyal' },
+    { id: '10', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 18h30 - 20h45', location: 'Noyal', city: 'Noyal' },
+    { id: '11', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Samedi 09h00 - 11h15', location: 'Noyal', city: 'Noyal' },
+    // Noyal - Hors stade
+    { id: '12', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Mardi 18h30 - 20h00', location: 'Noyal', city: 'Noyal' },
+    { id: '13', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 18h30 - 20h00', location: 'Noyal', city: 'Noyal' },
+    { id: '14', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Samedi 10h00 - 12h00', location: 'Noyal', city: 'Noyal' },
+    { id: '15', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Dimanche 09h00 - 11h00', location: 'Noyal', city: 'Noyal' },
+    { id: '16', category: 'Adultes Hors-Stade', discipline: 'Trail', ageGroup: 'Tous niveaux', dayTime: 'Samedi 09h45 - 11h45', location: 'Noyal', city: 'Noyal' },
+    // Noyal - Fitness Korrigans
+    { id: '17', category: 'Forme & Santé', discipline: 'Pilates', ageGroup: 'Adultes', dayTime: 'Lundi 18h30 - 19h30', location: 'Salle des Korrigans', city: 'Noyal' },
+    { id: '18', category: 'Forme & Santé', discipline: 'Renforcement musculaire', ageGroup: 'Adultes', dayTime: 'Mardi 19h45 - 20h45', location: 'Salle des Korrigans', city: 'Noyal' },
+    { id: '19', category: 'Forme & Santé', discipline: 'Circuit training', ageGroup: 'Adultes', dayTime: 'Jeudi 19h45 - 20h45', location: 'Salle des Korrigans', city: 'Noyal' },
+    // Nouvoitou - Stade Joseph Brossault
+    { id: '20', category: 'Jeunes', discipline: 'Athlétisme Eveils / Poussins / Benjamins', ageGroup: 'Eveils, Poussins, Benjamins', dayTime: 'Mercredi 14h00 - 16h00', location: 'Parc des sports Joseph Brossault', city: 'Nouvoitou' },
+    { id: '21', category: 'Jeunes', discipline: 'Athlétisme Minimes', ageGroup: 'Minimes', dayTime: 'Mercredi 14h00 - 16h00', location: 'Parc des sports Joseph Brossault', city: 'Nouvoitou' },
+    // Nouvoitou - Hors stade
+    { id: '22', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Mardi 18h30 - 20h00', location: 'Nouvoitou', city: 'Nouvoitou' },
+    { id: '23', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Mardi 19h30 - 21h00', location: 'Nouvoitou', city: 'Nouvoitou' },
+    { id: '24', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 19h00 - 20h30', location: 'Nouvoitou', city: 'Nouvoitou' },
+    { id: '25', category: 'Adultes Hors-Stade', discipline: 'Trail', ageGroup: 'Tous niveaux', dayTime: 'Samedi 10h00 - 11h30', location: 'Nouvoitou', city: 'Nouvoitou' },
+    // Nouvoitou - Fitness
+    { id: '26', category: 'Forme & Santé', discipline: 'Préparation Physique Générale', ageGroup: 'Tous niveaux', dayTime: 'Mercredi 19h00 - 20h00', location: 'Nouvoitou', city: 'Nouvoitou' },
+];
+
 function MaintenanceView() {
     const { articles, partners, team, activities, customPages, socialPosts, settings, setSettings,
-        setArticles, setPartners, setTeam, setActivities, setCustomPages, setSocialPosts } = useData();
+        setArticles, setPartners, setTeam, setActivities, setCustomPages, setSocialPosts,
+        setPricing, setSchedules } = useData();
     const [scanning, setScanning] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [imageUrls, setImageUrls] = useState<Array<{ url: string; field: string; size?: number }>>([]);
@@ -3033,6 +3088,51 @@ function MaintenanceView() {
                         )}
                     </div>
                 )}
+            </div>
+
+            <div className="admin-card" style={{ marginBottom: 24 }}>
+                <h3>🗓️ Mise à jour saison 2026/2027</h3>
+                <p style={{ color: '#475569', marginBottom: 16, lineHeight: 1.6 }}>
+                    Applique les nouveaux <strong>tarifs</strong> et le nouveau <strong>planning</strong> officiels 2026/2027 sur le site.
+                    Cette action <strong>remplace</strong> les tarifs et le planning actuellement en base par les valeurs de référence du club.
+                </p>
+                <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 8, padding: 14, marginBottom: 16, fontSize: '0.9rem', color: '#92400e' }}>
+                    ⚠️ Toute modification manuelle précédente des tarifs / horaires sera <strong>écrasée</strong>. Sauvegarde-les avant si besoin.
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button
+                        className="wp-btn wp-btn-primary"
+                        onClick={() => {
+                            if (!confirm('Appliquer les tarifs 2026/2027 (remplace toute la grille tarifaire actuelle) ?')) return;
+                            setPricing(defaultPricing2026);
+                            setToast('✓ Tarifs 2026/2027 appliqués');
+                        }}
+                    >
+                        💰 Appliquer les tarifs 2026/2027
+                    </button>
+                    <button
+                        className="wp-btn wp-btn-primary"
+                        onClick={() => {
+                            if (!confirm('Appliquer le planning 2026/2027 (remplace tous les horaires actuels) ?')) return;
+                            setSchedules(defaultSchedule2026);
+                            setToast('✓ Planning 2026/2027 appliqué');
+                        }}
+                    >
+                        📅 Appliquer le planning 2026/2027
+                    </button>
+                    <button
+                        className="wp-btn"
+                        style={{ background: '#059669', color: 'white' }}
+                        onClick={() => {
+                            if (!confirm('Appliquer les tarifs ET le planning 2026/2027 ?')) return;
+                            setPricing(defaultPricing2026);
+                            setSchedules(defaultSchedule2026);
+                            setToast('✓ Tarifs et planning 2026/2027 appliqués');
+                        }}
+                    >
+                        ✨ Tout appliquer d&apos;un coup
+                    </button>
+                </div>
             </div>
 
             <div className="admin-card">

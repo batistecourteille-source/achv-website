@@ -755,44 +755,46 @@ const defaultPartners: Partner[] = [
 ];
 
 const defaultSchedule: ScheduleItem[] = [
-    // Athlétisme à Noyal sur Vilaine, stade Paul Ricard
+    // Saison 2026/2027
+    // ─── NOYAL SUR VILAINE — Athlétisme sur stade, stade Paul Ricard ───
     { id: '1', category: 'Adultes Piste', discipline: 'Athlétisme', ageGroup: 'Cadets et +', dayTime: 'Lundi 18h00 - 20h00', location: 'Stade Paul Ricard', city: 'Noyal' },
     { id: '2', category: 'Jeunes', discipline: 'Lancer, cross ou sauts', ageGroup: 'Benjamins et +', dayTime: 'Mardi 18h00 - 19h15', location: 'Stade Paul Ricard', city: 'Noyal' },
     { id: '3', category: 'Adultes Piste', discipline: 'Musculation Athlétisme', ageGroup: 'Cadets et +', dayTime: 'Mercredi 17h30 - 19h15', location: 'Stade Paul Ricard', city: 'Noyal' },
     { id: '4', category: 'Jeunes', discipline: 'Athlétisme', ageGroup: 'Minimes et +', dayTime: 'Jeudi 18h30 - 20h00', location: 'Stade Paul Ricard', city: 'Noyal' },
     { id: '5', category: 'Jeunes', discipline: 'Athlétisme Eveils', ageGroup: 'Eveils', dayTime: 'Samedi 10h00 - 11h30', location: 'Stade Paul Ricard', city: 'Noyal' },
     { id: '6', category: 'Jeunes', discipline: 'Athlétisme', ageGroup: 'Poussins à Masters', dayTime: 'Samedi 10h00 - 12h00', location: 'Stade Paul Ricard', city: 'Noyal' },
-    { id: '7', category: 'Adultes Piste', discipline: 'Athlétisme', ageGroup: 'Poussins à Masters', dayTime: 'Samedi 10h00 - 12h00', location: 'Stade Paul Ricard', city: 'Noyal' },
 
-    // Athlétisme à Nouvoitou, stade de Nouvoitou
-    { id: '8', category: 'Jeunes', discipline: 'Athlétisme Eveils / Poussins / Benjamins', ageGroup: 'Eveils, Poussins, Benjamins', dayTime: 'Mercredi 14h00 - 16h00', location: 'Stade de Nouvoitou', city: 'Nouvoitou' },
-    { id: '9', category: 'Jeunes', discipline: 'Athlétisme Minimes', ageGroup: 'Minimes', dayTime: 'Mercredi 14h00 - 16h00', location: 'Stade de Nouvoitou', city: 'Nouvoitou' },
-    { id: '10', category: 'Forme & Santé', discipline: 'Préparation Physique Générale', ageGroup: 'Tous niveaux', dayTime: 'Mercredi 19h00 - 20h00', location: 'Stade de Nouvoitou', city: 'Nouvoitou' },
+    // ─── NOYAL — Marche Nordique ───
+    { id: '7', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Mardi 09h00 - 11h00', location: 'Noyal', city: 'Noyal' },
+    { id: '8', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Mardi 18h30 - 20h45', location: 'Noyal', city: 'Noyal', notes: 'Début de la séance ¼ heure plus tard' },
+    { id: '9', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 09h00 - 11h00', location: 'Noyal', city: 'Noyal' },
+    { id: '10', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 18h30 - 20h45', location: 'Noyal', city: 'Noyal' },
+    { id: '11', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Samedi 09h00 - 11h15', location: 'Noyal', city: 'Noyal' },
 
-    // Marche nordique
-    { id: '11', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Mardi 09h00 - 11h00', location: 'Noyal / Nouvoitou', city: 'Les deux' },
-    { id: '12', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Mardi 18h30 - 20h45', location: 'Noyal / Nouvoitou', city: 'Les deux' },
-    { id: '13', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 09h00 - 11h00', location: 'Noyal / Nouvoitou', city: 'Les deux' },
-    { id: '14', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 18h30 - 20h45', location: 'Noyal / Nouvoitou', city: 'Les deux' },
-    { id: '15', category: 'Marche Nordique', discipline: 'Marche Nordique', ageGroup: 'Tous niveaux', dayTime: 'Samedi 09h00 - 11h15', location: 'Noyal / Nouvoitou', city: 'Les deux' },
+    // ─── NOYAL — Athlétisme hors stade (Running + Trail) ───
+    { id: '12', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Mardi 18h30 - 20h00', location: 'Noyal', city: 'Noyal' },
+    { id: '13', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 18h30 - 20h00', location: 'Noyal', city: 'Noyal' },
+    { id: '14', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Samedi 10h00 - 12h00', location: 'Noyal', city: 'Noyal' },
+    { id: '15', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Dimanche 09h00 - 11h00', location: 'Noyal', city: 'Noyal' },
+    { id: '16', category: 'Adultes Hors-Stade', discipline: 'Trail', ageGroup: 'Tous niveaux', dayTime: 'Samedi 09h45 - 11h45', location: 'Noyal', city: 'Noyal' },
 
-    // Running
-    { id: '16', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Mardi 18h30 - 20h00', location: 'Noyal', city: 'Noyal' },
-    { id: '17', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 18h30 - 20h00', location: 'Noyal', city: 'Noyal' },
-    { id: '18', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Samedi 10h00 - 12h00', location: 'Noyal', city: 'Noyal' },
-    { id: '19', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Dimanche 09h00 - 11h00', location: 'Noyal', city: 'Noyal' },
-    { id: '20', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Mardi 19h00 - 20h30', location: 'Nouvoitou', city: 'Nouvoitou' },
-    { id: '21', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 19h00 - 20h30', location: 'Nouvoitou', city: 'Nouvoitou' },
+    // ─── NOYAL — Fitness salle des Korrigans ───
+    { id: '17', category: 'Forme & Santé', discipline: 'Pilates', ageGroup: 'Adultes', dayTime: 'Lundi 18h30 - 19h30', location: 'Salle des Korrigans', city: 'Noyal' },
+    { id: '18', category: 'Forme & Santé', discipline: 'Renforcement musculaire', ageGroup: 'Adultes', dayTime: 'Mardi 19h45 - 20h45', location: 'Salle des Korrigans', city: 'Noyal' },
+    { id: '19', category: 'Forme & Santé', discipline: 'Circuit training', ageGroup: 'Adultes', dayTime: 'Jeudi 19h45 - 20h45', location: 'Salle des Korrigans', city: 'Noyal' },
 
-    // Trail
-    { id: '22', category: 'Adultes Hors-Stade', discipline: 'Trail', ageGroup: 'Tous niveaux', dayTime: 'Samedi 10h00 - 11h30', location: 'Nouvoitou', city: 'Nouvoitou' },
-    { id: '23', category: 'Adultes Hors-Stade', discipline: 'Trail', ageGroup: 'Tous niveaux', dayTime: 'Samedi 09h45 - 11h45', location: 'Noyal', city: 'Noyal' },
+    // ─── NOUVOITOU — Athlétisme sur stade, Parc des sports Joseph Brossault ───
+    { id: '20', category: 'Jeunes', discipline: 'Athlétisme Eveils / Poussins / Benjamins', ageGroup: 'Eveils, Poussins, Benjamins', dayTime: 'Mercredi 14h00 - 16h00', location: 'Parc des sports Joseph Brossault', city: 'Nouvoitou' },
+    { id: '21', category: 'Jeunes', discipline: 'Athlétisme Minimes', ageGroup: 'Minimes', dayTime: 'Mercredi 14h00 - 16h00', location: 'Parc des sports Joseph Brossault', city: 'Nouvoitou' },
 
-    // Fitness - Salle de Korrigans
-    { id: '24', category: 'Forme & Santé', discipline: 'Pilates', ageGroup: 'Adultes', dayTime: 'Lundi 18h30 - 19h30', location: 'Salle des Korrigans', city: 'Noyal' },
-    { id: '25', category: 'Forme & Santé', discipline: 'Pilates', ageGroup: 'Adultes', dayTime: 'Mardi 18h30 - 19h30', location: 'Salle des Korrigans', city: 'Noyal' },
-    { id: '26', category: 'Forme & Santé', discipline: 'Renforcement musculaire', ageGroup: 'Adultes', dayTime: 'Mardi 19h45 - 20h45', location: 'Salle des Korrigans', city: 'Noyal' },
-    { id: '27', category: 'Forme & Santé', discipline: 'Circuit training', ageGroup: 'Adultes', dayTime: 'Jeudi 19h45 - 20h45', location: 'Salle des Korrigans', city: 'Noyal' },
+    // ─── NOUVOITOU — Athlétisme hors stade ───
+    { id: '22', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Mardi 18h30 - 20h00', location: 'Nouvoitou', city: 'Nouvoitou' },
+    { id: '23', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Mardi 19h30 - 21h00', location: 'Nouvoitou', city: 'Nouvoitou' },
+    { id: '24', category: 'Adultes Hors-Stade', discipline: 'Running', ageGroup: 'Tous niveaux', dayTime: 'Jeudi 19h00 - 20h30', location: 'Nouvoitou', city: 'Nouvoitou' },
+    { id: '25', category: 'Adultes Hors-Stade', discipline: 'Trail', ageGroup: 'Tous niveaux', dayTime: 'Samedi 10h00 - 11h30', location: 'Nouvoitou', city: 'Nouvoitou' },
+
+    // ─── NOUVOITOU — Fitness ───
+    { id: '26', category: 'Forme & Santé', discipline: 'Préparation Physique Générale', ageGroup: 'Tous niveaux', dayTime: 'Mercredi 19h00 - 20h00', location: 'Nouvoitou', city: 'Nouvoitou' },
 ];
 
 const defaultCustomPages: CustomPage[] = [];
@@ -832,25 +834,25 @@ const defaultRecords: ClubRecord[] = [
 ];
 
 const defaultPricing: PricingItem[] = [
-    // LICENCE COMPETITION
-    { id: '1', category: 'Competition', activity: 'Éveil Athlé (2)', licenseType: 'Découverte', birthYears: '2017 à 2019', price: '120,00 €', monClubCode: '0101', order: 1 },
-    { id: '2', category: 'Competition', activity: 'Poussin', licenseType: 'Découverte', birthYears: '2015 – 2016', price: '120,00 €', monClubCode: '0102', order: 2 },
-    { id: '3', category: 'Competition', activity: 'Benjamin', licenseType: 'Compétition', birthYears: '2013 – 2014', price: '125,00 €', monClubCode: '0103', order: 3 },
-    { id: '4', category: 'Competition', activity: 'Minime', licenseType: 'Compétition', birthYears: '2011 – 2012', price: '130,00 €', monClubCode: '0104', order: 4 },
-    { id: '5', category: 'Competition', activity: 'Cadet', licenseType: 'Compétition', birthYears: '2009 – 2010', price: '140,00 €', monClubCode: '0105', order: 5 },
-    { id: '6', category: 'Competition', activity: 'Junior', licenseType: 'Compétition', birthYears: '2007 – 2008', price: '140,00 €', monClubCode: '0106', order: 6 },
-    { id: '7', category: 'Competition', activity: 'Espoir', licenseType: 'Compétition', birthYears: '2004 à 2006', price: '150,00 €', monClubCode: '0107', order: 7 },
-    { id: '8', category: 'Competition', activity: 'Senior', licenseType: 'Compétition', birthYears: '1992 à 2003', price: '155,00 €', monClubCode: '0108', order: 8 },
-    { id: '9', category: 'Competition', activity: 'Master', licenseType: 'Compétition', birthYears: '1991 et avant', price: '155,00 €', monClubCode: '0109', order: 9 },
+    // LICENCE COMPETITION - Saison 2026/2027
+    { id: '1', category: 'Competition', activity: 'Éveil Athlé (2)', licenseType: 'Découverte', birthYears: '2018 à 2020', price: '130,00 €', monClubCode: '0101', order: 1 },
+    { id: '2', category: 'Competition', activity: 'Poussin', licenseType: 'Découverte', birthYears: '2016 – 2017', price: '130,00 €', monClubCode: '0102', order: 2 },
+    { id: '3', category: 'Competition', activity: 'Benjamin', licenseType: 'Compétition', birthYears: '2014 – 2015', price: '140,00 €', monClubCode: '0103', order: 3 },
+    { id: '4', category: 'Competition', activity: 'Minime', licenseType: 'Compétition', birthYears: '2012 – 2013', price: '150,00 €', monClubCode: '0104', order: 4 },
+    { id: '5', category: 'Competition', activity: 'Cadet', licenseType: 'Compétition', birthYears: '2010 – 2011', price: '160,00 €', monClubCode: '0105', order: 5 },
+    { id: '6', category: 'Competition', activity: 'Junior', licenseType: 'Compétition', birthYears: '2008 – 2009', price: '160,00 €', monClubCode: '0106', order: 6 },
+    { id: '7', category: 'Competition', activity: 'Espoir', licenseType: 'Compétition', birthYears: '2005 à 2007', price: '160,00 €', monClubCode: '0107', order: 7 },
+    { id: '8', category: 'Competition', activity: 'Senior', licenseType: 'Compétition', birthYears: '1993 à 2004', price: '170,00 €', monClubCode: '0108', order: 8 },
+    { id: '9', category: 'Competition', activity: 'Master', licenseType: 'Compétition', birthYears: '1992 et avant', price: '170,00 €', monClubCode: '0109', order: 9 },
     // MAILLOT
     { id: '10', category: 'Autre', activity: 'Maillot Compétition (obligatoire)', licenseType: '-', birthYears: '-', price: '35,00 €', monClubCode: '1001', comment: 'Sauf Eveil, Poussin et Benjamin', order: 10 },
-    // RUNNING / SANTE
-    { id: '11', category: 'RunningSante', activity: 'Running', licenseType: 'Running ou Santé', birthYears: '2009 et avant', price: '125,00 €', monClubCode: '0001', order: 11 },
-    { id: '12', category: 'RunningSante', activity: 'Marche Nordique', licenseType: 'Running ou Santé', birthYears: '2009 et avant', price: '125,00 €', monClubCode: '0003', order: 12 },
-    { id: '13', category: 'RunningSante', activity: 'Trail', licenseType: 'Running ou Santé', birthYears: '2009 et avant', price: '125,00 €', monClubCode: '0002', order: 13 },
-    { id: '14', category: 'RunningSante', activity: 'Fitness : circuit, renfo, pilates', licenseType: 'Sans licence', birthYears: '2009 et avant', price: '150,00 €', monClubCode: '0501', order: 14 },
+    // RUNNING / SANTE - Saison 2026/2027
+    { id: '11', category: 'RunningSante', activity: 'Running', licenseType: 'Running ou Santé', birthYears: '2010 et avant', price: '140,00 €', monClubCode: '0001', order: 11 },
+    { id: '12', category: 'RunningSante', activity: 'Marche Nordique', licenseType: 'Running ou Santé', birthYears: '2010 et avant', price: '140,00 €', monClubCode: '0003', order: 12 },
+    { id: '13', category: 'RunningSante', activity: 'Trail', licenseType: 'Running ou Santé', birthYears: '2010 et avant', price: '140,00 €', monClubCode: '0002', order: 13 },
+    { id: '14', category: 'RunningSante', activity: 'Fitness : circuit, renfo, pilates', licenseType: 'Sans licence', birthYears: '2010 et avant', price: '150,00 €', monClubCode: '0501', order: 14 },
     // REDUCTION
-    { id: '15', category: 'Autre', activity: 'Réduction famille', licenseType: '-', birthYears: '-', price: '20,00 €', monClubCode: '-', comment: 'Applicable 1 fois dès 3 adhésions à taux plein', order: 15 },
+    { id: '15', category: 'Autre', activity: 'Réduction famille', licenseType: '-', birthYears: '-', price: '30,00 €', monClubCode: '-', comment: 'Applicable 1 fois dès 3 adhésions à taux plein', order: 15 },
 ];
 
 const defaultSocialPosts: SocialPost[] = [
