@@ -175,7 +175,10 @@ export default function GlobalSearch() {
         }
     };
 
-    const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.userAgent);
+    const [isMac, setIsMac] = useState(false);
+    useEffect(() => {
+        setIsMac(/Mac|iPhone|iPod|iPad/.test(navigator.userAgent));
+    }, []);
 
     return (
         <>
@@ -188,7 +191,7 @@ export default function GlobalSearch() {
             >
                 <span className="gs-icon">🔍</span>
                 <span className="gs-label">Rechercher…</span>
-                <span className="gs-kbd">{isMac ? '⌘' : 'Ctrl'} K</span>
+                <span className="gs-kbd" suppressHydrationWarning>{isMac ? '⌘' : 'Ctrl'} K</span>
             </button>
 
             {/* Modal overlay */}
